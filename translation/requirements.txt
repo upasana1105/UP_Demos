@@ -1,0 +1,6 @@
+google-adk
+google-cloud-translate>=3.11.0
+google-cloud-storage
+pydantic
+pypdf2
+python-dotenv
