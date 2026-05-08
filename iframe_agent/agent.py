@@ -1009,19 +1009,23 @@ class ChatAgent(AgentExecutor):
                                                     "interactionMode": "readOnly"
                                                 }
                                     final_parts.append(
-                                        DataPart(
-                                            data=action,
-                                            kind="data",
-                                            metadata={"mimeType": "application/json+a2ui"}
+                                        Part(
+                                            root=DataPart(
+                                                data=action,
+                                                kind="data",
+                                                metadata={"mimeType": "application/json+a2ui"}
+                                            )
                                         )
                                     )
                             else:
                                 # Handle single object fallback
                                 final_parts.append(
-                                    DataPart(
-                                        data=actions,
-                                        kind="data",
-                                        metadata={"mimeType": "application/json+a2ui"}
+                                    Part(
+                                        root=DataPart(
+                                            data=actions,
+                                            kind="data",
+                                            metadata={"mimeType": "application/json+a2ui"}
+                                        )
                                     )
                                 )
                         except Exception as e:
