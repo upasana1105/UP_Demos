@@ -948,7 +948,7 @@ class ChatAgent(AgentExecutor):
         return AgentCard(name="A2UI_IFrame_Agent", description="Agent with iFrame", version="1.0.0", url=self.base_url, defaultInputModes=["text/plain", "application/json"], skills=[], defaultOutputModes=["text/plain", "application/json", "application/json+a2ui"], capabilities=capabilities, preferred_transport=TransportProtocol.http_json)
 
     def _build_agent(self, tools: BaseToolset) -> LlmAgent:
-        model_name = os.getenv("GEMINI_MODEL", "gemini-2.5-pro")
+        model_name = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
         return LlmAgent(model=Gemini(model=model_name), name="chat_agent", description="A friendly chat assistant.", instruction=f"{ROLE_DESCRIPTION}\n{WORKFLOW_DESCRIPTION}\n{UI_DESCRIPTION}", tools=[])
 
     async def stream(self, query: str, session_id: str) -> AsyncIterable[dict[str, Any]]:

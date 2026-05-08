@@ -2,14 +2,15 @@
 
 echo "Starting Financial Document Translator (VENV Mode)..."
 
-# 1. Check for Python 3.10+
+# 1. Check for Python
 if command -v python3.11 &>/dev/null; then
     PYTHON_BIN="python3.11"
 elif command -v python3.10 &>/dev/null; then
     PYTHON_BIN="python3.10"
+elif command -v python3 &>/dev/null; then
+    PYTHON_BIN="python3"
 else
-    echo "ERROR: Python 3.10 or 3.11 not found."
-    echo "Please run: brew install python@3.11"
+    echo "ERROR: Python 3 not found."
     exit 1
 fi
 

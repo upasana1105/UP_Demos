@@ -60,6 +60,9 @@ async def translate_document(
         user_message = (
             f"Please translate the financial document located at '{os.path.abspath(file_path)}' "
             f"into the target language '{target_language}'. "
+            f"CRITICAL INSTRUCTION: You MUST call the `adaptive_translate_tool` for this document, "
+            f"even if your internal checks suggest it contains no selectable text. The tool has a "
+            f"specialized fallback pipeline to handle scanned or vector-heavy documents."
         )
 
         # Automatically register user's custom CSV glossary to GCP if provided
@@ -74,14 +77,13 @@ async def translate_document(
 
         if glossary_id:
             user_message += f"\n\nCRITICAL INSTRUCTION: When you call the 'adaptive_translate_tool', you MUST explicitly set the parameter 'glossary_id' equal to '{glossary_id}'. Do not leave it blank. "
-        
-        user_message += (
-            "\n\nCRITICAL ENFORCEMENT SUMMARY REQUIRED: "
-            "In your final response, you MUST include a detailed 'AI Enforcement Summary'. "
-            "This summary must explicitly demonstrate how the glossary was 'enforced'. "
-            "Provide specific examples (e.g., list 'Stop Words' like EBITDA that were strictly preserved, "
-            "and other terms that were mapped). Format this summary clearly in Markdown."
-        )
+            user_message += (
+                "\n\nCRITICAL ENFORCEMENT SUMMARY REQUIRED: "
+                "In your final response, you MUST include a detailed 'AI Enforcement Summary'. "
+                "This summary must explicitly demonstrate how the glossary was 'enforced'. "
+                "Provide specific examples (e.g., list 'Stop Words' like EBITDA that were strictly preserved, "
+                "and other terms that were mapped). Format this summary clearly in Markdown."
+            )
 
 
         # 3. Initialize the Runner and Session
