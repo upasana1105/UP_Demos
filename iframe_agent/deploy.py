@@ -123,6 +123,7 @@ def main():
             "cloudpickle",
             "pydantic",
             "protobuf==5.29.3",
+            "a2a-sdk",
         ],
         "http_options": {
             "api_version": "v1beta1",

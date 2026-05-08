@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="connect-src 'none'">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kanban Board Preview</title>
+    <style>
+        /* Design System Variables */
+        :root {
+            --b500: #0747A6; /* Global nav blue */
+            --b400: #0052CC; /* Primary buttons/links */
+            --n0: #FFFFFF;
+            --n10: #FAFBFC; /* App background */
+            --n20: #F4F5F7; /* Hover states */
+            --n30: #EBECF0; /* Column background */
+            --n40: #DFE1E6; /* Borders */
+            --n100: #7A869A; /* Secondary text */
+            --n500: #42526E; /* Subheadings */
+            --n800: #172B4D; /* Primary text */
+            --card-shadow: 0 1px 2px rgba(9, 30, 66, 0.25);
+            --focus-ring: 0 0 0 2px #4C9AFF;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            background-color: var(--n0);
+            color: var(--n800);
+            overflow: hidden;
+            font-size: 14px;
+        }
+
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #C1C7D0; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #A5ADBA; }
+
+        /* --- NAVIGATION --- */
+        /* Global Sidebar (Dark Blue) */
+        .global-nav {
+            width: 64px;
+            background-color: var(--b500);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 16px 0;
+            flex-shrink: 0;
+            z-index: 100;
+        }
+
+        .nav-item {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-bottom: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .nav-item.logo {
+            background: #2684FF; /* Logo icon color */
+            margin-bottom: 24px;
+        }
+
+        .nav-item:not(.logo):hover { background: rgba(255, 255, 255, 0.2); }
+
+        /* Project Sidebar (Light Gray) */
+        .project-nav {
+            width: 240px;
+            background-color: var(--n10);
+            border-right: 1px solid var(--n40);
+            display: flex;
+            flex-direction: column;
+            padding: 24px 16px;
+            flex-shrink: 0;
+        }
+
+        .project-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .project-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #FF7A00, #FFB800);
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .project-info h3 { margin: 0; font-size: 14px; font-weight: 600; }
+        .project-info p { margin: 2px 0 0 0; font-size: 12px; color: var(--n100); }
+
+        .menu-item {
+            padding: 8px 12px;
+            border-radius: 3px;
+            cursor: pointer;
+            color: var(--n500);
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .menu-item:hover { background-color: var(--n30); }
+        .menu-item.active {
+            background-color: #E6EFFC;
+            color: var(--b400);
+            font-weight: 500;
+        }
+
+        /* --- MAIN CONTENT --- */
+        main {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background-color: var(--n0);
+        }
+
+        header {
+            padding: 24px 40px 0;
+        }
+
+        .breadcrumb {
+            font-size: 12px;
+            color: var(--n100);
+            margin-bottom: 12px;
+        }
+
+        h2 {
+            margin: 0 0 16px 0;
+            font-weight: 500;
+            font-size: 24px;
+            letter-spacing: -0.01em;
+        }
+
+        .filters {
+            display: flex;
+            gap: 16px;
+            padding: 0 40px 24px;
+            align-items: center;
+        }
+
+        .search-bar {
+            padding: 6px 12px;
+            border: 2px solid var(--n40);
+            border-radius: 3px;
+            width: 200px;
+            font-size: 14px;
+            background: var(--n10);
+            color: var(--n800);
+            outline: none;
+        }
+
+        .search-bar:focus {
+            border-color: var(--b400);
+            background: var(--n0);
+        }
+
+        .filter-avatars {
+            display: flex;
+            margin-left: 8px;
+        }
+
+        .filter-btn {
+            background: none;
+            border: none;
+            color: var(--n500);
+            cursor: pointer;
+            font-size: 14px;
+            padding: 6px 12px;
+            border-radius: 3px;
+        }
+
+        .filter-btn:hover { background: var(--n20); }
+
+        /* --- BOARD & COLUMNS --- */
+        .board {
+            display: flex;
+            padding: 0 40px 24px;
+            gap: 16px;
+            flex-grow: 1;
+            overflow-x: auto;
+            overflow-y: hidden;
+            align-items: flex-start;
+        }
+
+        .column {
+            background-color: var(--n30);
+            width: 272px;
+            min-width: 272px;
+            border-radius: 3px;
+            display: flex;
+            flex-direction: column;
+            max-height: 100%;
+            transition: background-color 0.2s ease;
+        }
+
+        .column-header {
+            padding: 12px 14px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--n100);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            position: sticky;
+            top: 0;
+            background-color: var(--n30);
+            border-radius: 3px 3px 0 0;
+        }
+
+        .task-list {
+            padding: 0 8px 8px 8px;
+            min-height: 100px;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        /* --- CARDS (ISSUES) --- */
+        .card {
+            background: var(--n0);
+            border-radius: 3px;
+            padding: 12px;
+            margin-bottom: 8px;
+            box-shadow: var(--card-shadow);
+            cursor: grab;
+            transition: background 0.1s ease-in-out, box-shadow 0.1s;
+            user-select: none;
+            position: relative;
+        }
+
+        .card:hover {
+            background: var(--n10);
+        }
+
+        .card:active {
+            cursor: grabbing;
+        }
+
+        .card-title {
+            font-size: 14px;
+            margin-bottom: 16px;
+            line-height: 1.4;
+            color: var(--n800);
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-footer-left, .card-footer-right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Icons & Tags */
+        .issue-type {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: white;
+        }
+        .type-task { background-color: #4BADE8; }
+        .type-story { background-color: #57D9A3; }
+        .type-bug { background-color: #E5493A; }
+
+        .issue-key {
+            font-size: 12px;
+            color: var(--n500);
+            font-weight: 500;
+        }
+
+        .priority {
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        .pri-high { color: #E5493A; }
+        .pri-med { color: #FF8B00; }
+
+        .avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+            font-size: 11px;
+            color: white;
+            box-shadow: 0 0 0 2px var(--n0);
+        }
+
+        /* Drag and Drop Visual States */
+        .dragging {
+            opacity: 0.5;
+            transform: rotate(3deg);
+            box-shadow: 0 5px 10px rgba(9, 30, 66, 0.15);
+        }
+
+        .drag-over {
+            background-color: #E2E4E9; /* Slightly darker grey for drop target */
+        }
+    </style>
+</head>
+<body>
+
+    <aside class="global-nav">
+        <div class="nav-item logo" title="Home">K</div>
+        <div class="nav-item" title="Search">🔍</div>
+        <div class="nav-item" title="Create" style="background: rgba(255,255,255,0.2);">+</div >
+    </aside>
+
+    <aside class="project-nav">
+        <div class="project-header">
+            <div class="project-icon">P</div>
+            <div class="project-info">
+                <h3>Phoenix Project</h3>
+                <p>Software project</p>
+            </div>
+        </div>
+        <div class="menu-item">📊 Roadmap</div>
+        <div class="menu-item">📋 Backlog</div>
+        <div class="menu-item active">📦 Active sprints</div>
+        <div class="menu-item">📈 Reports</div>
+        <div class="menu-item">⚙️ Project settings</div>
+    </aside>
+
+    <main>
+        <header>
+            <div class="breadcrumb">Projects / Phoenix Project / Active sprints</div>
+            <h2>PX Sprint 1</h2>
+        </header>
+
+        <div class="filters">
+            <input type="text" class="search-bar" placeholder="Search this board">
+            <div class="filter-avatars">
+                <div class="avatar" style="background: #0052CC; z-index: 3;">JD</div>
+                <div class="avatar" style="background: #00875A; z-index: 2; margin-left: -8px;">AS</div>
+                <div class="avatar" style="background: #FF5630; z-index: 1; margin-left: -8px;">MK</div>
+            </div>
+            <button class="filter-btn">Only My Issues</button>
+            <button class="filter-btn">Recently Updated</button>
+        </div>
+
+        <div class="board">
+            <div class="column" ondragover="allowDrop(event)" ondragleave="clearStatus(event)" ondrop="drop(event)">
+                <div class="column-header">To Do <span style="font-weight: normal; margin-left: 4px;">2</span></div>
+                <div class="task-list" id="todo">
+
+                    <div class="card" draggable="true" ondragstart="drag(event)" id="task-1">
+                        <div class="card-title">Setup project repository and CSP headers</div>
+                        <div class="card-footer">
+                            <div class="card-footer-left">
+                                <div class="issue-type type-task" title="Task">✓</div>
+                                <span class="issue-key">PX-12</span>
+                            </div>
+                            <div class="card-footer-right">
+                                <div class="priority pri-high" title="Highest">↑</div>
+                                <div class="avatar" style="background: #0052CC;">JD</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card" draggable="true" ondragstart="drag(event)" id="task-2">
+                        <div class="card-title">Define API security protocols to prevent CSRF</div>
+                        <div class="card-footer">
+                            <div class="card-footer-left">
+                                <div class="issue-type type-story" title="Story">🔖</div>
+                                <span class="issue-key">PX-14</span>
+                            </div>
+                            <div class="card-footer-right">
+                                <div class="priority pri-med" title="Medium">=</div>
+                                <div class="avatar" style="background: #00875A;">AS</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="column" ondragover="allowDrop(event)" ondragleave="clearStatus(event)" ondrop="drop(event)">
+                <div class="column-header">In Progress <span style="font-weight: normal; margin-left: 4px;">1</span></div>
+                <div class="task-list" id="inprogress">
+
+                    <div class="card" draggable="true" ondragstart="drag(event)" id="task-3">
+                        <div class="card-title">Build Kanban drag-and-drop UI with native HTML5</div>
+                        <div class="card-footer">
+                            <div class="card-footer-left">
+                                <div class="issue-type type-bug" title="Bug">●</div>
+                                <span class="issue-key">PX-15</span>
+                            </div>
+                            <div class="card-footer-right">
+                                <div class="priority pri-high" title="High">↑</div>
+                                <div class="avatar" style="background: #FF5630;">MK</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="column" ondragover="allowDrop(event)" ondragleave="clearStatus(event)" ondrop="drop(event)">
+                <div class="column-header">Done <span style="font-weight: normal; margin-left: 4px;">1</span></div>
+                <div class="task-list" id="done">
+
+                    <div class="card" draggable="true" ondragstart="drag(event)" id="task-4">
+                        <div class="card-title">Initial requirements gathering with stakeholders</div>
+                        <div class="card-footer">
+                            <div class="card-footer-left">
+                                <div class="issue-type type-story" title="Story">🔖</div>
+                                <span class="issue-key">PX-04</span>
+                            </div>
+                            <div class="card-footer-right">
+                                <div class="priority pri-med" title="Medium">=</div>
+                                <div class="avatar" style="background: #0052CC;">JD</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Prevent default behavior to allow drop
+        function allowDrop(ev) {
+            ev.preventDefault();
+            let column = ev.target.closest('.column');
+            if (column) {
+                column.classList.add('drag-over');
+            }
+        }
+
+        // Remove visual cue when leaving column
+        function clearStatus(ev) {
+            let column = ev.target.closest('.column');
+            if (column) {
+                column.classList.remove('drag-over');
+            }
+        }
+
+        // Set the ID of the dragged card
+        function drag(ev) {
+            ev.dataTransfer.setData("text/plain", ev.target.closest('.card').id);
+            // Slight delay to allow the drag image to generate before changing opacity
+            setTimeout(() => {
+                ev.target.closest('.card').classList.add('dragging');
+            }, 0);
+        }
+
+        // Handle the drop event
+        function drop(ev) {
+            ev.preventDefault();
+            const data = ev.dataTransfer.getData("text/plain");
+            const draggedElement = document.getElementById(data);
+
+            if (draggedElement) {
+                draggedElement.classList.remove('dragging');
+
+                let target = ev.target.closest('.column');
+                if (target) {
+                    target.classList.remove('drag-over');
+                    const list = target.querySelector('.task-list');
+
+                    // Capture the original state (list ID) before moving
+                    const oldState = draggedElement.parentElement.id;
+                    const newState = list.id;
+
+                    // Move the card in the DOM
+                    list.appendChild(draggedElement);
+
+                    // If the card was moved to a different column, emit the message
+                    if (oldState !== newState) {
+                        // Extract the issue key (e.g., "PX-12") to pass along
+                        const issueKey = draggedElement.querySelector('.issue-key')?.innerText || '';
+
+                        // Emit the event to the parent a2ui-web-frame
+                        console.log("Emitting cardMoved to parent window:", {
+                            taskId: draggedElement.id,
+                            issueKey: issueKey,
+                            oldState: oldState,
+                            newState: newState,
+                        });
+                        
+                        window.parent.postMessage({
+                            type: 'a2ui_action',
+                            action: 'cardMoved',
+                            data: {
+                                taskId: draggedElement.id,
+                                issueKey: issueKey,
+                                oldState: oldState,
+                                newState: newState,
+                                widgetId: 'kanbanBoard'
+                            }
+                        }, '*'); // Emit to parent window
+                    }
+                }
+            }
+        }
+
+        // Clean up drag state if dropped outside a valid target
+        document.addEventListener('dragend', (ev) => {
+            const draggingCard = document.querySelector('.dragging');
+            if (draggingCard) {
+                draggingCard.classList.remove('dragging');
+            }
+            document.querySelectorAll('.drag-over').forEach(col => col.classList.remove('drag-over'));
+        });
+    </script>
+</body>
+</html>

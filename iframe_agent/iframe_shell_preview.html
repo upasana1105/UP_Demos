@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini Enterprise A2UI Shell Emulator</title>
+    <style>
+        :root {
+            --bg-main: #0E1117;
+            --bg-panel: rgba(22, 27, 34, 0.75);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-primary: #F0F6FC;
+            --text-secondary: #8B949E;
+            --accent-glow: #388BFD;
+            --success-color: #2EA043;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Top Premium Navbar */
+        .navbar {
+            height: 60px;
+            background: rgba(14, 17, 23, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            z-index: 1000;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            letter-spacing: -0.5px;
+            background: linear-gradient(90deg, #ffffff, #8b949e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .badge {
+            background: rgba(56, 139, 253, 0.15);
+            color: var(--accent-glow);
+            border: 1px solid rgba(56, 139, 253, 0.3);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Main Workspace Layout */
+        .workspace {
+            display: flex;
+            flex-grow: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Left Chat Panel */
+        .chat-panel {
+            width: 320px;
+            background: var(--bg-panel);
+            backdrop-filter: blur(16px);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+            z-index: 10;
+        }
+
+        .panel-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+
+        .chat-bubble {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            line-height: 1.5;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .chat-bubble.assistant {
+            border-left: 3px solid var(--accent-glow);
+        }
+
+        .bubble-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .a2ui-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            font-size: 11px;
+            color: var(--success-color);
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--success-color);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--success-color);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.5; }
+        }
+
+        /* Right Iframe Host */
+        .iframe-host-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background: #000000;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .iframe-wrapper {
+            flex-grow: 1;
+            width: 100%;
+            height: 100%;
+            display: flex;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #ffffff; /* Ensure iframe content background resolves correctly */
+        }
+
+        /* Live Event Interceptor Terminal */
+        .terminal-panel {
+            height: 180px;
+            background: rgba(10, 13, 18, 0.95);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            font-family: 'Fira Code', monospace;
+            z-index: 20;
+        }
+
+        .terminal-header {
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.03);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .terminal-logs {
+            flex-grow: 1;
+            padding: 12px 16px;
+            overflow-y: auto;
+            font-size: 12px;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .log-entry {
+            background: rgba(56, 139, 253, 0.05);
+            border-left: 2px solid var(--accent-glow);
+            padding: 6px 12px;
+            border-radius: 0 4px 4px 0;
+            animation: slideIn 0.2s ease-out;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .log-entry.highlight {
+            background: rgba(46, 160, 67, 0.1);
+            border-left-color: var(--success-color);
+        }
+
+        .log-time {
+            color: var(--text-secondary);
+            font-size: 10px;
+        }
+
+        .log-data {
+            color: #7EE787;
+            font-weight: 500;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(4px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Helper hint overlay */
+        .hint-overlay {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(14, 17, 23, 0.85);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--accent-glow);
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 11px;
+            color: var(--text-primary);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            pointer-events: none;
+            animation: fadeOut 6s forwards;
+            animation-delay: 4s;
+            z-index: 100;
+        }
+
+        @keyframes fadeOut {
+            to { opacity: 0; visibility: hidden; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="brand">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#388BFD" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            Gemini Enterprise Emulator
+        </div>
+        <div class="badge">&lt;a2ui-web-frame&gt; Sandbox Active</div>
+    </div>
+
+    <div class="workspace">
+        <div class="chat-panel">
+            <div class="panel-title">Orchestration Context</div>
+            
+            <div class="chat-bubble">
+                <div class="bubble-header">
+                    <span>User Request</span>
+                    <span>Just now</span>
+                </div>
+                Show me the Kanban board
+            </div>
+
+            <div class="chat-bubble assistant">
+                <div class="bubble-header">
+                    <span style="color: var(--accent-glow); font-weight: 600;">A2UI Agent</span>
+                    <span>Streaming OK</span>
+                </div>
+                Sure thing! Here is your Kanban board.
+                
+                <div class="a2ui-indicator">
+                    <div class="pulse-dot"></div>
+                    <span>WebFrameSrcdoc Hydrated</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="iframe-host-container">
+            <div class="hint-overlay">
+                💡 <b>Try dragging a card</b> to a new column to watch the parent window intercept the event below!
+            </div>
+            <div class="iframe-wrapper">
+                <!-- The iframe securely embeds the visual component output -->
+                <iframe src="preview_kanban_board.html" sandbox="allow-scripts allow-same-origin"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <div class="terminal-panel">
+        <div class="terminal-header">
+            <span>PARENT WINDOW POSTMESSAGE LISTENER</span>
+            <span style="color: var(--success-color);">● Listening on port *</span>
+        </div>
+        <div class="terminal-logs" id="logsContainer">
+            <div class="log-entry" style="border-left-color: var(--text-secondary);">
+                <span>[System initialization] Sandbox bounded. Ready to intercept two-way UI actions.</span>
+                <span class="log-time">Ready</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const logsContainer = document.getElementById('logsContainer');
+
+        // Listen for message events from the embedded child iframe
+        window.addEventListener('message', (event) => {
+            console.log("Parent Window caught raw message:", event.data);
+
+            // Verify it's an A2UI action payload
+            if (event.data && event.data.type === 'a2ui_action') {
+                const action = event.data.action;
+                const payloadData = event.data.data || {};
+
+                const logDiv = document.createElement('div');
+                logDiv.className = 'log-entry highlight';
+
+                const now = new Date().toLocaleTimeString();
+                
+                logDiv.innerHTML = `
+                    <div>
+                        <b style="color: #ffffff;">[A2UI INTERCEPTOR]</b> Action dispatched: <span style="color: var(--accent-glow); font-weight:bold;">"${action}"</span><br>
+                        <span class="log-data">Payload: ${JSON.stringify(payloadData, null, 2)}</span>
+                    </div>
+                    <span class="log-time">${now}</span>
+                `;
+
+                logsContainer.appendChild(logDiv);
+                logsContainer.scrollTop = logsContainer.scrollHeight;
+            }
+        });
+    </script>
+</body>
+</html>
