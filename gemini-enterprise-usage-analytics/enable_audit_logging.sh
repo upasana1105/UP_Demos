@@ -25,18 +25,40 @@ for SINGLE_APP_ID in "${APP_ID_ARRAY[@]}"; do
     echo "Enabling Usage Audit Logging for Gemini Enterprise (App: ${SINGLE_APP_ID})..."
     echo "======================================================================"
 
-    curl -X PATCH -H "Authorization: Bearer $(gcloud auth print-access-token)" \
-    -H "Content-Type: application/json" \
-    -H "X-Goog-User-Project: ${PROJECT_ID}" \
-    "https://${LOCATION}-discoveryengine.googleapis.com/v1alpha/projects/${PROJECT_ID}/locations/${LOCATION}/collections/default_collection/engines/${SINGLE_APP_ID}?updateMask=observabilityConfig" \
-    -d '{
-      "observabilityConfig": {
-        "observabilityEnabled": true,
-        "sensitiveLoggingEnabled": true
-      }
-    }'
+    # Prevent 500 Internal Errors by filtering out legacy/Enterprise Search engines
+    if [[ "$SINGLE_APP_ID" == *"enterprise-search"* || "$SINGLE_APP_ID" == *"search-kpmg"* ]]; then
+        echo "⚠️ [Skipped] App ID '${SINGLE_APP_ID}' is a Vertex AI Search engine."
+        echo "   Generative prompt logging (observabilityConfig) is only supported on Conversation & Agent apps."
+        echo ""
+        continue
+    fi
+
+    # Execute curl safely and capture HTTP response status
+    RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X PATCH \
+      -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+      -H "Content-Type: application/json" \
+      -H "X-Goog-User-Project: ${PROJECT_ID}" \
+      "https://${LOCATION}-discoveryengine.googleapis.com/v1alpha/projects/${PROJECT_ID}/locations/${LOCATION}/collections/default_collection/engines/${SINGLE_APP_ID}?updateMask=observabilityConfig" \
+      -d '{
+        "observabilityConfig": {
+          "observabilityEnabled": true,
+          "sensitiveLoggingEnabled": true
+        }
+      }')
+    
+    HTTP_STATUS=$(echo "$RESPONSE" | tr -d '\r' | sed -n 's/.*HTTP_STATUS://p')
+    BODY=$(echo "$RESPONSE" | sed '/HTTP_STATUS:/d')
+
+    if [ "$HTTP_STATUS" -eq 200 ]; then
+        echo "✓ Successfully enabled audit logging for ${SINGLE_APP_ID}"
+    else
+        echo "⚠️ [Notice] API returned HTTP ${HTTP_STATUS} for ${SINGLE_APP_ID}."
+        echo "   Response: ${BODY}"
+        echo "   (If this is a non-generative engine, this notice can be safely ignored)."
+    fi
     echo ""
 done
+
 
 # ------------------------------------------------------------------------------
 # 2. Enable Usage Audit Logging for NotebookLM Enterprise
