@@ -118,14 +118,40 @@ Once deployed, note your live Cloud Run URL (e.g., `https://sharepoint-mcp-serve
 
 ---
 
-## 🔗 Connecting to Gemini Enterprise (BYO MCP)
+## 🔗 Connecting to Gemini Enterprise (Official Onboarding Guide)
 
-To integrate this custom server into your Gemini Enterprise workspace:
+Follow these official enterprise onboarding steps (modeled after Google-managed MCP standards) to securely register this connector in your Gemini Enterprise environment:
 
-1. Open your **Gemini Enterprise Admin / Actions Panel**.
-2. Select **Add Custom Action / BYO MCP Server**.
-3. Enter configuration:
-   - **Name:** `SharePoint & OneDrive Universal MCP`
-   - **Endpoint URL:** `https://sharepoint-mcp-server-850431687571.us-central1.run.app`
-   - **Authentication:** Select `OAuth 2.0` (or pass your service authentication headers).
-4. Click **Save & Reload custom actions**.
+### Step 1: Create OAuth Client for Gemini Enterprise Authentication
+1. In Google Cloud Console, go to **APIs & Services** -> **Credentials**.
+2. Click **Create credentials** -> **OAuth Client ID**.
+3. **Application Type:** `Web Application`.
+4. **Authorized redirect URIs:** Add `https://vertexaisearch.cloud.google.com/oauth-redirect`.
+5. Click **Create**. Save your generated **Client ID** and **Client Secret**.
+
+### Step 2: Create Data Store from Custom MCP Server
+1. Go to **Gemini Enterprise** in Google Cloud Console.
+2. Select **Data stores** -> **Create data store**.
+3. Type `"MCP"` in the search bar and select **Custom MCP Server**.
+4. Fill in the connector connection profile:
+   - **MCP Server URL:** `https://sharepoint-mcp-server-850431687571.us-central1.run.app` *(your live Cloud Run deployment URL)*
+   - **Authorization URL:** `https://accounts.google.com/o/oauth2/v2/auth`
+   - **Auth URL Parameters:** `&access_type=offline&prompt=consent`
+   - **Token URL:** `https://oauth2.googleapis.com/token`
+   - **Client ID:** *(paste Client ID from Step 1)*
+   - **Client Secret:** *(paste Client Secret from Step 1)*
+   - **Scopes:** `https://www.googleapis.com/auth/cloud-platform` *(or your required Entra ID / Cloud Run invoker scopes)*
+5. Click **Login** to authenticate with your admin account, then click **Continue**.
+6. Under **Advanced Options** (optional), enter `"SharePoint & OneDrive Universal MCP Server"`. Click Continue.
+7. Choose your multi-region location (e.g., `global`), enter a Data Connector name, and click **Create**.
+8. Wait a few minutes for the connector to initialize. Then go to **Data stores**, click on your newly created MCP datastore, and select **Actions**. 
+9. By default, all actions are disabled. Select all 12 read and write actions and click **Enable actions**.
+
+### Step 3: Connect Gemini Enterprise App to the MCP Server
+1. Go to **Gemini Enterprise** -> select the app you'd like to connect.
+2. Go to **Connected data stores** -> click **Link Existing Datastore**.
+3. Select your newly created MCP Server datastore and click **Connect**.
+
+### Step 4: Use the MCP Server within Gemini Enterprise
+- **Option A (Directly in Chat):** Open your Gemini Enterprise app URL (`https://vertexaisearch.cloud.google.com/home/cid/...`). Click on the **Connector** icon in the chat bar and authorize the server.
+- **Option B (Agent Designer):** In Gemini Enterprise, click `+ New Agent` -> proceed to Builder. Under **Connectors**, click the `+` sign and toggle on `SharePoint & OneDrive MCP Server`. You are fully live!
