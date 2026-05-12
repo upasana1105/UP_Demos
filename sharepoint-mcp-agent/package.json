@@ -1,0 +1,16 @@
+{
+  "name": "sharepoint-mcp-server",
+  "version": "1.0.0",
+  "description": "SharePoint MCP Server integrated with Microsoft Graph API and Gemini Enterprise",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.27.0",
+    "axios": "^1.13.5",
+    "dotenv": "^17.3.1",
+    "mammoth": "^1.12.0"
+  }
+}
