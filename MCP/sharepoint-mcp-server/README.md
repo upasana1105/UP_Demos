@@ -1,54 +1,109 @@
 # 🚀 Universal SharePoint & OneDrive MCP Connector for Gemini Enterprise
 
-This repository provides a production-ready, enterprise-grade **Model Context Protocol (MCP)** server bridging Microsoft Graph API with **Gemini Enterprise**. 
+This repository provides an enterprise-grade **Model Context Protocol (MCP)** connector bridging Microsoft Graph API with **Gemini Enterprise**. 
 
-Built specifically for high-performance AI agentic workflows, this connector features autonomous LLM prompt engineering, universal tenant-wide drive resolution, recursive folder discovery, zero-dependency binary extraction (Word, PowerPoint, Excel), and strict compliance with Gemini Enterprise's Action Approval consent dialogs for write mutations.
+Built specifically to empower AI agents with seamless access to your corporate knowledge base, this connector provides fully autonomous document management across your Entra ID tenant while enforcing strict governance and security compliance through Gemini Enterprise's native Action Approval dialogs.
 
 ---
 
-## 🌟 Enterprise Architectural Highlights
+## 🌟 Core Enterprise Capabilities
 
-1. **Universal Tenant-Wide Drive Resolution (`resolveDriveId`):** End users can refer to document libraries by human-readable names (e.g., `"Documents"`). The backend container automatically scans all accessible SharePoint team sites across your Entra ID tenant to locate the exact alphanumeric Drive GUID behind the scenes.
-2. **Recursive Drive & Folder Search (`resolveItemId`):** End users can target deeply nested folders by name (e.g., `"Quarterly Meeting notes"`). The container performs a recursive Graph API drive search (`/root/search(q=...)`) to locate the exact Folder GUID instantly.
-3. **Multi-Format Binary Text Stripper:** Includes high-speed Mammoth extraction for Word (`.docx`) and a custom, zero-dependency XML regex stripper for PowerPoint (`.pptx`) and Excel (`.xlsx`).
-4. **Action Approval Security Compliance:** All write mutations (`createFolder`, `createFile`, `updateFile`, `rename`, `move`, `delete`) are annotated with `"destructiveHint": true` and `"readOnlyHint": false`, ensuring Gemini Enterprise pops up its secure consent dialog before modifying corporate records.
+- **Autonomous Navigation:** AI agents can navigate your SharePoint team sites, document libraries, and nested folders using natural, human-readable names without requiring end users to know complex system IDs or GUIDs.
+- **Multi-Format Intelligence:** Supports reading, extracting, and summarizing content across diverse enterprise document formats including Word documents (`.docx`), PowerPoint presentations (`.pptx`), Excel spreadsheets (`.xlsx`), and plain text files.
+- **Secure Write Governance:** All data modification actions trigger Gemini Enterprise's built-in Action Approval dialog, ensuring zero data mutations occur without explicit human consent.
+
+---
+
+## 🛠️ Supported Action Catalog
+
+This connector empowers your Gemini Enterprise AI with 12 advanced read and write capabilities across your entire SharePoint and OneDrive ecosystem:
+
+### 🔍 Read Actions (Instant, Interruption-Free Streaming)
+
+#### 1. Search SharePoint Sites
+Allows the AI agent to discover relevant corporate SharePoint sites across your organization based on keywords or department names.
+- *Example Prompt:* `"Search for SharePoint sites related to Sales and Marketing."`
+
+#### 2. List Document Libraries
+Retrieves all available document repositories and drives within a specific SharePoint team site.
+- *Example Prompt:* `"List all document libraries in my Sales site."`
+
+#### 3. List Library Items (Files & Folders)
+Explores the directory structure, listing all files, subfolders, and metadata within a specific drive or folder location.
+- *Example Prompt:* `"List all files and folders inside my Documents library."`
+
+#### 4. Get File Metadata
+Retrieves detailed properties for any specific file, including creation date, last modified time, file size, and web URLs.
+- *Example Prompt:* `"Get the metadata and last modified time for summary.txt."`
+
+#### 5. Read Document Content
+Streams clean, extracted text directly to the AI agent from Word documents (`.docx`), PowerPoint presentations (`.pptx`), Excel spreadsheets (`.xlsx`), and text files for instant summarization or analysis.
+- *Example Prompt:* `"Read the text content of Annual_Report.docx and give me a 3-bullet summary."`
+
+#### 6. Get Secure Download URL
+Generates temporary, secure, authenticated direct download URLs for any document in your repository.
+- *Example Prompt:* `"Generate a direct download URL for my SharePoint presentation."`
+
+---
+
+### 🚀 Write Actions (Protected by Action Approval Consent Dialog)
+
+#### 7. Create a New Folder
+Creates a new subfolder inside any document library or parent folder using natural names.
+- *Example Prompt:* `"Create a new folder named 'QuarterlyReports' in Documents."`
+
+#### 8. Create a New Document
+Surgically creates new text documents inside specified folders and populates them with AI-generated content.
+- *Example Prompt:* `"Create a new document named 'summary.txt' inside my 'Quarterly Meeting notes' folder in Documents with the content 'Q1 meeting notes summary.' "`
+
+#### 9. Update / Overwrite Document Content
+Overwrites or updates the text content of an existing document instantly.
+- *Example Prompt:* `"Update the content of summary.txt in Documents to say 'Record Q1 performance achieved.' "`
+
+#### 10. Rename an Item
+Renames any existing file or folder while preserving its contents and location.
+- *Example Prompt:* `"Rename summary.txt in Documents to 'Final_Summary.txt'."`
+
+#### 11. Move an Item
+Moves files or folders between different directories or archive locations.
+- *Example Prompt:* `"Move Final_Summary.txt from Documents into the Archive folder."`
+
+#### 12. Delete an Item
+Securely deletes unwanted files or folders from your repository.
+- *Example Prompt:* `"Delete my old temporary summary file from Documents."`
 
 ---
 
 ## 📋 Prerequisites: Microsoft Entra ID Setup
 
-Before deploying the server, register a Microsoft Entra ID (formerly Azure AD) OAuth application:
+Before deploying the server, register a Microsoft Entra ID OAuth application:
 
 1. Go to the **Microsoft Entra Admin Center** -> **App registrations** -> **New registration**.
 2. Name your app (e.g., `Gemini-Enterprise-SharePoint-MCP`).
-3. Under **Supported account types**, choose **Accounts in this organizational directory only**.
-4. Under **API permissions**, add the following Microsoft Graph Delegated permissions:
-   - `Files.ReadWrite.All`
-   - `Sites.ReadWrite.All`
-   - `User.Read`
+3. Choose **Accounts in this organizational directory only**.
+4. Under **API permissions**, add Delegated permissions: `Files.ReadWrite.All`, `Sites.ReadWrite.All`, `User.Read`.
 5. Grant **Admin Consent** for your tenant.
-6. Under **Certificates & secrets**, create a new **Client Secret**. Save the Secret Value.
-7. Under **Overview**, note your **Application (client) ID** and **Directory (tenant) ID**.
+6. Create a **Client Secret** and note your **Client ID** and **Tenant ID**.
 
 ---
 
 ## 💻 Local Development & Testing
 
-1. Clone the repository and install dependencies:
-   ```bash
-   npm install
-   ```
-2. Create a `.env` file in the root directory:
-   ```env
-   MICROSOFT_CLIENT_ID="your-entra-client-id"
-   MICROSOFT_CLIENT_SECRET="your-entra-client-secret"
-   MICROSOFT_TENANT_ID="your-entra-tenant-id"
-   PORT=8080
-   ```
-3. Run the local development server:
-   ```bash
-   npm start
-   ```
+```bash
+npm install
+```
+Create a `.env` file:
+```env
+MICROSOFT_CLIENT_ID="your-entra-client-id"
+MICROSOFT_CLIENT_SECRET="your-entra-client-secret"
+MICROSOFT_CLIENT_SECRET="your-entra-client-secret"
+MICROSOFT_TENANT_ID="your-entra-tenant-id"
+PORT=8080
+```
+Run locally:
+```bash
+npm start
+```
 
 ---
 
@@ -60,8 +115,6 @@ Deploy your container to Google Cloud Run for secure, scalable cloud execution:
 chmod +x deploy.sh
 ./deploy.sh
 ```
-
-*Note: The deployment script automatically builds your Dockerfile, pushes it to Artifact Registry, and deploys it to Cloud Run.* 
 Once deployed, note your live Cloud Run URL (e.g., `https://sharepoint-mcp-server-850431687571.us-central1.run.app`).
 
 ---
@@ -72,35 +125,8 @@ To integrate this custom server into your Gemini Enterprise workspace:
 
 1. Open your **Gemini Enterprise Admin / Actions Panel**.
 2. Select **Add Custom Action / BYO MCP Server**.
-3. Enter the following configuration:
+3. Enter configuration:
    - **Name:** `SharePoint & OneDrive Universal MCP`
    - **Endpoint URL:** `https://sharepoint-mcp-server-850431687571.us-central1.run.app`
    - **Authentication:** Select `OAuth 2.0` (or pass your service authentication headers).
 4. Click **Save & Reload custom actions**.
-
----
-
-## 🛠️ Complete Tool Catalog & Example Prompts
-
-Your Gemini Enterprise AI can now execute all 12 advanced read and write tools using pure natural language commands:
-
-### 🔍 Read Actions (Instant Streaming)
-- **Search SharePoint Sites:** *"Search for SharePoint sites related to Sales and Marketing."*
-- **List Document Libraries:** *"List all document libraries in my Sales site."*
-- **List Library Items:** *"List all files and folders inside my Documents library."*
-- **Get File Metadata:** *"Get the metadata and last modified time for summary.txt."*
-- **Read Document Content (Word, PPTX, Excel, Text):** *"Read the extracted text content of Annual_Report.docx and give me a 3-bullet summary."*
-- **Get Binary Download URL:** *"Generate a direct download URL for my SharePoint document."*
-
-### 🚀 Write Actions (Protected by Action Approval Dialog)
-- **Create a Folder:** *"Create a new folder named 'QuarterlyReports' in Documents."*
-- **Create a Document:** *"Create a new document named 'summary.txt' inside my 'Quarterly Meeting notes' folder in Documents with the content 'Q1 meeting notes summary.' "*
-- **Update/Overwrite Document:** *"Update the content of summary.txt in Documents to say 'Record Q1 performance achieved.' "*
-- **Rename Item:** *"Rename summary.txt in Documents to 'Final_Summary.txt'."*
-- **Move Item:** *"Move Final_Summary.txt from Documents into the Archive folder."*
-- **Delete Item:** *"Delete my old temporary summary file from Documents."*
-
----
-
-## 🛡️ Security & Governance
-This server enforces strict enterprise boundaries. Write tools will **never** execute without explicit human confirmation via the Gemini Enterprise UI approval dialog, ensuring complete protection against unintended AI mutations.
