@@ -133,15 +133,15 @@ Follow these official enterprise onboarding steps (modeled after Google-managed 
 1. Go to **Gemini Enterprise** in Google Cloud Console.
 2. Select **Data stores** -> **Create data store**.
 3. Type `"MCP"` in the search bar and select **Custom MCP Server**.
-4. Fill in the connector connection profile:
+4. Fill in the connector connection profile for Microsoft SharePoint:
    - **MCP Server URL:** `https://sharepoint-mcp-server-850431687571.us-central1.run.app` *(your live Cloud Run deployment URL)*
-   - **Authorization URL:** `https://accounts.google.com/o/oauth2/v2/auth`
-   - **Auth URL Parameters:** `&access_type=offline&prompt=consent`
-   - **Token URL:** `https://oauth2.googleapis.com/token`
-   - **Client ID:** *(paste Client ID from Step 1)*
-   - **Client Secret:** *(paste Client Secret from Step 1)*
-   - **Scopes:** `https://www.googleapis.com/auth/cloud-platform` *(or your required Entra ID / Cloud Run invoker scopes)*
-5. Click **Login** to authenticate with your admin account, then click **Continue**.
+   - **Authorization URL:** `https://login.microsoftonline.com/common/oauth2/v2.0/authorize`
+   - **Auth URL Parameters:** `&prompt=consent`
+   - **Token URL:** `https://login.microsoftonline.com/common/oauth2/v2.0/token`
+   - **Client ID:** *(paste Microsoft Entra Client ID)*
+   - **Client Secret:** *(paste Microsoft Entra Client Secret)*
+   - **Scopes:** `Files.ReadWrite.All Sites.ReadWrite.All User.Read offline_access`
+5. Click **Login** to authenticate with your Microsoft account, then click **Continue**.
 6. Under **Advanced Options** (optional), enter `"SharePoint & OneDrive Universal MCP Server"`. Click Continue.
 7. Choose your multi-region location (e.g., `global`), enter a Data Connector name, and click **Create**.
 8. Wait a few minutes for the connector to initialize. Then go to **Data stores**, click on your newly created MCP datastore, and select **Actions**. 
