@@ -1,0 +1,20 @@
+name: sample_sales_model
+description: "Semantic Model for Sample Sales data tracking sales by date."
+tables:
+  - name: SAMPLE_SALES
+    description: "Daily sales tracking table"
+    base_table:
+      database: SNOWFLAKE_LEARNING_DB
+      schema: PUBLIC
+      table: SAMPLE_SALES
+    time_dimensions:
+      - name: SALE_DATE
+        description: "The date of the sale"
+        expr: SALE_DATE
+        data_type: DATE
+    measures:
+      - name: TOTAL_SALES
+        description: "Sum of sales amount"
+        expr: SALES
+        data_type: NUMBER
+        default_aggregation: SUM

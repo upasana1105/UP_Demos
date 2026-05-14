@@ -1,0 +1,11 @@
+node_modules
+npm-debug.log
+tunnel_log.txt
+tunnel_output.txt
+start-jira-mcp.sh
+.env
+Dockerfile
+deploy.sh
+.git
+.gitignore
+.DS_Store

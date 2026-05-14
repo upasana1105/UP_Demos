@@ -1,0 +1,1 @@
+{"version":3,"file":"simple-pdf-export.d.ts","sourceRoot":"","sources":["../../src/utils/simple-pdf-export.ts"],"names":[],"mappings":"AAAA,qBAAa,eAAe;IAC1B;;OAEG;IACH,MAAM,CAAC,qBAAqB,CAC1B,OAAO,EAAE,MAAM,EACf,KAAK,EAAE,MAAM,EACb,OAAO,EAAE,MAAM,EACf,QAAQ,CAAC,EAAE;QACT,KAAK,CAAC,EAAE,MAAM,CAAC;QACf,MAAM,CAAC,EAAE,MAAM,CAAC;QAChB,YAAY,CAAC,EAAE,MAAM,CAAC;KACvB,GACA,MAAM;CA0RV"}

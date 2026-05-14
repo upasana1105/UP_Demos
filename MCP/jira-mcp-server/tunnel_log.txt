@@ -1,0 +1,37 @@
+🚀 Starting Jira MCP Persistence Script...
+🧹 Cleaning up port 3000...
+📂 Starting MCP Server...
+✅ Server started with PID 88194
+[dotenv@17.3.1] injecting env (3) from .env -- tip: ⚡️ secrets for agents: https://dotenvx.com/as2
+Server listening on port 3000
+MCP endpoint: http://localhost:3000/mcp (Streaming)
+Auth endpoint: http://localhost:3000/auth
+Token endpoint: http://localhost:3000/token
+🌐 Starting tunnel via localhost.run...
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+
+===============================================================================
+Welcome to localhost.run!
+
+Follow your favourite reverse tunnel at [https://twitter.com/localhost_run].
+
+To set up and manage custom domains go to https://admin.localhost.run/
+
+More details on custom domains (and how to enable subdomains of your custom
+domain) at https://localhost.run/docs/custom-domains
+
+If you get a permission denied error check the faq for how to connect with a key or
+create a free tunnel without a key at [http://localhost:3000/docs/faq#generating-an-ssh-key].
+
+To explore using localhost.run visit the documentation site:
+https://localhost.run/docs/
+
+===============================================================================
+
+** your connection id is 85d0f242-1908-4efd-8b5d-97c82e004a89, please mention it if you send me a message about an issue. **
+
+tcsetattr: Interrupted system call
+Connection to localhost.run closed.
+client_loop: send disconnect: Broken pipe

@@ -1,0 +1,17 @@
+{
+  "name": "snowflake-mcp-server",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Model Context Protocol (MCP) server for Snowflake",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.6.0",
+    "snowflake-sdk": "^1.11.0",
+    "express": "^4.19.2",
+    "axios": "^1.6.8",
+    "dotenv": "^16.4.5"
+  }
+}
