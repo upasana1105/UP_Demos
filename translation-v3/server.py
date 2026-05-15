@@ -139,7 +139,8 @@ async def translate_document(
         
         if not final_file or not os.path.exists(final_file):
             # Fallback path logic
-            expected_output = file_path.replace(".pdf", f"_{target_language}.pdf")
+            ext = os.path.splitext(file_path)[1]
+            expected_output = file_path.replace(ext, f"_{target_language}{ext}")
             final_file = expected_output if os.path.exists(expected_output) else None
 
         return {

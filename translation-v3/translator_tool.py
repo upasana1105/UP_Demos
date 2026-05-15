@@ -37,94 +37,105 @@ async def adaptive_translate_tool(
     except Exception as e:
         return {"status": "error", "message": f"Failed to read file: {str(e)}"}
 
-    # Check if document has searchable text using PyMuPDF
-    import fitz
-    has_text = False
-    try:
-        doc = fitz.open(file_path)
-        for page in doc:
-            if len(page.get_text("text").strip()) > 50:
-                has_text = True
-                break
-        doc.close()
-    except Exception as e:
-        print(f"Failed to check text content with PyMuPDF: {e}")
-        # Assume it has text if we can't open it with fitz (let Translation API try)
-        has_text = True
+    # Determine extension and MIME type
+    ext = os.path.splitext(file_path)[1].lower()
+    if ext == ".docx":
+        mime_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    elif ext == ".pptx":
+        mime_type = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+    else:
+        mime_type = "application/pdf"
+        ext = ".pdf"
 
-    if not has_text:
-        print("Document has very little or no searchable text. Triggering full Gemini translation fallback...")
+    if ext == ".pdf":
+        # Check if document has searchable text using PyMuPDF
+        import fitz
+        has_text = False
         try:
-            from PIL import Image
-            import io
-            from google import genai
-            from google.genai import types
-            
             doc = fitz.open(file_path)
-            out_doc = fitz.open() # New empty PDF
-            
-            project_id = os.getenv("GOOGLE_CLOUD_PROJECT", "uppdemos")
-            client_gen = genai.Client(vertexai=True, project=project_id, location="global")
-            
-            for page_num in range(len(doc)):
-                print(f"Fallback processing page {page_num} with Gemini...")
-                page = doc[page_num]
-                pix = page.get_pixmap(dpi=300)
-                img_bytes = pix.tobytes("png")
-                
-                generator_prompt = f"""
-                Translate ALL text on this page into {target_language_code}.
-                Recreate the page visual exactly, preserving the layout, styles, colors, and any charts or diagrams.
-                The output must be a high-quality image containing the translated content.
-                Ensure all text is translated, leaving nothing in the original language.
-                """
-                
-                gen_response = client_gen.models.generate_content(
-                    model="gemini-2.5-flash-image",
-                    contents=[
-                        types.Part.from_bytes(data=img_bytes, mime_type="image/png"),
-                        types.Part.from_text(text=generator_prompt)
-                    ]
-                )
-                
-                new_img_bytes = None
-                for part in gen_response.candidates[0].content.parts:
-                    try:
-                        if part.inline_data and part.inline_data.mime_type.startswith("image/"):
-                            new_img_bytes = part.inline_data.data
-                            break
-                    except AttributeError:
-                        pass
-                        
-                if new_img_bytes:
-                    img = Image.open(io.BytesIO(new_img_bytes))
-                    img_pdf_bytes = io.BytesIO()
-                    img.save(img_pdf_bytes, format="PDF")
-                    img_doc = fitz.open("pdf", img_pdf_bytes.getvalue())
-                    out_doc.insert_pdf(img_doc)
-                else:
-                    print(f"Failed to generate translated page {page_num} with Gemini.")
-                    # Insert original page as fallback
-                    out_doc.insert_pdf(doc, from_page=page_num, to_page=page_num)
-                    
-            output_file_path = file_path.replace(".pdf", f"_{target_language_code}.pdf")
-            out_doc.save(output_file_path)
-            out_doc.close()
+            for page in doc:
+                if len(page.get_text("text").strip()) > 50:
+                    has_text = True
+                    break
             doc.close()
-            
-            return {
-                "status": "success", 
-                "output_file": output_file_path,
-                "detected_language": source_language_code
-            }
-        except Exception as fallback_err:
-            print(f"Full Gemini fallback failed: {fallback_err}")
-            return {"status": "error", "message": f"Translation failed on zero-text document: {str(fallback_err)}"}
+        except Exception as e:
+            print(f"Failed to check text content with PyMuPDF: {e}")
+            # Assume it has text if we can't open it with fitz (let Translation API try)
+            has_text = True
 
-    # Proceed with standard Translation API if text is present
+        if not has_text:
+            print("Document has very little or no searchable text. Triggering full Gemini translation fallback...")
+            try:
+                from PIL import Image
+                import io
+                from google import genai
+                from google.genai import types
+                
+                doc = fitz.open(file_path)
+                out_doc = fitz.open() # New empty PDF
+                
+                project_id = os.getenv("GOOGLE_CLOUD_PROJECT", "uppdemos")
+                client_gen = genai.Client(vertexai=True, project=project_id, location="global")
+                
+                for page_num in range(len(doc)):
+                    print(f"Fallback processing page {page_num} with Gemini...")
+                    page = doc[page_num]
+                    pix = page.get_pixmap(dpi=300)
+                    img_bytes = pix.tobytes("png")
+                    
+                    generator_prompt = f"""
+                    Translate ALL text on this page into {target_language_code}.
+                    Recreate the page visual exactly, preserving the layout, styles, colors, and any charts or diagrams.
+                    The output must be a high-quality image containing the translated content.
+                    Ensure all text is translated, leaving nothing in the original language.
+                    """
+                    
+                    gen_response = client_gen.models.generate_content(
+                        model="gemini-2.5-flash-image",
+                        contents=[
+                            types.Part.from_bytes(data=img_bytes, mime_type="image/png"),
+                            types.Part.from_text(text=generator_prompt)
+                        ]
+                    )
+                    
+                    new_img_bytes = None
+                    for part in gen_response.candidates[0].content.parts:
+                        try:
+                            if part.inline_data and part.inline_data.mime_type.startswith("image/"):
+                                new_img_bytes = part.inline_data.data
+                                break
+                        except AttributeError:
+                            pass
+                            
+                    if new_img_bytes:
+                        img = Image.open(io.BytesIO(new_img_bytes))
+                        img_pdf_bytes = io.BytesIO()
+                        img.save(img_pdf_bytes, format="PDF")
+                        img_doc = fitz.open("pdf", img_pdf_bytes.getvalue())
+                        out_doc.insert_pdf(img_doc)
+                    else:
+                        print(f"Failed to generate translated page {page_num} with Gemini.")
+                        # Insert original page as fallback
+                        out_doc.insert_pdf(doc, from_page=page_num, to_page=page_num)
+                        
+                output_file_path = file_path.replace(".pdf", f"_{target_language_code}.pdf")
+                out_doc.save(output_file_path)
+                out_doc.close()
+                doc.close()
+                
+                return {
+                    "status": "success", 
+                    "output_file": output_file_path,
+                    "detected_language": source_language_code
+                }
+            except Exception as fallback_err:
+                print(f"Full Gemini fallback failed: {fallback_err}")
+                return {"status": "error", "message": f"Translation failed on zero-text document: {str(fallback_err)}"}
+
+    # Proceed with standard Translation API if text is present or if docx/pptx
     document_input_config = {
         "content": content,
-        "mime_type": "application/pdf",
+        "mime_type": mime_type,
     }
 
     # Prepare the request
@@ -146,23 +157,36 @@ async def adaptive_translate_tool(
         translated_content = response.document_translation.byte_stream_outputs[0]
         
         # Save output file
-        output_file_path = file_path.replace(".pdf", f"_{target_language_code}.pdf")
+        output_file_path = file_path.replace(ext, f"_{target_language_code}{ext}")
         with open(output_file_path, "wb") as f:
             f.write(translated_content)
         
-        # Post-process images to translate text within them
-        try:
-            print(f"Processing images in {output_file_path}...")
-            await localize_images_in_pdf(file_path, output_file_path, target_language_code)
-        except Exception as e:
-            print(f"Image translation failed: {e}")
-            
-        # Fix table layouts using Gemini coordinate calculator
-        try:
-            print(f"Fixing tables in {output_file_path}...")
-            await fix_tables_in_pdf(file_path, output_file_path, target_language_code)
-        except Exception as e:
-            print(f"Table fix failed: {e}")
+        if ext == ".pdf":
+            # Post-process images to translate text within them
+            try:
+                print(f"Processing images in {output_file_path}...")
+                await localize_images_in_pdf(file_path, output_file_path, target_language_code)
+            except Exception as e:
+                print(f"Image translation failed: {e}")
+                
+            # Fix table layouts using Gemini coordinate calculator
+            try:
+                print(f"Fixing tables in {output_file_path}...")
+                await fix_tables_in_pdf(file_path, output_file_path, target_language_code)
+            except Exception as e:
+                print(f"Table fix failed: {e}")
+        elif ext == ".docx":
+            try:
+                print(f"Processing images in DOCX {output_file_path}...")
+                await localize_images_in_docx(file_path, output_file_path, target_language_code)
+            except Exception as e:
+                print(f"DOCX Image translation failed: {e}")
+        elif ext == ".pptx":
+            try:
+                print(f"Processing images in PPTX {output_file_path}...")
+                await localize_images_in_pptx(file_path, output_file_path, target_language_code)
+            except Exception as e:
+                print(f"PPTX Image translation failed: {e}")
             
         return {
             "status": "success", 
@@ -171,6 +195,145 @@ async def adaptive_translate_tool(
         }
     except Exception as e:
         return {"status": "error", "message": f"Translation failed: {str(e)}"}
+
+async def localize_images_in_docx(original_path: str, translated_path: str, target_lang: str):
+    import docx
+    from google import genai
+    from google.genai import types
+    import io
+    import asyncio
+
+    project_id = os.getenv("GOOGLE_CLOUD_PROJECT", "uppdemos")
+    client = genai.Client(vertexai=True, project=project_id, location="global")
+
+    doc = docx.Document(translated_path)
+    
+    async def call_gemini_async(client_obj, bytes_data, mime_type, prompt_text):
+        try:
+            def sync_call():
+                return client_obj.models.generate_content(
+                    model="gemini-2.5-flash-image",
+                    contents=[
+                        types.Part.from_bytes(data=bytes_data, mime_type=mime_type),
+                        types.Part.from_text(text=prompt_text)
+                    ]
+                )
+            return await asyncio.to_thread(sync_call)
+        except Exception as e:
+            print(f"Async Gemini call via thread failed: {e}")
+            return None
+
+    tasks = []
+    for rel in doc.part.rels.values():
+        if "image" in rel.target_part.content_type:
+            img_part = rel.target_part
+            image_bytes = img_part.blob
+            mime = img_part.content_type
+
+            generator_prompt = f"""
+            Translate ALL text within this image into {target_lang}.
+            It is CRITICAL that every single word, label, title, and legend item is translated to {target_lang}.
+            Do NOT leave any text in English.
+            Generate a new image that is identical in style, layout, colors, and data presentation as the input image, but with the fully translated text.
+            Ensure high visual fidelity and crisp text.
+            """
+            tasks.append((img_part, image_bytes, mime, generator_prompt))
+
+    if not tasks:
+        print("No images found in DOCX to localize.")
+        return
+
+    print(f"Executing {len(tasks)} DOCX image translation tasks in parallel...")
+    coroutines = [call_gemini_async(client, t[1], t[2], t[3]) for t in tasks]
+    results = await asyncio.gather(*coroutines)
+
+    for i, result in enumerate(results):
+        if not result:
+            continue
+        new_img_bytes = None
+        for part in result.candidates[0].content.parts:
+            try:
+                if part.inline_data and part.inline_data.mime_type.startswith("image/"):
+                    new_img_bytes = part.inline_data.data
+                    break
+            except AttributeError:
+                pass
+        if new_img_bytes:
+            img_part = tasks[i][0]
+            img_part._blob = new_img_bytes
+
+    doc.save(translated_path)
+    print(f"Successfully localized images in DOCX at {translated_path}")
+
+async def localize_images_in_pptx(original_path: str, translated_path: str, target_lang: str):
+    import pptx
+    from google import genai
+    from google.genai import types
+    import io
+    import asyncio
+
+    project_id = os.getenv("GOOGLE_CLOUD_PROJECT", "uppdemos")
+    client = genai.Client(vertexai=True, project=project_id, location="global")
+
+    prs = pptx.Presentation(translated_path)
+    
+    async def call_gemini_async(client_obj, bytes_data, mime_type, prompt_text):
+        try:
+            def sync_call():
+                return client_obj.models.generate_content(
+                    model="gemini-2.5-flash-image",
+                    contents=[
+                        types.Part.from_bytes(data=bytes_data, mime_type=mime_type),
+                        types.Part.from_text(text=prompt_text)
+                    ]
+                )
+            return await asyncio.to_thread(sync_call)
+        except Exception as e:
+            print(f"Async Gemini call via thread failed: {e}")
+            return None
+
+    tasks = []
+    for slide in prs.slides:
+        for shape in slide.shapes:
+            if shape.shape_type == 13: # mso_shape_type PICTURE = 13
+                image = shape.image
+                image_bytes = image.blob
+                mime = f"image/{image.ext}" if image.ext else "image/png"
+                generator_prompt = f"""
+                Translate ALL text within this image into {target_lang}.
+                It is CRITICAL that every single word, label, title, and legend item is translated to {target_lang}.
+                Do NOT leave any text in English.
+                Generate a new image that is identical in style, layout, colors, and data presentation as the input image, but with the fully translated text.
+                Ensure high visual fidelity and crisp text.
+                """
+                tasks.append((image, image_bytes, mime, generator_prompt))
+
+    if not tasks:
+        print("No images found in PPTX to localize.")
+        return
+
+    print(f"Executing {len(tasks)} PPTX image translation tasks in parallel...")
+    coroutines = [call_gemini_async(client, t[1], t[2], t[3]) for t in tasks]
+    results = await asyncio.gather(*coroutines)
+
+    for i, result in enumerate(results):
+        if not result:
+            continue
+        new_img_bytes = None
+        for part in result.candidates[0].content.parts:
+            try:
+                if part.inline_data and part.inline_data.mime_type.startswith("image/"):
+                    new_img_bytes = part.inline_data.data
+                    break
+            except AttributeError:
+                pass
+        if new_img_bytes:
+            image_obj = tasks[i][0]
+            image_obj._blob = new_img_bytes
+
+    prs.save(translated_path)
+    print(f"Successfully localized images in PPTX at {translated_path}")
+
 
 async def localize_images_in_pdf(original_pdf_path: str, translated_pdf_path: str, target_lang: str):
     """Finds charts/images in the PDF, uses Gemini to regenerate them with translated text,

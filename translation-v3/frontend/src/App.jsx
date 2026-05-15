@@ -57,7 +57,7 @@ const Dashboard = () => {
 
   const handleFileUpload = (e) => {
     const uploadedFile = e.target.files[0];
-    if (uploadedFile && uploadedFile.type === "application/pdf") {
+    if (uploadedFile && (uploadedFile.type === "application/pdf" || uploadedFile.name.endsWith(".pdf") || uploadedFile.name.endsWith(".docx") || uploadedFile.name.endsWith(".pptx"))) {
       setFile(uploadedFile);
       setFileUrl(URL.createObjectURL(uploadedFile));
       addLog(`Selected document: ${uploadedFile.name}`);
@@ -194,16 +194,24 @@ const Dashboard = () => {
             <div className="flex-grow relative bg-slate-50/50 flex flex-col justify-center items-center overflow-hidden">
               {!file ? (
                 <label className="w-3/4 max-w-sm h-64 border-2 border-dashed border-slate-300 rounded-3xl flex flex-col items-center justify-center cursor-pointer hover:border-kpmg-blue hover:bg-blue-50/50 transition-colors group/drop shadow-sm bg-white">
-                  <input type="file" className="hidden" onChange={handleFileUpload} accept=".pdf" />
+                  <input type="file" className="hidden" onChange={handleFileUpload} accept=".pdf,.docx,.pptx" />
                   <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4 group-hover/drop:scale-110 transition-transform shadow-sm">
                     <Upload className="w-6 h-6 text-kpmg-dark" />
                   </div>
-                  <span className="text-sm font-bold text-slate-800">Upload PDF Report</span>
+                  <span className="text-sm font-bold text-slate-800">Upload Report (PDF, DOCX, PPTX)</span>
                   <span className="text-[10px] text-slate-500 mt-2 uppercase tracking-[0.2em]">Ready for Validation</span>
                 </label>
               ) : (
-                <div className="absolute inset-0 p-4">
-                  <iframe src={fileUrl} className="w-full h-full rounded-2xl border border-slate-200 shadow-sm bg-white" title="Original Document" />
+                <div className="absolute inset-0 p-4 flex flex-col items-center justify-center bg-white rounded-2xl border border-slate-200 shadow-sm">
+                  {file.name.endsWith('.pdf') ? (
+                    <iframe src={fileUrl} className="w-full h-full rounded-xl" title="Original Document" />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center text-slate-400 p-8 text-center">
+                      <FileText className="w-16 h-16 mb-4 text-kpmg-blue" />
+                      <span className="text-sm font-bold text-slate-700">{file.name}</span>
+                      <span className="text-[10px] text-slate-500 mt-1 uppercase tracking-widest">Office Document Loaded</span>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -236,7 +244,7 @@ const Dashboard = () => {
               </div>
               {status === 'complete' && activeTab === 'pdf' && (
                 <button onClick={handleDownload} className="flex items-center gap-2 px-3 py-1 bg-kpmg-blue hover:bg-blue-700 rounded font-bold uppercase text-[9px] tracking-widest text-white transition-colors">
-                  <Download className="w-3 h-3" /> Download PDF
+                  <Download className="w-3 h-3" /> Download File
                 </button>
               )}
             </div>
@@ -245,7 +253,18 @@ const Dashboard = () => {
               {status === 'complete' ? (
                 <div className="absolute inset-0 p-4">
                   {activeTab === 'pdf' ? (
-                    <iframe src={`${API_BASE}/api/view-file?file_path=${result}`} className="w-full h-full rounded-2xl border border-slate-200 shadow-sm bg-white" title="Translated Document" />
+                    result && result.endsWith('.pdf') ? (
+                      <iframe src={`${API_BASE}/api/view-file?file_path=${result}`} className="w-full h-full rounded-2xl border border-slate-200 shadow-sm bg-white" title="Translated Document" />
+                    ) : (
+                      <div className="absolute inset-0 p-4 flex flex-col items-center justify-center bg-white rounded-2xl border border-slate-200 shadow-sm text-center">
+                        <FileCheck className="w-16 h-16 mb-4 text-emerald-600" />
+                        <span className="text-sm font-bold text-slate-700">{result ? result.split('/').pop() : 'Translated Document'}</span>
+                        <span className="text-[10px] text-slate-500 mt-2 uppercase tracking-widest">Translation Complete</span>
+                        <button onClick={handleDownload} className="mt-4 flex items-center gap-2 px-4 py-2 bg-kpmg-blue hover:bg-blue-700 rounded-xl font-bold uppercase text-[10px] tracking-widest text-white transition-colors shadow-md">
+                          <Download className="w-4 h-4" /> Download File
+                        </button>
+                      </div>
+                    )
                   ) : (
                     <div className="h-full w-full flex flex-col gap-4 overflow-y-auto custom-scrollbar pr-2">
                       {/* Audit KPI Grid */}

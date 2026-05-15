@@ -6,3 +6,5 @@ pypdf2
 python-dotenv
 pymupdf
 pillow
+python-docx
+python-pptx
