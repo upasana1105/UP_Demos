@@ -1,56 +1,108 @@
-# Financial Document Translation Agent (v3)
+# 🚀 Financial Document Translation Agent (v3)
 
-Expert document translation with **numerical precision**, **layout preservation**, and **terminology consistency**. Now supports PDF, DOCX, and PPTX formats with AI-powered image localization.
+[![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688.svg?style=flat&logo=FastAPI&logoColor=white)](https://fastapi.tiangolo.com)
+[![React](https://img.shields.io/badge/Frontend-React-61DAFB.svg?style=flat&logo=React&logoColor=black)](https://reactjs.org/)
+[![Vite](https://img.shields.io/badge/UI-Vite-646CFF.svg?style=flat&logo=Vite&logoColor=white)](https://vitejs.dev/)
+[![Gemini](https://img.shields.io/badge/AI-Gemini%202.5-blue.svg)](https://deepmind.google/technologies/gemini/)
 
-## New Features in v3
-- **Multi-Format Support**: Seamlessly handles `.pdf`, `.docx`, and `.pptx` documents.
-- **AI Image Localization**: Uses `gemini-2.5-flash-image` to translate text embedded within images, charts, and diagrams while preserving layout.
-- **Fallback Pipeline**: Automatically falls back to full Gemini translation for scanned or non-selectable vector documents.
+Expert document translation with **numerical precision**, **layout preservation**, and **terminology consistency**. This project handles complex financial reports across multiple formats, ensuring that both text and embedded graphics are perfectly localized.
 
-## Quick Start
+---
+
+## 🌟 Key Features
+
+### 📄 Multi-Format Mastery
+Seamlessly process and translate:
+- **PDF Documents** (Vector and Scanned)
+- **Word Documents** (`.docx`)
+- **PowerPoint Presentations** (`.pptx`)
+
+### 🧠 AI-Powered Image Localization
+Leverages **Gemini 2.5 Flash Image** to:
+- Detect text embedded within images, charts, and diagrams.
+- Translate the text while preserving the original visual style, colors, and layout.
+- Re-insert the translated image back into the document.
+
+### 🔄 Hybrid Translation Pipeline
+Combines the strengths of two world-class systems:
+1. **Google Cloud Translation API**: Handles core text translation with layout preservation and glossary enforcement.
+2. **Gemini Multi-Modal Fallback**: Automatically kicks in for scanned pages or documents with non-selectable text.
+
+---
+
+## 🛠️ Architecture
+
+```mermaid
+graph TD
+    A[User Upload] --> B{File Type?}
+    B -->|.pdf| C[Extract Text Check]
+    B -->|.docx| D[Native DOCX Processing]
+    B -->|.pptx| E[Native PPTX Processing]
+    
+    C -->|Has Text| F[GCP Document Translate]
+    C -->|No Text| G[Gemini Fallback OCR/Translate]
+    
+    F --> H[Image Localization Layer]
+    D --> H
+    E --> H
+    
+    H --> I[Gemini 2.5 Flash Image]
+    I --> J[Final Output & Audit]
+```
+
+---
+
+## 🚀 Quick Start
 
 ### Prerequisites
 - Python 3.10+
-- Node.js (for frontend)
-- GCP Project with **Cloud Translation API** enabled.
+- Node.js & npm
+- Google Cloud Project with **Cloud Translation API** enabled.
 
 ### Installation
 
-1. **Clone the workspace** and navigate to the project directory:
+1. **Clone and Navigate**:
    ```bash
    cd "UP_Demos/translation-v3"
    ```
 
-2. **Install Backend Dependencies**:
+2. **Setup Backend**:
    ```bash
    pip install -r requirements.txt
    ```
 
-3. **Install Frontend Dependencies**:
+3. **Setup Frontend**:
    ```bash
    cd frontend
    npm install
    cd ..
    ```
 
-### Running the Application
+### Running Locally
 
-Use the provided runner script to start both the backend and frontend:
+Start both services with a single command:
 ```bash
 bash run.sh
 ```
 
-- **Frontend Dashboard**: `http://localhost:5175`
-- **Backend API**: `http://localhost:8002`
+- **Dashboard**: `http://localhost:5175`
+- **API Endpoint**: `http://localhost:8002`
 
-## Key Files
-- `main.py`: The `FinanceTranslator` agent definition.
-- `translator_tool.py`: Core logic for Cloud Translation API and Gemini image localization.
-- `audit_tool.py`: Text extraction utilities for PDF, DOCX, and PPTX.
-- `server.py`: FastAPI backend orchestrator.
-- `frontend/`: React/Vite dashboard for uploading and viewing translations.
+---
 
-## Deployment Checklist
-- [ ] Enable **Cloud Translation API** in your GCP console.
-- [ ] Upload the glossary CSVs to a GCS bucket if using Cloud Glossaries.
-- [ ] Update `GOOGLE_CLOUD_PROJECT` in your environment or `.env` file.
+## 📁 Project Structure
+
+| File/Folder | Description |
+| :--- | :--- |
+| `main.py` | ADK Agent definition and workflow instructions. |
+| `translator_tool.py` | Core translation logic and Gemini image processing. |
+| `audit_tool.py` | Multi-format text extraction utilities. |
+| `server.py` | FastAPI backend orchestrator. |
+| `frontend/` | React/Vite verification dashboard. |
+
+---
+
+## 📋 Deployment Checklist
+- [ ] Enable **Cloud Translation API** in GCP.
+- [ ] Ensure `GOOGLE_CLOUD_PROJECT` is set in your environment.
+- [ ] (Optional) Upload glossary CSVs to a GCS bucket for enterprise terminology enforcement.
