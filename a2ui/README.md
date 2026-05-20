@@ -45,6 +45,8 @@ employee_verification/
 5. **Agent calls** `update_employee_field` for changed fields, then `verify_employee`
 6. **Success card** is displayed
 
+![A2UI Employee Verification Card](successful_test.png)
+
 ## Adding New Agents
 
 1. Create a new directory: `agents/my_new_agent/`
