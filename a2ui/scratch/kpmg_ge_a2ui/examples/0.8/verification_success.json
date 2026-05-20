@@ -1,0 +1,102 @@
+[
+  {
+    "beginRendering": {
+      "surfaceId": "verification-success",
+      "root": "success_card",
+      "styles": {
+        "primaryColor": "#00338D",
+        "font": "Roboto"
+      }
+    }
+  },
+  {
+    "surfaceUpdate": {
+      "surfaceId": "verification-success",
+      "components": [
+        {
+          "id": "success_card",
+          "component": {
+            "Card": {
+              "child": "success_column"
+            }
+          }
+        },
+        {
+          "id": "success_column",
+          "component": {
+            "Column": {
+              "children": {
+                "explicitList": [
+                  "success_icon",
+                  "success_title",
+                  "success_message",
+                  "verified_date_text"
+                ]
+              },
+              "alignment": "center"
+            }
+          }
+        },
+        {
+          "id": "success_icon",
+          "component": {
+            "Icon": {
+              "name": {
+                "literalString": "checkCircle"
+              }
+            }
+          }
+        },
+        {
+          "id": "success_title",
+          "component": {
+            "Text": {
+              "text": {
+                "literalString": "Verification Complete"
+              },
+              "usageHint": "h2"
+            }
+          }
+        },
+        {
+          "id": "success_message",
+          "component": {
+            "Text": {
+              "text": {
+                "path": "/message"
+              },
+              "usageHint": "h5"
+            }
+          }
+        },
+        {
+          "id": "verified_date_text",
+          "component": {
+            "Text": {
+              "text": {
+                "path": "/verified_date"
+              },
+              "usageHint": "caption"
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "dataModelUpdate": {
+      "surfaceId": "verification-success",
+      "path": "/",
+      "contents": [
+        {
+          "key": "message",
+          "valueString": "Employee E-1001 (John Smith) has been successfully verified."
+        },
+        {
+          "key": "verified_date",
+          "valueString": "Verified on: 2026-04-23T19:00:00Z"
+        }
+      ]
+    }
+  }
+]

@@ -1,0 +1,47 @@
+[
+  {
+    "employeeId": "E-1001",
+    "fullName": "John Smith",
+    "title": "Senior Financial Analyst",
+    "department": "Finance",
+    "manager": "Sarah Chen",
+    "hireDate": "2021-03-15",
+    "status": "Active",
+    "salaryBand": "Band 4",
+    "address": "456 Oak Avenue, Apt 12B, New York, NY 10001",
+    "phone": "(555) 123-4568",
+    "email": "john.smith@kpmg-demo.com",
+    "emergencyContact": "Jane Smith",
+    "emergencyPhone": "(555) 987-6543"
+  },
+  {
+    "employeeId": "E-1002",
+    "fullName": "Jane Doe",
+    "title": "Software Engineer",
+    "department": "Engineering",
+    "manager": "Michael Scott",
+    "hireDate": "2019-08-10",
+    "status": "Active",
+    "salaryBand": "Band 5",
+    "address": "789 Pine St, Seattle, WA 98101",
+    "phone": "(555) 987-6543",
+    "email": "jane.doe@kpmg-demo.com",
+    "emergencyContact": "Jim Doe",
+    "emergencyPhone": "(555) 123-4567"
+  },
+  {
+    "employeeId": "E-1003",
+    "fullName": "Bob Jones",
+    "title": "HR Specialist",
+    "department": "Human Resources",
+    "manager": "Toby Flenderson",
+    "hireDate": "2022-01-05",
+    "status": "On Leave",
+    "salaryBand": "Band 3",
+    "address": "101 Maple Rd, Scranton, PA 18503",
+    "phone": "(555) 555-5555",
+    "email": "bob.jones@kpmg-demo.com",
+    "emergencyContact": "Alice Jones",
+    "emergencyPhone": "(555) 444-4444"
+  }
+]

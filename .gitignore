@@ -23,3 +23,8 @@ __pycache__/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Backups and logs
+.git_backup/
+*.log
+

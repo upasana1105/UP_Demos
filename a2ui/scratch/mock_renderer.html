@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Local A2UI Mock Renderer for validating Generative UI schemas.">
+    <title>A2UI Mock Renderer & Validator</title>
+    <!-- Modern Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --bg: #f0f2f5;
+            --card-bg: #ffffff;
+            --text: #1f2937;
+            --text-muted: #6b7280;
+            --border: #d1d5db;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: #111827;
+            font-size: 2rem;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+            text-align: center;
+            font-size: 1rem;
+        }
+
+        .app-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .panel {
+            background: var(--card-bg);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0;
+            color: #111827;
+        }
+
+        textarea {
+            background: #f9fafb;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            padding: 1rem;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            resize: vertical;
+            min-height: 350px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        textarea:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        button.btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        button.btn:hover {
+            background: #2563eb;
+        }
+
+        /* Rendered UI Styles matching Screenshot */
+        #render-area {
+            min-height: 400px;
+            max-height: 600px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .a2ui-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .a2ui-column {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .a2ui-row {
+            display: flex;
+            flex-direction: row;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .a2ui-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        input[type="text"], input[type="number"], select {
+            background: #ffffff;
+            border: 1px solid #9ca3af;
+            border-radius: 8px;
+            color: var(--text);
+            padding: 0.75rem;
+            outline: none;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+        }
+
+        input[type="text"]:focus, input[type="number"]:focus, select:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .a2ui-button {
+            background: #cce3f6;
+            color: #0c5460;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.85rem;
+            align-self: center;
+        }
+
+        .a2ui-button:hover {
+            background: #b8d9f2;
+            transform: translateY(-1px);
+        }
+
+        /* Output Area */
+        #output-area {
+            background: #f9fafb;
+            color: #0f172a;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            min-height: 100px;
+            border: 1px solid var(--border);
+        }
+
+        .empty-state {
+            color: var(--text-muted);
+            text-align: center;
+            margin: auto;
+            font-style: italic;
+        }
+
+        /* Micro-animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animated {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+    </style>
+</head>
+<body>
+
+    <h1 id="app-title">A2UI Mock Renderer</h1>
+    <p class="subtitle">Paste your agent's generated JSON to test rendering and submission payloads.</p>
+
+    <div class="app-container">
+        <!-- Left Panel: Input JSON -->
+        <div class="panel">
+            <h2>Input Spec (JSON)</h2>
+            <textarea id="json-input" placeholder="Paste your generated <a2ui-json> block here..."></textarea>
+            <button id="render-btn" class="btn" onclick="processAndRender()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6-1.6 1.6a1 1 0 0 0 1.4 1.4l1.6-1.6 1.6 1.6a1 1 0 0 0 1.4-1.4l-1.6-1.6 1.6-1.6a1 1 0 0 0-1.4-1.4l-1.6 1.6-1.6-1.6Z"/><path d="M21 12a9 9 0 1 1-9-9c2.5 0 4.7 1 6.4 2.6"/></svg>
+                Parse & Render UI
+            </button>
+        </div>
+
+        <!-- Right Panel: Rendered UI & Output -->
+        <div class="panel">
+            <h2>Interactive Preview</h2>
+            <div id="render-area">
+                <div class="empty-state">Nothing rendered yet. Paste JSON and click Parse.</div>
+            </div>
+            
+            <h2>Generated userAction Payload</h2>
+            <div id="output-area">Payload will appear here when you click the rendered submit button...</div>
+        </div>
+    </div>
+
+    <script>
+        // Global state to store bound paths
+        let boundPaths = {};
+
+        function renderComponent(componentId, components, parentElement) {
+            const comp = components.find(c => c.id === componentId);
+            if (!comp) return;
+            
+            const type = Object.keys(comp.component)[0];
+            const props = comp.component[type];
+            
+            let element;
+            
+            switch(type) {
+                case 'Card':
+                    element = document.createElement('div');
+                    element.className = 'a2ui-card animated';
+                    renderComponent(props.child, components, element);
+                    break;
+                case 'Column':
+                    element = document.createElement('div');
+                    element.className = 'a2ui-column';
+                    const children = props.children.explicitList;
+                    children.forEach(childId => renderComponent(childId, components, element));
+                    break;
+                case 'Row':
+                    element = document.createElement('div');
+                    element.className = 'a2ui-row';
+                    const rowChildren = props.children.explicitList;
+                    rowChildren.forEach(childId => renderComponent(childId, components, element));
+                    break;
+                case 'TextField':
+                    element = document.createElement('div');
+                    element.className = 'a2ui-input-group';
+                    const label = document.createElement('label');
+                    label.innerText = props.label.literalString || "Input";
+                    
+                    const input = document.createElement('input');
+                    input.type = props.textFieldType === 'number' ? 'number' : 'text';
+                    input.id = componentId;
+                    input.placeholder = "Enter value...";
+                    
+                    // Mock Pre-filling for this demo!
+                    const path = props.text ? props.text.path : (props.value ? props.value.path : "");
+                    if (path === "/employee/address") {
+                        input.value = "456 Oak Avenue, Apt 12B, New York, NY 10001";
+                    } else if (path === "/employee/phone") {
+                        input.value = "(555) 123-4568";
+                    } else if (path === "/employee/email") {
+                        input.value = "john.smith@kpmg-demo.com";
+                    } else if (path === "/employee/emergencyContact") {
+                        input.value = "Jane Smith";
+                    } else if (path === "/employee/emergencyPhone") {
+                        input.value = "(555) 987-6543";
+                    }
+                    
+                    // Track path binding
+                    if (props.text && props.text.path) {
+                        boundPaths[props.text.path] = componentId;
+                    } else if (props.value && props.value.path) {
+                        boundPaths[props.value.path] = componentId;
+                    }
+                    
+                    element.appendChild(label);
+                    element.appendChild(input);
+                    break;
+                case 'MultipleChoice':
+                    element = document.createElement('div');
+                    element.className = 'a2ui-input-group';
+                    const mcLabel = document.createElement('label');
+                    mcLabel.innerText = "Select Category";
+                    
+                    const selectEl = document.createElement('select');
+                    selectEl.id = componentId;
+                    
+                    props.options.forEach(opt => {
+                        const option = document.createElement('option');
+                        option.value = opt.value;
+                        option.innerText = opt.label.literalString;
+                        selectEl.appendChild(option);
+                    });
+                    
+                    // Track path binding
+                    if (props.selections && props.selections.path) {
+                        boundPaths[props.selections.path] = componentId;
+                    }
+                    
+                    element.appendChild(mcLabel);
+                    element.appendChild(selectEl);
+                    break;
+                case 'Button':
+                    element = document.createElement('button');
+                    element.className = 'a2ui-button';
+                    const textComp = components.find(c => c.id === props.child);
+                    element.innerText = textComp ? textComp.component.Text.text.literalString : "Submit";
+                    
+                    element.onclick = () => handleAction(props.action);
+                    break;
+                case 'Text':
+                    element = document.createElement('div');
+                    const textStr = props.text.literalString || "";
+                    
+                    let icon = "";
+                    if (textStr.includes("Employee ID")) icon = "🆔 ";
+                    else if (textStr.includes("Full Name")) icon = "👤 ";
+                    else if (textStr.includes("Title")) icon = "💼 ";
+                    else if (textStr.includes("Department")) icon = "🏢 ";
+                    else if (textStr.includes("Manager")) icon = "👥 ";
+                    else if (textStr.includes("Hire Date")) icon = "📅 ";
+                    else if (textStr.includes("Status")) icon = "🔵 ";
+                    else if (textStr.includes("Salary Band")) icon = "💰 ";
+                    else if (textStr.includes("Address")) icon = "📍 ";
+                    else if (textStr.includes("Phone")) icon = "📞 ";
+                    else if (textStr.includes("Email")) icon = "✉️ ";
+                    else if (textStr.includes("Emergency Contact")) icon = "🚨 ";
+                    
+                    if (props.usageHint === 'h2') {
+                        const h2 = document.createElement('h2');
+                        h2.innerText = icon + textStr;
+                        element.appendChild(h2);
+                    } else {
+                        const p = document.createElement('p');
+                        p.innerText = icon + textStr;
+                        element.appendChild(p);
+                    }
+                    break;
+                default:
+                    console.log("Unsupported type", type);
+            }
+            
+            if (element) {
+                parentElement.appendChild(element);
+            }
+        }
+
+        function processAndRender() {
+            const input = document.getElementById('json-input').value;
+            const renderArea = document.getElementById('render-area');
+            renderArea.innerHTML = ''; // Clear previous
+            boundPaths = {}; // Reset paths
+
+            try {
+                let jsonStr = input.trim();
+                const openTag = "<a2ui-json>";
+                const closeTag = "</a2ui-json>";
+                
+                if (jsonStr.includes(openTag)) {
+                    jsonStr = jsonStr.split(openTag)[1].split(closeTag)[0];
+                }
+                
+                jsonStr = jsonStr.trim();
+                if (jsonStr.startsWith("```json")) jsonStr = jsonStr.substring(7);
+                if (jsonStr.endsWith("```")) jsonStr = jsonStr.substring(0, jsonStr.length - 3);
+
+                const payload = JSON.parse(jsonStr);
+                
+                const beginCmd = payload.find(cmd => cmd.beginRendering);
+                const updateCmd = payload.find(cmd => cmd.surfaceUpdate);
+                
+                if (!beginCmd || !updateCmd) {
+                    renderArea.innerHTML = `<div class="empty-state" style="color: #ef4444;">Missing beginRendering or surfaceUpdate command.</div>`;
+                    return;
+                }
+
+                const rootId = beginCmd.beginRendering.root;
+                const components = updateCmd.surfaceUpdate.components;
+
+                renderComponent(rootId, components, renderArea);
+
+            } catch (e) {
+                renderArea.innerHTML = `<div class="empty-state" style="color: #ef4444;">Error parsing JSON: ${e.message}</div>`;
+            }
+        }
+
+        function handleAction(actionObj) {
+            const outputArea = document.getElementById('output-area');
+            
+            if (!actionObj) {
+                outputArea.innerText = "No action defined on this button.";
+                return;
+            }
+
+            // Resolve context data model from bound paths!
+            const resolvedContext = {};
+            
+            if (actionObj.context && Array.isArray(actionObj.context)) {
+                actionObj.context.forEach(ctxMapping => {
+                    const key = ctxMapping.key;
+                    const path = ctxMapping.value.path;
+                    const literal = ctxMapping.value.literalString;
+                    
+                    if (literal) {
+                        resolvedContext[key] = literal;
+                    } else if (path) {
+                        const elementId = boundPaths[path];
+                        const inputEl = document.getElementById(elementId);
+                        resolvedContext[key] = inputEl ? inputEl.value : "";
+                    }
+                });
+            }
+
+            // Construct the v0.9 userAction payload defined in your docs!
+            const payload = {
+                "version": "v0.9",
+                "userAction": {
+                    "actionName": actionObj.name || "unknown_action",
+                    "surfaceId": "expense-report-form",
+                    "sourceComponentId": "submit_button",
+                    "context": resolvedContext
+                }
+            };
+
+            outputArea.innerText = JSON.stringify(payload, null, 2);
+        }
+    </script>
+</body>
+</html>

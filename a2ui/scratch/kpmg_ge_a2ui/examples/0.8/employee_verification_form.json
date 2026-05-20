@@ -1,0 +1,890 @@
+[
+  {
+    "beginRendering": {
+      "surfaceId": "employee-verification-form",
+      "root": "main_card",
+      "styles": {
+        "primaryColor": "#00338D",
+        "font": "Roboto"
+      }
+    }
+  },
+  {
+    "surfaceUpdate": {
+      "surfaceId": "employee-verification-form",
+      "components": [
+        {
+          "id": "main_card",
+          "component": {
+            "Card": {
+              "child": "main_column"
+            }
+          }
+        },
+        {
+          "id": "main_column",
+          "component": {
+            "Column": {
+              "children": {
+                "explicitList": [
+                  "header_row",
+                  "divider_top",
+                  "readonly_section_title",
+                  "readonly_fields_column",
+                  "divider_mid",
+                  "editable_section_title",
+                  "editable_fields_column",
+                  "divider_bottom",
+                  "action_buttons_row"
+                ]
+              },
+              "alignment": "stretch"
+            }
+          }
+        },
+        {
+          "id": "header_row",
+          "component": {
+            "Column": {
+              "children": {
+                "explicitList": [
+                  "header_icon",
+                  "header_title",
+                  "header_subtitle"
+                ]
+              },
+              "alignment": "center"
+            }
+          }
+        },
+        {
+          "id": "header_icon",
+          "component": {
+            "Icon": {
+              "name": {
+                "literalString": "verifiedUser"
+              }
+            }
+          }
+        },
+        {
+          "id": "header_title",
+          "component": {
+            "Text": {
+              "text": {
+                "literalString": "Employee Verification"
+              },
+              "usageHint": "h2"
+            }
+          }
+        },
+        {
+          "id": "header_subtitle",
+          "component": {
+            "Text": {
+              "text": {
+                "path": "/name"
+              },
+              "usageHint": "h4"
+            }
+          }
+        },
+        {
+          "id": "divider_top",
+          "component": {
+            "Divider": {}
+          }
+        },
+        {
+          "id": "readonly_section_title",
+          "component": {
+            "Text": {
+              "text": {
+                "literalString": "Employment Details (Read-Only)"
+              },
+              "usageHint": "h5"
+            }
+          }
+        },
+        {
+          "id": "readonly_fields_column",
+          "component": {
+            "Column": {
+              "children": {
+                "explicitList": [
+                  "field_empid",
+                  "field_name",
+                  "field_title",
+                  "field_department",
+                  "field_manager",
+                  "field_hire_date",
+                  "field_status",
+                  "field_salary_band"
+                ]
+              },
+              "alignment": "stretch"
+            }
+          }
+        },
+        {
+          "id": "field_empid_icon",
+          "component": {
+            "Icon": {
+              "name": {
+                "literalString": "badge"
+              }
+            }
+          }
+        },
+        {
+          "id": "field_empid_label",
+          "component": {
+            "Text": {
+              "text": {
+                "literalString": "Employee ID"
+              },
+              "usageHint": "caption"
+            }
+          }
+        },
+        {
+          "id": "field_empid_value",
+          "component": {
+            "Text": {
+              "text": {
+                "path": "/employee_id"
+              },
+              "usageHint": "h5"
+            }
+          }
+        },
+        {
+          "id": "field_empid_text_col",
+          "component": {
+            "Column": {
+              "children": {
+                "explicitList": [
+                  "field_empid_label",
+                  "field_empid_value"
+                ]
+              },
+              "alignment": "start"
+            }
+          }
+        },
+        {
+          "id": "field_empid",
+          "component": {
+            "Row": {
+              "children": {
+                "explicitList": [
+                  "field_empid_icon",
+                  "field_empid_text_col"
+                ]
+              },
+              "alignment": "center",
+              "distribution": "start"
+            }
+          }
+        },
+        {
+          "id": "field_name_icon",
+          "component": {
+            "Icon": {
+              "name": {
+                "literalString": "person"
+              }
+            }
+          }
+        },
+        {
+          "id": "field_name_label",
+          "component": {
+            "Text": {
+              "text": {
+                "literalString": "Full Name"
+              },
+              "usageHint": "caption"
+            }
+          }
+        },
+        {
+          "id": "field_name_value",
+          "component": {
+            "Text": {
+              "text": {
+                "path": "/name"
+              },
+              "usageHint": "h5"
+            }
+          }
+        },
+        {
+          "id": "field_name_text_col",
+          "component": {
+            "Column": {
+              "children": {
+                "explicitList": [
+                  "field_name_label",
+                  "field_name_value"
+                ]
+              },
+              "alignment": "start"
+            }
+          }
+        },
+        {
+          "id": "field_name",
+          "component": {
+            "Row": {
+              "children": {
+                "explicitList": [
+                  "field_name_icon",
+                  "field_name_text_col"
+                ]
+              },
+              "alignment": "center",
+              "distribution": "start"
+            }
+          }
+        },
+        {
+          "id": "field_title_icon",
+          "component": {
+            "Icon": {
+              "name": {
+                "literalString": "work"
+              }
+            }
+          }
+        },
+        {
+          "id": "field_title_label",
+          "component": {
+            "Text": {
+              "text": {
+                "literalString": "Title"
+              },
+              "usageHint": "caption"
+            }
+          }
+        },
+        {
+          "id": "field_title_value",
+          "component": {
+            "Text": {
+              "text": {
+                "path": "/title"
+              },
+              "usageHint": "h5"
+            }
+          }
+        },
+        {
+          "id": "field_title_text_col",
+          "component": {
+            "Column": {
+              "children": {
+                "explicitList": [
+                  "field_title_label",
+                  "field_title_value"
+                ]
+              },
+              "alignment": "start"
+            }
+          }
+        },
+        {
+          "id": "field_title",
+          "component": {
+            "Row": {
+              "children": {
+                "explicitList": [
+                  "field_title_icon",
+                  "field_title_text_col"
+                ]
+              },
+              "alignment": "center",
+              "distribution": "start"
+            }
+          }
+        },
+        {
+          "id": "field_department_icon",
+          "component": {
+            "Icon": {
+              "name": {
+                "literalString": "business"
+              }
+            }
+          }
+        },
+        {
+          "id": "field_department_label",
+          "component": {
+            "Text": {
+              "text": {
+                "literalString": "Department"
+              },
+              "usageHint": "caption"
+            }
+          }
+        },
+        {
+          "id": "field_department_value",
+          "component": {
+            "Text": {
+              "text": {
+                "path": "/department"
+              },
+              "usageHint": "h5"
+            }
+          }
+        },
+        {
+          "id": "field_department_text_col",
+          "component": {
+            "Column": {
+              "children": {
+                "explicitList": [
+                  "field_department_label",
+                  "field_department_value"
+                ]
+              },
+              "alignment": "start"
+            }
+          }
+        },
+        {
+          "id": "field_department",
+          "component": {
+            "Row": {
+              "children": {
+                "explicitList": [
+                  "field_department_icon",
+                  "field_department_text_col"
+                ]
+              },
+              "alignment": "center",
+              "distribution": "start"
+            }
+          }
+        },
+        {
+          "id": "field_manager_icon",
+          "component": {
+            "Icon": {
+              "name": {
+                "literalString": "supervisorAccount"
+              }
+            }
+          }
+        },
+        {
+          "id": "field_manager_label",
+          "component": {
+            "Text": {
+              "text": {
+                "literalString": "Manager"
+              },
+              "usageHint": "caption"
+            }
+          }
+        },
+        {
+          "id": "field_manager_value",
+          "component": {
+            "Text": {
+              "text": {
+                "path": "/manager"
+              },
+              "usageHint": "h5"
+            }
+          }
+        },
+        {
+          "id": "field_manager_text_col",
+          "component": {
+            "Column": {
+              "children": {
+                "explicitList": [
+                  "field_manager_label",
+                  "field_manager_value"
+                ]
+              },
+              "alignment": "start"
+            }
+          }
+        },
+        {
+          "id": "field_manager",
+          "component": {
+            "Row": {
+              "children": {
+                "explicitList": [
+                  "field_manager_icon",
+                  "field_manager_text_col"
+                ]
+              },
+              "alignment": "center",
+              "distribution": "start"
+            }
+          }
+        },
+        {
+          "id": "field_hire_date_icon",
+          "component": {
+            "Icon": {
+              "name": {
+                "literalString": "calendarToday"
+              }
+            }
+          }
+        },
+        {
+          "id": "field_hire_date_label",
+          "component": {
+            "Text": {
+              "text": {
+                "literalString": "Hire Date"
+              },
+              "usageHint": "caption"
+            }
+          }
+        },
+        {
+          "id": "field_hire_date_value",
+          "component": {
+            "Text": {
+              "text": {
+                "path": "/hire_date"
+              },
+              "usageHint": "h5"
+            }
+          }
+        },
+        {
+          "id": "field_hire_date_text_col",
+          "component": {
+            "Column": {
+              "children": {
+                "explicitList": [
+                  "field_hire_date_label",
+                  "field_hire_date_value"
+                ]
+              },
+              "alignment": "start"
+            }
+          }
+        },
+        {
+          "id": "field_hire_date",
+          "component": {
+            "Row": {
+              "children": {
+                "explicitList": [
+                  "field_hire_date_icon",
+                  "field_hire_date_text_col"
+                ]
+              },
+              "alignment": "center",
+              "distribution": "start"
+            }
+          }
+        },
+        {
+          "id": "field_status_icon",
+          "component": {
+            "Icon": {
+              "name": {
+                "literalString": "toggleOn"
+              }
+            }
+          }
+        },
+        {
+          "id": "field_status_label",
+          "component": {
+            "Text": {
+              "text": {
+                "literalString": "Employment Status"
+              },
+              "usageHint": "caption"
+            }
+          }
+        },
+        {
+          "id": "field_status_value",
+          "component": {
+            "Text": {
+              "text": {
+                "path": "/employment_status"
+              },
+              "usageHint": "h5"
+            }
+          }
+        },
+        {
+          "id": "field_status_text_col",
+          "component": {
+            "Column": {
+              "children": {
+                "explicitList": [
+                  "field_status_label",
+                  "field_status_value"
+                ]
+              },
+              "alignment": "start"
+            }
+          }
+        },
+        {
+          "id": "field_status",
+          "component": {
+            "Row": {
+              "children": {
+                "explicitList": [
+                  "field_status_icon",
+                  "field_status_text_col"
+                ]
+              },
+              "alignment": "center",
+              "distribution": "start"
+            }
+          }
+        },
+        {
+          "id": "field_salary_band_icon",
+          "component": {
+            "Icon": {
+              "name": {
+                "literalString": "payments"
+              }
+            }
+          }
+        },
+        {
+          "id": "field_salary_band_label",
+          "component": {
+            "Text": {
+              "text": {
+                "literalString": "Salary Band"
+              },
+              "usageHint": "caption"
+            }
+          }
+        },
+        {
+          "id": "field_salary_band_value",
+          "component": {
+            "Text": {
+              "text": {
+                "path": "/salary_band"
+              },
+              "usageHint": "h5"
+            }
+          }
+        },
+        {
+          "id": "field_salary_band_text_col",
+          "component": {
+            "Column": {
+              "children": {
+                "explicitList": [
+                  "field_salary_band_label",
+                  "field_salary_band_value"
+                ]
+              },
+              "alignment": "start"
+            }
+          }
+        },
+        {
+          "id": "field_salary_band",
+          "component": {
+            "Row": {
+              "children": {
+                "explicitList": [
+                  "field_salary_band_icon",
+                  "field_salary_band_text_col"
+                ]
+              },
+              "alignment": "center",
+              "distribution": "start"
+            }
+          }
+        },
+        {
+          "id": "divider_mid",
+          "component": {
+            "Divider": {}
+          }
+        },
+        {
+          "id": "editable_section_title",
+          "component": {
+            "Text": {
+              "text": {
+                "literalString": "✏️ Editable Fields (Update if needed)"
+              },
+              "usageHint": "h5"
+            }
+          }
+        },
+        {
+          "id": "editable_fields_column",
+          "component": {
+            "Column": {
+              "children": {
+                "explicitList": [
+                  "input_address",
+                  "input_phone",
+                  "input_email",
+                  "input_emergency_contact",
+                  "input_emergency_phone"
+                ]
+              },
+              "alignment": "stretch"
+            }
+          }
+        },
+        {
+          "id": "input_address",
+          "component": {
+            "TextInput": {
+              "label": {
+                "literalString": "Address"
+              },
+              "value": {
+                "path": "/address"
+              }
+            }
+          }
+        },
+        {
+          "id": "input_phone",
+          "component": {
+            "TextInput": {
+              "label": {
+                "literalString": "Phone"
+              },
+              "value": {
+                "path": "/phone"
+              }
+            }
+          }
+        },
+        {
+          "id": "input_email",
+          "component": {
+            "TextInput": {
+              "label": {
+                "literalString": "Email"
+              },
+              "value": {
+                "path": "/email"
+              }
+            }
+          }
+        },
+        {
+          "id": "input_emergency_contact",
+          "component": {
+            "TextInput": {
+              "label": {
+                "literalString": "Emergency Contact"
+              },
+              "value": {
+                "path": "/emergency_contact"
+              }
+            }
+          }
+        },
+        {
+          "id": "input_emergency_phone",
+          "component": {
+            "TextInput": {
+              "label": {
+                "literalString": "Emergency Phone"
+              },
+              "value": {
+                "path": "/emergency_phone"
+              }
+            }
+          }
+        },
+        {
+          "id": "divider_bottom",
+          "component": {
+            "Divider": {}
+          }
+        },
+        {
+          "id": "submit_button_text",
+          "component": {
+            "Text": {
+              "text": {
+                "literalString": "Submit & Verify"
+              }
+            }
+          }
+        },
+        {
+          "id": "submit_button",
+          "component": {
+            "Button": {
+              "child": "submit_button_text",
+              "primary": true,
+              "action": {
+                "name": "submit_verification",
+                "context": [
+                  {
+                    "key": "employeeId",
+                    "value": {
+                      "path": "/employee_id"
+                    }
+                  },
+                  {
+                    "key": "address",
+                    "value": {
+                      "path": "/address"
+                    }
+                  },
+                  {
+                    "key": "phone",
+                    "value": {
+                      "path": "/phone"
+                    }
+                  },
+                  {
+                    "key": "email",
+                    "value": {
+                      "path": "/email"
+                    }
+                  },
+                  {
+                    "key": "emergencyContact",
+                    "value": {
+                      "path": "/emergency_contact"
+                    }
+                  },
+                  {
+                    "key": "emergencyPhone",
+                    "value": {
+                      "path": "/emergency_phone"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "id": "verify_as_is_button_text",
+          "component": {
+            "Text": {
+              "text": {
+                "literalString": "Verify As Is"
+              }
+            }
+          }
+        },
+        {
+          "id": "verify_as_is_button",
+          "component": {
+            "Button": {
+              "child": "verify_as_is_button_text",
+              "primary": false,
+              "action": {
+                "name": "verify_as_is",
+                "context": [
+                  {
+                    "key": "employeeId",
+                    "value": {
+                      "path": "/employee_id"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "id": "action_buttons_row",
+          "component": {
+            "Row": {
+              "children": {
+                "explicitList": [
+                  "submit_button",
+                  "verify_as_is_button"
+                ]
+              },
+              "distribution": "center",
+              "alignment": "center"
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "dataModelUpdate": {
+      "surfaceId": "employee-verification-form",
+      "path": "/",
+      "contents": [
+        {
+          "key": "employee_id",
+          "valueString": "E-1001"
+        },
+        {
+          "key": "name",
+          "valueString": "John Smith"
+        },
+        {
+          "key": "title",
+          "valueString": "Senior Financial Analyst"
+        },
+        {
+          "key": "department",
+          "valueString": "Finance"
+        },
+        {
+          "key": "manager",
+          "valueString": "Sarah Chen"
+        },
+        {
+          "key": "hire_date",
+          "valueString": "2021-03-15"
+        },
+        {
+          "key": "employment_status",
+          "valueString": "Active"
+        },
+        {
+          "key": "salary_band",
+          "valueString": "Band 4"
+        },
+        {
+          "key": "address",
+          "valueString": "456 Oak Avenue, Apt 12B, New York, NY 10001"
+        },
+        {
+          "key": "phone",
+          "valueString": "(555) 123-4567"
+        },
+        {
+          "key": "email",
+          "valueString": "john.smith@kpmg-demo.com"
+        },
+        {
+          "key": "emergency_contact",
+          "valueString": "Jane Smith"
+        },
+        {
+          "key": "emergency_phone",
+          "valueString": "(555) 987-6543"
+        }
+      ]
+    }
+  }
+]
