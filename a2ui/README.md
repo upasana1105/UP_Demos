@@ -45,7 +45,13 @@ employee_verification/
 5. **Agent calls** `update_employee_field` for changed fields, then `verify_employee`
 6. **Success card** is displayed
 
+### User Experience Flow
+
+#### 1. Verification Form
 ![A2UI Employee Verification Card](successful_test.png)
+
+#### 2. Verification Complete
+![Verification Complete](verification_success.png)
 
 ## Adding New Agents
 
