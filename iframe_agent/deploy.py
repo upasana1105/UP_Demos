@@ -186,8 +186,8 @@ def main():
         project_id=project_id,
         app_id=app_id,
         agent_card=a2ui_agent_card_str,
-        agent_name="iframe_a2ui_agent_v12",
-        display_name="IFrame A2UI Agent v12",
+        agent_name="iframe_a2ui_agent_v16",
+        display_name="IFrame A2UI Agent v16",
         description="An agent that renders an iframe Kanban board using A2UI.",
         agent_authorization=os.environ.get("AGENT_AUTHORIZATION"),
     )

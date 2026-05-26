@@ -10,29 +10,36 @@ def _get_bearer_token():
     return credentials.token
 
 def main():
-    agent_resource_name = (
-        "projects/850431687571/locations/global/collections/default_collection/"
-        "engines/gemini-enterprise-gm_1771086459519/assistants/default_assistant/"
-        "agents/18308671199588090470"
+    project_id = "uppdemos"
+    app_id = "gemini-enterprise-gm_1771086459519"
+    list_endpoint = (
+        f"https://discoveryengine.googleapis.com/v1alpha/projects/{project_id}/"
+        f"locations/global/collections/default_collection/engines/{app_id}/"
+        "assistants/default_assistant/agents"
     )
-    
-    api_endpoint = f"https://discoveryengine.googleapis.com/v1alpha/{agent_resource_name}"
-    
     bearer_token = _get_bearer_token()
     headers = {
         "Authorization": f"Bearer {bearer_token}",
         "Content-Type": "application/json",
-        "X-Goog-User-Project": "uppdemos",
+        "X-Goog-User-Project": project_id,
     }
-    
-    print(f"Deleting older agent from Gemini Enterprise: {agent_resource_name}")
-    response = requests.delete(api_endpoint, headers=headers)
-    
-    if response.status_code in [200, 204]:
-        print("✓ Older agent deleted successfully! Authorization lock released.")
+    print(f"Scanning Gemini Enterprise ({app_id}) for iframe agents...")
+    response = requests.get(list_endpoint, headers=headers)
+    if response.status_code == 200:
+        agents = response.json().get("agents", [])
+        for a in agents:
+            name = a.get("name")
+            display_name = a.get("displayName", "")
+            if "iframe" in display_name.lower() or "a2ui" in display_name.lower():
+                delete_url = f"https://discoveryengine.googleapis.com/v1alpha/{name}"
+                print(f"Deleting Gemini Enterprise Agent: {name} ({display_name})")
+                del_resp = requests.delete(delete_url, headers=headers)
+                if del_resp.status_code in [200, 204]:
+                    print(f"✓ Successfully deleted {display_name}")
+                else:
+                    print(f"✗ Failed to delete {display_name}: {del_resp.status_code} - {del_resp.text}")
     else:
-        print(f"✗ Failed to delete agent: {response.status_code}")
-        print(response.text)
+        print(f"✗ Failed to list agents: {response.status_code} - {response.text}")
 
 if __name__ == "__main__":
     main()

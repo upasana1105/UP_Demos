@@ -1,0 +1,13 @@
+# Python Ignore
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+
+# Local Environment Secrets
+.env
+
+# OS Specific Files
+.DS_Store

@@ -13,7 +13,7 @@ def _get_bearer_token():
 def create_auth():
   load_dotenv()
   project_id = os.environ.get("PROJECT_ID", "uppdemos")
-  auth_id = "a2ui-auth-iframe-v13"
+  auth_id = "a2ui-auth-iframe-v16"
   
   # Client ID and Secret matched exactly from reference implementation
   client_id = "850431687571-78f04l9o3tcaodpc4mf9c31809a0f227.apps.googleusercontent.com"

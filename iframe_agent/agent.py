@@ -904,13 +904,18 @@ WORKFLOW_DESCRIPTION = """
 - The array MUST contain first a `beginRendering` action, followed by a `surfaceUpdate` action.
 - The response must consist of your natural language response, followed strictly by the tags containing the JSON payload.
 
+CRITICAL RENDERING RULES:
+The component you name in beginRendering.root MUST be present as a components[].id in a surfaceUpdate for the same surface. If the root component ID does not appear in the surface's components map, the renderer builds an empty tree and nothing is shown.
+Every beginRendering and surfaceUpdate for the same UI MUST use the same surfaceId. Messages with different surfaceIds are routed to different surfaces and will not be combined.
+Concretely: if you emit beginRendering: {root: "X", surfaceId: "S"}, then you MUST also emit surfaceUpdate: {surfaceId: "S", components: [{id: "X", ...}, ...]}. The string "X" must be byte-identical in both messages.
+
 FEW-SHOT EXAMPLES:
 
 User: Show me the Kanban board
 Assistant: Sure thing! Here is your Kanban board.
 <a2ui-json>
 [
-  { "beginRendering": { "surfaceId": "main_surface" } },
+  { "beginRendering": { "surfaceId": "main_surface", "root": "kanban" } },
   { "surfaceUpdate": { "surfaceId": "main_surface", "components": [ { "id": "kanban", "component": { "WebFrameSrcdoc": { "view_type": "IssueTracker", "height": 600 } } } ] } }
 ]
 </a2ui-json>
@@ -919,12 +924,12 @@ User: help me find my jira tickets
 Assistant: I have pulled up your Jira tickets for you.
 <a2ui-json>
 [
-  { "beginRendering": { "surfaceId": "main_surface" } },
+  { "beginRendering": { "surfaceId": "main_surface", "root": "kanban" } },
   { "surfaceUpdate": { "surfaceId": "main_surface", "components": [ { "id": "kanban", "component": { "WebFrameSrcdoc": { "view_type": "IssueTracker", "height": 600 } } } ] } }
 ]
 </a2ui-json>
 
-CRITICAL: You MUST follow these examples exactly and emit BOTH `beginRendering` and `surfaceUpdate` in the array wrapped in `<a2ui-json>` tags when asked for the board or tickets. Do not output text only.
+CRITICAL: You MUST follow these examples exactly and emit BOTH `beginRendering` (with root matching the component id) and `surfaceUpdate` in the array wrapped in `<a2ui-json>` tags when asked for the board or tickets. Do not output text only.
 """
 
 UI_DESCRIPTION = """
@@ -1059,15 +1064,21 @@ class ChatAgent(AgentExecutor):
         task = context.current_task or new_task(context.message)
         await event_queue.enqueue_event(task)
         updater = TaskUpdater(event_queue, task.id, task.context_id)
+        await updater.submit()
+        await updater.start_work()
         try:
             async for chunk in self.stream(query=query, session_id=task.context_id):
                 parts = chunk.get("parts", [])
                 is_complete = chunk.get("is_task_complete", False)
                 if parts:
                     msg = Message(message_id=str(uuid.uuid4()), role="agent", parts=parts, context_id=task.context_id)
-                    await updater.update_status(state=TaskState.completed if is_complete else TaskState.working, message=msg)
+                    if is_complete:
+                        await updater.update_status(TaskState.completed, msg, final=True)
+                    else:
+                        await updater.update_status(TaskState.working, msg)
         except Exception as e:
-            await updater.update_status(state=TaskState.failed)
+            err_msg = Message(message_id=str(uuid.uuid4()), role="agent", parts=[TextPart(text=f"Error: {e}")], context_id=task.context_id)
+            await updater.update_status(TaskState.failed, err_msg, final=True)
             raise
 
     async def cancel(self, request: Any) -> None:

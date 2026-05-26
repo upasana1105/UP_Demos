@@ -16,17 +16,21 @@ client = vertexai.Client(
     ),
 )
 
-# List of engine IDs to delete (based on previous failures and older versions)
-engines_to_delete = [
-    "4432989540390535168"
-]
-
-for engine_id in engines_to_delete:
-    resource_name = f"projects/{project_id}/locations/{location}/reasoningEngines/{engine_id}"
-    print(f"Attempting to delete: {resource_name}")
-    try:
-        # The SDK might use delete() method
-        client.agent_engines.delete(name=resource_name)
-        print(f"✓ Delete request sent for {engine_id}")
-    except Exception as e:
-        print(f"✗ Failed to delete {engine_id}: {e}")
+print(f"Scanning for all iframe reasoning engines in {project_id} / {location}...")
+try:
+    engines = client.agent_engines.list()
+    for engine in engines:
+        try:
+            name = engine.api_resource.name
+            display_name = engine.api_resource.display_name
+            if "iframe" in display_name.lower() or "a2ui" in display_name.lower():
+                print(f"Attempting to delete Reasoning Engine: {name} ({display_name})")
+                try:
+                    client.agent_engines.delete(name=name)
+                    print(f"✓ Delete request sent for {name}")
+                except Exception as e:
+                    print(f"✗ Failed to delete {name}: {e}")
+        except Exception as e:
+            pass
+except Exception as e:
+    print(f"Error listing engines: {e}")
