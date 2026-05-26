@@ -19,61 +19,11 @@ To successfully set up and authorize using native OIDC OAuth, the following admi
    - You will need your Databricks Account ID to register the app.
    - Log in to the **Databricks Account Console** at [accounts.cloud.databricks.com](https://accounts.cloud.databricks.com) and locate the Account ID in the **bottom-left corner** of the sidebar navigation.
 
-3. **User Provisioning & Federated Identity (SSO)**:
-   - Databricks OAuth relies on identity delegation. The email address of the user authenticating via Gemini Enterprise **must exactly match** a user record inside your Databricks account.
-   - Ensure your enterprise identity provider (IdP) SSO (such as Okta, Azure AD, or Google Workspace) is set up to provision/sync your users to both Google Cloud (Gemini Enterprise) and Databricks.
-
-4. **Target SQL Compute & Unity Catalog Access Control**:
-   - Under standard OAuth authorization, the user's delegated token inherits their specific permissions in Databricks.
-   - Ensure target users are granted `Can Use` privileges on the specific **SQL Warehouse** compute that processes queries.
-   - Ensure users are granted `SELECT` (and other DDL/DML as needed) permissions under **Unity Catalog** for the schemas, catalogs, and tables they will ask Gemini to query.
 
 ### Phase 1: Register the Custom OAuth App in Databricks
 
-#### Option 1: Automated via Python SDK (Fastest & Google SSO Friendly)
-If your account uses Google Federation SSO (Gmail) and you have Account Admin access, run the registration script (`create_databricks_oauth.py` in the `scratch` directory) locally on your machine. It triggers browser-based OAuth (User-to-Machine) to complete registration in 5 seconds.
+#### Setup via Account Console
 
-```python
-import sys
-from databricks.sdk import AccountClient
-
-ACCOUNTS_HOST = "https://accounts.cloud.databricks.com"
-ACCOUNT_ID = "YOUR_DATABRICKS_ACCOUNT_ID"  # e.g., 2130c768-f030-4035-85db-736c897785ec
-
-print("=========================================================")
-print("🚀 Registering Databricks OAuth App via Google SSO")
-print("=========================================================")
-
-try:
-    client = AccountClient(
-        host=ACCOUNTS_HOST,
-        account_id=ACCOUNT_ID,
-        auth_type="oauth-u2m"
-    )
-    print("\nVerifying connection & admin permissions...")
-    list(client.custom_app_integration.list())
-except Exception as e:
-    print(f"❌ Authentication failed: {e}")
-    sys.exit(1)
-
-print("Registering Custom OAuth Application 'Gemini Enterprise Databricks MCP'...")
-try:
-    app = client.custom_app_integration.create(
-        name="Gemini Enterprise Databricks MCP",
-        redirect_urls=["https://vertexaisearch.cloud.google.com/oauth-redirect"],
-        scopes=["all-apis", "sql", "offline_access", "openid", "profile"],
-        confidential=True
-    )
-    print("\n🎉 OAuth Application Registered successfully!")
-    print(f"Client ID: {app.client_id}")
-    print(f"Client Secret: {app.client_secret}")
-except Exception as e:
-    print(f"\n❌ Error registering OAuth Application: {e}")
-    sys.exit(1)
-```
-
-#### Option 2: Visual Setup via Account Console
-If you prefer using the UI, have an Account Admin execute these steps:
 1. Log in to the **Databricks Accounts Console** at [accounts.cloud.databricks.com](https://accounts.cloud.databricks.com).
 2. Go to **Settings** ➡️ **App integrations** ➡️ **Add integration**.
 3. Select **Custom OAuth App**.
