@@ -4,6 +4,24 @@ This repository contains the comprehensive onboarding guide and codebase for con
 
 ---
 
+## 📸 Visual Walkthrough & Sample Outputs
+
+Here is a live demonstration of Gemini Enterprise querying your Databricks SQL warehouse and plotting high-resolution visual analytics completely in the background:
+
+### 1. Enable Databricks MCP in Gemini Enterprise
+Attach and enable the Databricks MCP/Genie data stores inside the Gemini Enterprise chat interface:
+![1. Enable Connectors Panel](screenshots/connector_panel.png)
+
+### 2. Prompt Execution & Background Querying
+Ask Gemini to analyze your catalog; read-only SQL commands execute in the background without interrupting you with popup approvals:
+![2. Prompt Execution State](screenshots/thinking_state.png)
+
+### 3. Natively Rendered Seaborn Chart Response
+Gemini's built-in secure Python interpreter processes the database query and plots beautiful graphics directly inside your chat workspace:
+![3. Beautiful Seaborn Chart Response](screenshots/seaborn_chart.png)
+
+---
+
 ## 🔵 Track A: Direct Native OIDC OAuth (Paid Accounts)
 
 This track establishes a direct, secure, and zero-infrastructure connection between Gemini Enterprise and Databricks by registering Gemini as a trusted OAuth client.
@@ -234,14 +252,4 @@ Since Gemini 3.5 contains a native secure Python environment (Code Interpreter),
 
 #### Historical Growth Trend (Matplotlib Line Chart)
 > **"Find the monthly total sales revenue over the last year from our Databricks database. Plot this growth timeline as a high-resolution line chart using your Python interpreter, with individual data markers and a shaded grid."**
-
-### 📸 Visual Onboarding & Charting Walkthrough
-
-````carousel
-![1. Enable Connectors Panel](/Users/upasanapati/shrinkAI experiment/Antigravity_Experiments/UP_Demos/byomcp/databricks-mcp-bridge/screenshots/connector_panel.png)
-<!-- slide -->
-![2. Prompt Execution State](/Users/upasanapati/shrinkAI experiment/Antigravity_Experiments/UP_Demos/byomcp/databricks-mcp-bridge/screenshots/thinking_state.png)
-<!-- slide -->
-![3. Beautiful Seaborn Chart Response](/Users/upasanapati/shrinkAI experiment/Antigravity_Experiments/UP_Demos/byomcp/databricks-mcp-bridge/screenshots/seaborn_chart.png)
-````
 
