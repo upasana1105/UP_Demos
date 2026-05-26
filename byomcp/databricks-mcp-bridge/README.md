@@ -4,7 +4,7 @@ This repository contains the comprehensive onboarding guide and codebase for con
 
 ---
 
-## 📸 Visual Walkthrough & Sample Outputs
+## Sample Outputs
 
 Here is a live demonstration of Gemini Enterprise querying your Databricks SQL warehouse and plotting high-resolution visual analytics completely in the background:
 
