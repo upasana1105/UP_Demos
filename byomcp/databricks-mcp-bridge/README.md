@@ -48,49 +48,7 @@ To successfully set up and authorize using native OIDC OAuth, the following admi
 
 ### Phase 1: Register the Custom OAuth App in Databricks
 
-#### Option 1: Automated via Python SDK (Fastest & Google SSO Friendly)
-If your account uses Google Federation SSO (Gmail) and you have Account Admin access, run the registration script (`create_databricks_oauth.py` in the `scratch` directory) locally on your machine. It triggers browser-based OAuth (User-to-Machine) to complete registration in 5 seconds.
-
-```python
-import sys
-from databricks.sdk import AccountClient
-
-ACCOUNTS_HOST = "https://accounts.cloud.databricks.com"
-ACCOUNT_ID = "YOUR_DATABRICKS_ACCOUNT_ID"  # e.g., 2130c768-f030-4035-85db-736c897785ec
-
-print("=========================================================")
-print("🚀 Registering Databricks OAuth App via Google SSO")
-print("=========================================================")
-
-try:
-    client = AccountClient(
-        host=ACCOUNTS_HOST,
-        account_id=ACCOUNT_ID,
-        auth_type="oauth-u2m"
-    )
-    print("\nVerifying connection & admin permissions...")
-    list(client.custom_app_integration.list())
-except Exception as e:
-    print(f"❌ Authentication failed: {e}")
-    sys.exit(1)
-
-print("Registering Custom OAuth Application 'Gemini Enterprise Databricks MCP'...")
-try:
-    app = client.custom_app_integration.create(
-        name="Gemini Enterprise Databricks MCP",
-        redirect_urls=["https://vertexaisearch.cloud.google.com/oauth-redirect"],
-        scopes=["all-apis", "sql", "offline_access", "openid", "profile"],
-        confidential=True
-    )
-    print("\n🎉 OAuth Application Registered successfully!")
-    print(f"Client ID: {app.client_id}")
-    print(f"Client Secret: {app.client_secret}")
-except Exception as e:
-    print(f"\n❌ Error registering OAuth Application: {e}")
-    sys.exit(1)
-```
-
-#### Option 2: Visual Setup via Account Console
+### via Account Console
 If you prefer using the UI, have an Account Admin execute these steps:
 1. Log in to the **Databricks Accounts Console** at [accounts.cloud.databricks.com](https://accounts.cloud.databricks.com).
 2. Go to **Settings** ➡️ **App integrations** ➡️ **Add integration**.
