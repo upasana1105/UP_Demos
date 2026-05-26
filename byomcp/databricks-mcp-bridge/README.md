@@ -1,4 +1,4 @@
-# Databricks Managed MCP Integration Guide & Proxy Bridge 🚀
+# Databricks Managed MCP Integration Guide & Proxy (as needed) 
 
 This repository contains the comprehensive onboarding guide and codebase for connecting your **Databricks Managed MCP Server** directly to **Gemini Enterprise** (Vertex AI Search and Conversation).
 
