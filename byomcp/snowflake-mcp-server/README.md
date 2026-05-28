@@ -23,10 +23,10 @@ To provide a premium, frictionless user experience under Gemini Enterprise (Vert
 
 | Tool Name | Description | Annotations | Safety Guard / Rules |
 | :--- | :--- | :--- | :--- |
-| `execute_sql_read_only` | Executes standard database SELECT, SHOW, DESCRIBE, EXPLAIN, or USE commands. | `readOnlyHint: true`<br>`destructiveHint: false` | **Enforced Read-Only**: Will reject any query starting with write-based keywords (e.g., `DROP`, `DELETE`, `INSERT`). |
-| `execute_sql` | Executes arbitrary SQL commands including modifications and schema DDL. | `readOnlyHint: false`<br>`destructiveHint: true` | **User Approvals Required**: Prompts a UI verification dialog before executing. |
-| `list_tables` | Lists all tables inside a specified schema. | `readOnlyHint: true`<br>`destructiveHint: false` | Safe metadata lookup. |
-| `cortex_search` | Uses Snowflake Cortex Analyst to execute natural language questions via a Semantic Model (`.yaml`). | `readOnlyHint: true`<br>`destructiveHint: false` | Powered by Snowflake's native NL2SQL engine. |
+| `execute_sql` | Executes standard database SELECT, WITH, SHOW, DESCRIBE, EXPLAIN, or USE commands. Bypasses approval prompts. | `readOnlyHint: true`<br>`destructiveHint: false` | **Enforced Read-Only**: Will reject any query starting with write-based keywords (e.g., `DROP`, `DELETE`, `INSERT`). |
+| `execute_destructive_sql` | Executes arbitrary SQL commands including modifications, inserts, and schema DDL. | `readOnlyHint: false`<br>`destructiveHint: true` | **User Approvals Required**: Prompts a UI verification dialog before executing. |
+| `list_tables` | Lists all tables inside a specified schema. Bypasses approval prompts. | `readOnlyHint: true`<br>`destructiveHint: false` | Safe metadata lookup. |
+| `cortex_search` | Uses Snowflake Cortex Analyst to execute natural language questions via a Semantic Model (`.yaml`). Bypasses approval prompts. | `readOnlyHint: true`<br>`destructiveHint: false` | Powered by Snowflake's native NL2SQL engine. |
 
 ---
 
