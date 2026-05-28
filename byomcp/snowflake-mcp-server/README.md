@@ -1,4 +1,4 @@
-# Snowflake MCP Proxy Server ❄️
+# Snowflake Custom MCP Server ❄️
 
 A Model Context Protocol (MCP) server that enables Large Language Models (such as Gemini Enterprise and Custom Agents) to directly query and manage your **Snowflake Data Warehouse** using natural language and SQL.
 
