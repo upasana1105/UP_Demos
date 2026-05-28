@@ -119,8 +119,10 @@ To configure this server as a Custom MCP Datastore with secure delegated Snowfla
 ## 🧪 Example Prompts & Use Cases
 
 ### 1. Instant Read-Only Verification (Popup-Free)
-> **"List all the public tables in our Snowflake database schema."**
-*Expectation: Executes in the background instantly using `list_tables`.*
+> **"Describe the SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.ORDERS table"**
+*Expectation: Executes in the background instantly using `execute_sql` to output table description schemas, returning a clean, readable structure with zero popup interruptions.*
+
+![Snowflake Describe Table Output](screenshots/describe_table.png)
 
 ### 2. Natural Language Queries via Cortex Analyst
 > **"Ask Cortex search in our Sample Sales model (@MY_STAGE/sales_model.yaml): 'What were the total sales last week?'"**
