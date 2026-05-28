@@ -89,29 +89,52 @@ app.post("/mcp", async (req, res) => {
                 tools: [
                     {
                         name: "execute_sql",
-                        description: "Execute a standard SQL query against Snowflake",
+                        description: "Execute an arbitrary SQL command or write-based statement (INSERT, UPDATE, DELETE, DROP, ALTER) against Snowflake. This is marked destructive and will require user confirmation.",
                         inputSchema: {
                             type: "object",
                             properties: {
                                 query: { type: "string", description: "The SQL query to execute" }
                             },
                             required: ["query"]
+                        },
+                        annotations: {
+                            readOnlyHint: false,
+                            destructiveHint: true
+                        }
+                    },
+                    {
+                        name: "execute_sql_read_only",
+                        description: "Execute a standard read-only SQL query against Snowflake. Use this ONLY for SELECT, SHOW, DESCRIBE, EXPLAIN, and USE statements. Bypasses approval prompts.",
+                        inputSchema: {
+                            type: "object",
+                            properties: {
+                                query: { type: "string", description: "The read-only SQL query to execute" }
+                            },
+                            required: ["query"]
+                        },
+                        annotations: {
+                            readOnlyHint: true,
+                            destructiveHint: false
                         }
                     },
                     {
                         name: "list_tables",
-                        description: "List tables in a specific database schema",
+                        description: "List tables in a specific database schema. Bypasses approval prompts.",
                         inputSchema: {
                             type: "object",
                             properties: {
                                 database: { type: "string", description: "The database name (optional, defaults to session database)" },
                                 schema: { type: "string", description: "The schema name (optional, defaults to public)" }
                             }
+                        },
+                        annotations: {
+                            readOnlyHint: true,
+                            destructiveHint: false
                         }
                     },
                     {
                         name: "cortex_search",
-                        description: "Use Snowflake Cortex Analyst to query data using natural language (requires a semantic model yaml file)",
+                        description: "Use Snowflake Cortex Analyst to query data using natural language. Bypasses approval prompts.",
                         inputSchema: {
                             type: "object",
                             properties: {
@@ -119,6 +142,10 @@ app.post("/mcp", async (req, res) => {
                                 semantic_model_file: { type: "string", description: "Path to your uploaded YAML model file in a Snowflake stage (e.g. @MY_STAGE/sales_model.yaml)" }
                             },
                             required: ["question", "semantic_model_file"]
+                        },
+                        annotations: {
+                            readOnlyHint: true,
+                            destructiveHint: false
                         }
                     }
                 ]
@@ -132,6 +159,26 @@ app.post("/mcp", async (req, res) => {
 
         try {
             if (name === "execute_sql") {
+                const rows = await executeQuery(connection, args.query);
+                return res.json({
+                    jsonrpc: "2.0",
+                    id: req.body.id || 1,
+                    result: {
+                        content: [{ type: "text", text: JSON.stringify(rows, null, 2) }]
+                    }
+                });
+            }
+            if (name === "execute_sql_read_only") {
+                const queryTrimmed = args.query.trim().toLowerCase();
+                const isReadOnly = queryTrimmed.startsWith("select") || 
+                                   queryTrimmed.startsWith("show") || 
+                                   queryTrimmed.startsWith("describe") || 
+                                   queryTrimmed.startsWith("explain") || 
+                                   queryTrimmed.startsWith("use") ||
+                                   queryTrimmed.startsWith("with");
+                if (!isReadOnly) {
+                    throw new Error("Only read-only queries (SELECT, WITH, SHOW, DESCRIBE, EXPLAIN, USE) are allowed via execute_sql_read_only.");
+                }
                 const rows = await executeQuery(connection, args.query);
                 return res.json({
                     jsonrpc: "2.0",
