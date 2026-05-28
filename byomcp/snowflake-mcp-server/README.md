@@ -38,8 +38,10 @@ The server is configured using environment variables. Create a `.env` file in th
 | :--- | :--- | :--- |
 | `PORT` | The port the Express HTTP server listens on. | `8080` |
 | `SNOWFLAKE_ACCOUNT` | Your Snowflake Account Identifier. | `dikgrbu-tv54598` |
-| `SNOWFLAKE_USER` | Username for authentication. | `upasanapati` |
-| `SNOWFLAKE_PASSWORD` | Password for the username. | `********` |
+| `SNOWFLAKE_USER` | Username for service account authentication. | `upasanapati` |
+| `SNOWFLAKE_PASSWORD` | Password for the service account username. | `********` |
+| `SNOWFLAKE_CLIENT_ID` | Your Custom OAuth Application Client ID. | `your_snowflake_client_id` |
+| `SNOWFLAKE_CLIENT_SECRET` | Your Custom OAuth Application Client Secret. | `your_snowflake_client_secret` |
 | `SNOWFLAKE_WAREHOUSE` | The virtual warehouse to compute queries. | `COMPUTE_WH` |
 | `SNOWFLAKE_DATABASE` | Default active database. | `SNOWFLAKE_SAMPLE_DATA` |
 | `SNOWFLAKE_SCHEMA` | Default active schema. | `PUBLIC` |
@@ -89,7 +91,7 @@ chmod +x deploy.sh
 
 ## 🔌 Registering with Gemini Enterprise
 
-To configure this server as a Custom MCP Datastore:
+To configure this server as a Custom MCP Datastore with secure delegated Snowflake OAuth:
 
 1. Open your **Vertex AI Search and Conversation** Console.
 2. Select **Data stores** ➡️ **Create data store** ➡️ **Custom MCP Server**.
@@ -100,11 +102,12 @@ To configure this server as a Custom MCP Datastore:
 | **MCP Server URL \*** | `https://<YOUR_CLOUD_RUN_URL>/mcp` |
 | **Authorization URL \*** | `https://<YOUR_CLOUD_RUN_URL>/auth` |
 | **Token URL \*** | `https://<YOUR_CLOUD_RUN_URL>/token` |
-| **Client ID \*** | `mock_client` |
-| **Client Secret \*** | `mock_secret` |
-| **Scopes** | `https://www.googleapis.com/auth/snowflake` |
+| **Client ID \*** | *Enter your real **Snowflake Custom OAuth Client ID*** |
+| **Client Secret \*** | *Enter your real **Snowflake Custom OAuth Client Secret*** |
+| **Scopes** | *The scopes authorized under your Snowflake custom integration (e.g., `session:role-any`)* |
 
-4. Save, attach it to your chat interface, and verify connection.
+4. Click **Login** to start the delegated OAuth flow. You will be securely redirected to your Snowflake login page to authenticate.
+5. Once authenticated, save the connection and attach the custom MCP data store to your chat interface.
 
 ---
 
