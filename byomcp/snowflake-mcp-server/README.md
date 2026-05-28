@@ -106,8 +106,13 @@ To configure this server as a Custom MCP Datastore with secure delegated Snowfla
 | **Client Secret \*** | *Enter your real **Snowflake Custom OAuth Client Secret*** |
 | **Scopes** | *The scopes authorized under your Snowflake custom integration (e.g., `session:role-any`)* |
 
-4. Click **Login** to start the delegated OAuth flow. You will be securely redirected to your Snowflake login page to authenticate.
-5. Once authenticated, save the connection and attach the custom MCP data store to your chat interface.
+4. Click **Login** to start the delegated OAuth flow. You will be securely redirected to your Snowflake login page to authenticate:
+   
+   ![Snowflake OAuth Sign-in Dialog](screenshots/snowflake_login.png)
+
+5. Once authenticated, save the connection and enable/authorize it inside the **Gemini Enterprise** chat connectors panel:
+
+   ![Enable Snowflake Connector Panel](screenshots/connector_panel.png)
 
 ---
 
