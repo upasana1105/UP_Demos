@@ -1,5 +1,4 @@
 import os
-import re
 try:
     import importlib.metadata as metadata
 except ImportError:
@@ -92,7 +91,7 @@ async def adaptive_translate_tool(
                     """
                     
                     gen_response = client_gen.models.generate_content(
-                        model="publishers/google/models/gemini-3.1-flash-image",
+                        model="gemini-2.5-flash-image",
                         contents=[
                             types.Part.from_bytes(data=img_bytes, mime_type="image/png"),
                             types.Part.from_text(text=generator_prompt)
@@ -110,14 +109,6 @@ async def adaptive_translate_tool(
                             
                     if new_img_bytes:
                         img = Image.open(io.BytesIO(new_img_bytes))
-                        if img.mode in ("RGBA", "LA") or (img.mode == "P" and "transparency" in img.info):
-                            bg = Image.new("RGB", img.size, (255, 255, 255))
-                            if img.mode == "P":
-                                img = img.convert("RGBA")
-                            bg.paste(img, mask=img.split()[3])
-                            img = bg
-                        else:
-                            img = img.convert("RGB")
                         img_pdf_bytes = io.BytesIO()
                         img.save(img_pdf_bytes, format="PDF")
                         img_doc = fitz.open("pdf", img_pdf_bytes.getvalue())
@@ -178,52 +169,12 @@ async def adaptive_translate_tool(
             except Exception as e:
                 print(f"Image translation failed: {e}")
                 
-            # Repair microscopic typography (Option 1: Automated PyMuPDF Redrawing & Wrapping)
+            # Fix table layouts using Gemini coordinate calculator
             try:
-                print(f"Repairing microscopic typography in {output_file_path}...")
-                await repair_pdf_typography(output_file_path)
+                print(f"Fixing tables in {output_file_path}...")
+                await fix_tables_in_pdf(file_path, output_file_path, target_language_code)
             except Exception as e:
-                print(f"Typography repair failed: {e}")
-                
-            # Fix table layouts using Gemini coordinate calculator (Bypassed to natively preserve yellow/blue grids and layouts)
-            # try:
-            #     print(f"Fixing tables in {output_file_path}...")
-            #     await fix_tables_in_pdf(file_path, output_file_path, target_language_code)
-            # except Exception as e:
-            #     print(f"Table fix failed: {e}")
-                
-            # Embed native CJK font subset if target is Japanese, Chinese, or Korean
-            if target_language_code in ["ja", "zh", "ko"]:
-                try:
-                    print(f"Embedding native CJK font subset into {output_file_path}...")
-                    doc_cjk = fitz.open(output_file_path)
-                    cjk_paths = [
-                        "/System/Library/Fonts/STHeiti Light.ttc",
-                        "/System/Library/Fonts/Supplemental/AppleGothic.ttf",
-                        "/usr/share/fonts/truetype/droid/DroidSansFallback.ttf",
-                        "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
-                        "C:\\Windows\\Fonts\\msgothic.ttc"
-                    ]
-                    cjk_font_path = None
-                    for path in cjk_paths:
-                        if os.path.exists(path):
-                            cjk_font_path = path
-                            break
-                            
-                    if cjk_font_path:
-                        for page in doc_cjk:
-                            page.insert_font(fontname="cjk", fontfile=cjk_font_path)
-                        temp_cjk_path = output_file_path + ".cjk.pdf"
-                        doc_cjk.save(temp_cjk_path, incremental=False)
-                        doc_cjk.close()
-                        import shutil
-                        shutil.move(temp_cjk_path, output_file_path)
-                        print("Native CJK font subset embedded successfully!")
-                    else:
-                        doc_cjk.close()
-                        print("No CJK system font found to embed.")
-                except Exception as cjk_err:
-                    print(f"CJK font embedding failed: {cjk_err}")
+                print(f"Table fix failed: {e}")
         elif ext == ".docx":
             try:
                 print(f"Processing images in DOCX {output_file_path}...")
@@ -261,7 +212,7 @@ async def localize_images_in_docx(original_path: str, translated_path: str, targ
         try:
             def sync_call():
                 return client_obj.models.generate_content(
-                    model="publishers/google/models/gemini-3.1-flash-image",
+                    model="gemini-2.5-flash-image",
                     contents=[
                         types.Part.from_bytes(data=bytes_data, mime_type=mime_type),
                         types.Part.from_text(text=prompt_text)
@@ -330,7 +281,7 @@ async def localize_images_in_pptx(original_path: str, translated_path: str, targ
         try:
             def sync_call():
                 return client_obj.models.generate_content(
-                    model="publishers/google/models/gemini-3.1-flash-image",
+                    model="gemini-2.5-flash-image",
                     contents=[
                         types.Part.from_bytes(data=bytes_data, mime_type=mime_type),
                         types.Part.from_text(text=prompt_text)
@@ -409,7 +360,7 @@ async def localize_images_in_pdf(original_pdf_path: str, translated_pdf_path: st
         try:
             def sync_call():
                 return client_obj.models.generate_content(
-                    model="publishers/google/models/gemini-3.1-flash-image",
+                    model="gemini-2.5-flash-image",
                     contents=[
                         types.Part.from_bytes(data=bytes_data, mime_type=mime_type),
                         types.Part.from_text(text=prompt_text)
@@ -426,7 +377,7 @@ async def localize_images_in_pdf(original_pdf_path: str, translated_pdf_path: st
     for page_num in range(len(doc_orig)):
         page_orig = doc_orig[page_num]
         images = page_orig.get_images(full=True)
-        image_info = page_orig.get_image_info(xrefs=True)
+        image_info = page_orig.get_image_info(hashes=True)
         
         print(f"Scanning page {page_num} for tasks...")
         page_tasks_added = 0
@@ -441,7 +392,7 @@ async def localize_images_in_pdf(original_pdf_path: str, translated_pdf_path: st
                 
             matching_info = None
             for info in image_info:
-                if info.get('xref') == xref:
+                if info['width'] == width and info['height'] == height:
                     matching_info = info
                     break
                     
@@ -633,7 +584,7 @@ async def fix_tables_in_pdf(original_pdf_path: str, translated_pdf_path: str, ta
                     
                     def sync_call_detect():
                         return client.models.generate_content(
-                            model="publishers/google/models/gemini-3.5-flash",
+                            model="gemini-2.5-flash",
                             contents=[
                                 types.Part.from_bytes(data=img_bytes, mime_type="image/png"),
                                 types.Part.from_text(text=detect_prompt)
@@ -686,7 +637,7 @@ async def fix_tables_in_pdf(original_pdf_path: str, translated_pdf_path: str, ta
                 
                 def sync_call():
                     return client.models.generate_content(
-                        model="publishers/google/models/gemini-3.5-flash",
+                        model="gemini-2.5-flash",
                         contents=[
                             types.Part.from_bytes(data=img_bytes, mime_type="image/png"),
                             types.Part.from_text(text=prompt)
@@ -824,200 +775,3 @@ def save_dynamic_glossary(terms: list, filename: str = "dynamic_glossary.csv") -
         return {"status": "success", "file_path": os.path.abspath(file_path)}
     except Exception as e:
         return {"status": "error", "message": str(e)}
-
-def merge_adjacent_blocks(blocks, page_width):
-    """Merges blocks in the same column that are vertically very close to each other,
-    to reconstruct full paragraphs before repairing them.
-    """
-    if not blocks:
-        return []
-        
-    # Filter to keep text blocks with valid bbox
-    text_blocks = []
-    for b in blocks:
-        if "lines" in b:
-            text = "".join(["".join([s["text"] for s in l["spans"]]) for l in b["lines"]]).strip()
-            if text:
-                text_blocks.append({
-                    "bbox": b["bbox"],
-                    "text": text,
-                    "lines": b["lines"]
-                })
-                
-    if not text_blocks:
-        return []
-        
-    merged = []
-    used = set()
-    
-    # Sort blocks by column (rounded to nearest 10 points), then by y0
-    text_blocks.sort(key=lambda x: (round(x["bbox"][0] / 10.0) * 10, x["bbox"][1]))
-    
-    for i in range(len(text_blocks)):
-        if i in used:
-            continue
-            
-        curr = text_blocks[i]
-        used.add(i)
-        
-        curr_bbox = list(curr["bbox"])
-        curr_text = curr["text"]
-        curr_lines = list(curr["lines"])
-        
-        # Look ahead to find vertically adjacent blocks in the same column
-        for j in range(i + 1, len(text_blocks)):
-            if j in used:
-                continue
-                
-            next_blk = text_blocks[j]
-            
-            # Same column check (x0 within 12 points)
-            same_column = abs(next_blk["bbox"][0] - curr_bbox[0]) < 12
-            
-            if same_column:
-                # Vertical gap check (gap between curr_y1 and next_y0 is less than 18 points)
-                vertical_gap = next_blk["bbox"][1] - curr_bbox[3]
-                
-                # Also check if they overlap slightly or sit on the same vertical flow
-                if -5 <= vertical_gap < 18:
-                    curr_bbox[0] = min(curr_bbox[0], next_blk["bbox"][0])
-                    curr_bbox[1] = min(curr_bbox[1], next_blk["bbox"][1])
-                    curr_bbox[2] = max(curr_bbox[2], next_blk["bbox"][2])
-                    curr_bbox[3] = max(curr_bbox[3], next_blk["bbox"][3])
-                    
-                    curr_text = curr_text.strip() + " " + next_blk["text"].strip()
-                    curr_lines.extend(next_blk["lines"])
-                    used.add(j)
-                    
-        merged.append({
-            "bbox": tuple(curr_bbox),
-            "text": re.sub(r'\s+', ' ', curr_text).strip(),
-            "lines": curr_lines
-        })
-        
-    return merged
-
-async def repair_pdf_typography(pdf_path: str):
-    """Scans translated PDF for microscopic fonts and dynamically redraws them using
-    intelligent column-width calculations and PyMuPDF's native text wrapping engine.
-    """
-    import fitz
-    import re
-    import os
-    
-    if not os.path.exists(pdf_path):
-        print(f"Typography Repair Warning: File {pdf_path} not found.")
-        return
-        
-    doc = fitz.open(pdf_path)
-    print(f"Scanning {pdf_path} for microscopic typography repairs...")
-    
-    for page_num in range(len(doc)):
-        page = doc[page_num]
-        raw_blocks = page.get_text("dict")["blocks"]
-        
-        # Step 1: Merge split lines/paragraphs in the same column
-        blocks = merge_adjacent_blocks(raw_blocks, page.rect.width)
-        
-        all_text_rects = [fitz.Rect(b["bbox"]) for b in blocks]
-        page_repairs = []
-        
-        # Step 2: Identify microscopic blocks
-        for b_idx, b in enumerate(blocks):
-            text = b["text"]
-            orig_rect = fitz.Rect(b["bbox"])
-            x0, y0, x1, y1 = orig_rect.x0, orig_rect.y0, orig_rect.x1, orig_rect.y1
-            
-            is_microscopic = False
-            min_span_size = 99.0
-            sample_span = None
-            
-            for l in b["lines"]:
-                for s in l["spans"]:
-                    if s["size"] < min_span_size:
-                        min_span_size = s["size"]
-                        sample_span = s
-                        
-            if min_span_size < 6.5 and sample_span and len(text) >= 2 and re.search(r'[a-zA-Z\u00C0-\u00FF\u3040-\u309f\u30a0-\u30ff\uff00-\uffef\u4e00-\u9faf]', text):
-                is_microscopic = True
-                
-            if is_microscopic and sample_span:
-                # Find start of the next column to the right
-                min_right_x0 = page.rect.width - 40
-                for rect in all_text_rects:
-                    if rect.x0 > x0 + 15:
-                        vertical_overlap = max(0, min(y1, rect.y1) - max(y0, rect.y0))
-                        if vertical_overlap > 0 or abs(rect.y0 - y0) < 30:
-                            if rect.x0 < min_right_x0:
-                                min_right_x0 = rect.x0
-                
-                safe_x1 = min_right_x0 - 8
-                if safe_x1 <= x0 + 15:
-                    safe_x1 = x0 + 100
-                    
-                # Calculate dynamic required height based on text length
-                readable_size = 8.5
-                line_height = readable_size * 1.25
-                box_width = safe_x1 - x0
-                
-                chars_per_line = max(10, int(box_width / 4.2))
-                estimated_lines = max(1, -(-len(text) // chars_per_line))
-                
-                required_height = (estimated_lines + 0.5) * line_height
-                new_height = max(y1 - y0, required_height)
-                
-                expanded_rect = fitz.Rect(x0 - 1, y0 - 1, safe_x1, y0 + new_height)
-                
-                ts_font = sample_span["font"]
-                ts_font_lower = ts_font.lower()
-                if "bold" in ts_font_lower or "black" in ts_font_lower or "heavy" in ts_font_lower or "medium" in ts_font_lower:
-                    target_font = "Helvetica-Bold"
-                else:
-                    target_font = "Helvetica"
-                    
-                color_val = sample_span["color"]
-                r = (color_val >> 16 & 255) / 255.0
-                g = (color_val >> 8 & 255) / 255.0
-                b_val = (color_val & 255) / 255.0
-                text_color = (r, g, b_val)
-                
-                # Sample background color dynamically
-                clip_rect = fitz.Rect(x0 - 2, y0 - 2, x0, y0)
-                pix = page.get_pixmap(clip=clip_rect, dpi=72)
-                rgb_pixel = pix.pixel(0, 0)
-                bg_color = (rgb_pixel[0]/255.0, rgb_pixel[1]/255.0, rgb_pixel[2]/255.0)
-                
-                page_repairs.append({
-                    "orig_rect": orig_rect,
-                    "expanded_rect": expanded_rect,
-                    "text": text,
-                    "font_size": readable_size,
-                    "font_name": target_font,
-                    "text_color": text_color,
-                    "bg_color": bg_color
-                })
-                
-        # Step 3: Apply repairs
-        if page_repairs:
-            print(f"  Page {page_num} | Applying {len(page_repairs)} typography repairs...")
-            for repair in page_repairs:
-                erase_rect = fitz.Rect(
-                    repair["orig_rect"].x0 - 2,
-                    repair["orig_rect"].y0 - 2,
-                    repair["orig_rect"].x1 + 2,
-                    repair["orig_rect"].y1 + 2
-                )
-                page.draw_rect(erase_rect, color=repair["bg_color"], fill=repair["bg_color"])
-                
-                page.insert_textbox(
-                    repair["expanded_rect"],
-                    repair["text"],
-                    fontsize=repair["font_size"],
-                    fontname=repair["font_name"],
-                    color=repair["text_color"]
-                )
-                
-    doc.save(pdf_path, incremental=True, encryption=fitz.PDF_ENCRYPT_KEEP)
-    doc.close()
-    print(f"🎉 Typography repairs completed successfully on {pdf_path}")
-
