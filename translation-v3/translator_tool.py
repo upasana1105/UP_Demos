@@ -414,6 +414,7 @@ async def localize_images_in_pdf(original_pdf_path: str, translated_pdf_path: st
         
         print(f"Scanning page {page_num} for tasks...")
         page_tasks_added = 0
+        used_bboxes = set()  # Track already matched bboxes on this page to resolve collisions natively
         
         for img in images:
             xref = img[0]
@@ -424,9 +425,14 @@ async def localize_images_in_pdf(original_pdf_path: str, translated_pdf_path: st
                 continue
                 
             matching_info = None
+            # Original width/height matching, but tracking already allocated bboxes to resolve collisions in relative order
             for info in image_info:
+                bbox_tuple = tuple(info['bbox'])
+                if bbox_tuple in used_bboxes:
+                    continue
                 if info['width'] == width and info['height'] == height:
                     matching_info = info
+                    used_bboxes.add(bbox_tuple)
                     break
                     
             if not matching_info:
@@ -443,10 +449,9 @@ async def localize_images_in_pdf(original_pdf_path: str, translated_pdf_path: st
                 continue
                 
             generator_prompt = f"""
-            Translate ALL text within this image into {target_lang}.
-            It is CRITICAL that every single word, label, title, and legend item is translated to {target_lang}.
-            Do NOT leave any text in English.
-            Generate a new image that is identical in style, layout, colors, and data presentation as the input image, but with the fully translated text.
+            Analyze this image for any English text (such as labels, titles, legends, or words).
+            If the image contains NO English text at all (or only contains numbers, symbols, or decorative graphics), you MUST respond with exactly the text: NO_TEXT
+            Otherwise, if it contains English text, translate all text to {target_lang} and generate a new image that is identical in style, layout, colors, and data presentation as the input image, but with the fully translated text.
             The output image MUST be generated to match or scale nicely to {width}x{height} pixels.
             Ensure high visual fidelity and crisp text.
             """
@@ -472,32 +477,96 @@ async def localize_images_in_pdf(original_pdf_path: str, translated_pdf_path: st
             has_tables = False
             
         if page_tasks_added == 0 and not has_tables:
-            print(f"No large images or tables on page {page_num}, adding fallback task.")
+            print(f"No large images or tables on page {page_num}. Checking for vector drawings...")
             try:
-                width = page_orig.rect.width
-                height = page_orig.rect.height
-                rect = fitz.Rect(0, height / 2, width, height)
-                pix = page_orig.get_pixmap(clip=rect, dpi=300)
-                img_bytes = pix.tobytes("png")
+                drawings = page_orig.get_drawings()
+                page_width = page_orig.rect.width
+                page_height = page_orig.rect.height
                 
-                generator_prompt = f"""
-                Translate ALL text within this chart image into {target_lang}.
-                It is CRITICAL that every single word, label, title, and legend item is translated to {target_lang}.
-                Do NOT leave any text in English.
-                Generate a new image that is identical in style, layout, colors, and data presentation as the input image, but with the fully translated text.
-                Ensure high visual fidelity and crisp text.
-                """
+                chart_drawings = []
+                for d in drawings:
+                    d_rect = fitz.Rect(d["rect"])
+                    # Ignore decorative page-sized background blocks
+                    if d_rect.width > 0.9 * page_width and d_rect.height > 0.9 * page_height:
+                        continue
+                    chart_drawings.append(d_rect)
                 
-                tasks.append({
-                    "type": "fallback",
-                    "page_num": page_num,
-                    "rect": rect,
-                    "bytes": img_bytes,
-                    "mime": "image/png",
-                    "prompt": generator_prompt
-                })
+                if chart_drawings:
+                    print(f"Found {len(chart_drawings)} vector drawings. Computing intelligent targeted bounding box...")
+                    # Start with drawings boundary
+                    chart_rect = chart_drawings[0]
+                    for r in chart_drawings[1:]:
+                        chart_rect |= r
+                    
+                    # Dynamically find text blocks on this page that are likely chart labels/legends
+                    try:
+                        blocks = page_orig.get_text("blocks")
+                        max_dist = 50.0  # maximum points away from drawings core
+                        
+                        for b in blocks:
+                            b_rect = fitz.Rect(b[:4])
+                            b_text = b[4].strip()
+                            
+                            # Filter out dense body paragraphs or headers based on character length and height
+                            if len(b_text) > 120 or b_rect.height > 40:
+                                continue
+                                
+                            # Calculate horizontal distance
+                            if b_rect.x1 < chart_rect.x0:
+                                dx = chart_rect.x0 - b_rect.x1
+                            elif b_rect.x0 > chart_rect.x1:
+                                dx = b_rect.x0 - chart_rect.x1
+                            else:
+                                dx = 0.0
+                                
+                            # Calculate vertical distance
+                            if b_rect.y1 < chart_rect.y0:
+                                dy = chart_rect.y0 - b_rect.y1
+                            elif b_rect.y0 > chart_rect.y1:
+                                dy = b_rect.y0 - chart_rect.y1
+                            else:
+                                dy = 0.0
+                                
+                            dist = max(dx, dy)
+                            if dist <= max_dist:
+                                chart_rect |= b_rect
+                                print(f"Dynamically included chart label block: '{b_text[:30]}...' with bbox {b_rect}")
+                    except Exception as text_err:
+                        print(f"Failed to dynamically cluster text blocks: {text_err}")
+                    
+                    # Apply uniform 15-point safety padding to prevent edge clipping
+                    x0 = max(0.0, chart_rect.x0 - 15.0)
+                    y0 = max(0.0, chart_rect.y0 - 15.0)
+                    x1 = min(page_width, chart_rect.x1 + 15.0)
+                    y1 = min(page_height, chart_rect.y1 + 15.0)
+                    
+                    rect = fitz.Rect(x0, y0, x1, y1)
+                    print(f"Targeted fallback bounding box for page {page_num}: {rect}")
+                    
+                    pix = page_orig.get_pixmap(clip=rect, dpi=300)
+                    img_bytes = pix.tobytes("png")
+                    
+                    generator_prompt = f"""
+                    Analyze this chart image for any English text (such as labels, titles, legends, or words).
+                    If the image contains NO English text at all (or only contains numbers, symbols, or decorative graphics), you MUST respond with exactly the text: NO_TEXT
+                    Otherwise, if it contains English text, translate all text within this chart image into {target_lang}.
+                    Generate a new image that is identical in style, layout, colors, and data presentation as the input image, but with the fully translated text.
+                    Ensure high visual fidelity and crisp text.
+                    """
+                    
+                    tasks.append({
+                        "type": "fallback",
+                        "page_num": page_num,
+                        "rect": rect,
+                        "bytes": img_bytes,
+                        "mime": "image/png",
+                        "prompt": generator_prompt
+                    })
+                    print(f"Added targeted fallback task for page {page_num} with rect {rect}")
+                else:
+                    print(f"No charts/drawings detected on page {page_num}. Keeping page text-only.")
             except Exception as e:
-                print(f"Failed to create fallback task for page {page_num}: {e}")
+                print(f"Failed to create targeted fallback task for page {page_num}: {e}")
 
     # Step 2: Execute all tasks in parallel
     async def run_tasks():
@@ -515,6 +584,20 @@ async def localize_images_in_pdf(original_pdf_path: str, translated_pdf_path: st
         task = tasks[i]
         if not result:
             print(f"Skipping failed result for task {i}")
+            continue
+            
+        # Check if Gemini requested to skip replacement due to lack of text
+        is_no_text = False
+        try:
+            for part in result.candidates[0].content.parts:
+                if part.text and "NO_TEXT" in part.text:
+                    is_no_text = True
+                    break
+        except:
+            pass
+            
+        if is_no_text:
+            print(f"Task {i} on page {task['page_num']} has no translatable English text. Skipping replacement to preserve original graphics.")
             continue
             
         new_img_bytes = None
