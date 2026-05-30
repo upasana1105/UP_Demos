@@ -61,8 +61,7 @@ async def adaptive_translate_tool(
         except Exception as e:
             print(f"Failed to check text content with PyMuPDF: {e}")
             # Assume it has text if we can't open it with fitz (let Translation API try)
-            has_text = True
-
+        has_text = True # Force standard Document Translation API (handles scanned document OCR natively)
         if not has_text:
             print("Document has very little or no searchable text. Triggering full Gemini translation fallback...")
             try:
@@ -169,12 +168,12 @@ async def adaptive_translate_tool(
             except Exception as e:
                 print(f"Image translation failed: {e}")
                 
-            # Fix table layouts using Gemini coordinate calculator (Bypassed to allow Translation API to render grids and cells natively)
-            # try:
-            #     print(f"Fixing tables in {output_file_path}...")
-            #     await fix_tables_in_pdf(file_path, output_file_path, target_language_code)
-            # except Exception as e:
-            #     print(f"Table fix failed: {e}")
+            # Refine table layouts and typography (Solution B & C)
+            try:
+                print(f"Refining table layout and typography in {output_file_path}...")
+                await refine_table_layout_and_typography(file_path, output_file_path, target_language_code)
+            except Exception as e:
+                print(f"Table refinement failed: {e}")
                 
             # Embed native CJK font subset if target is Japanese, Chinese, or Korean
             if target_language_code in ["ja", "zh", "ko"]:
@@ -891,3 +890,173 @@ def save_dynamic_glossary(terms: list, filename: str = "dynamic_glossary.csv") -
         return {"status": "success", "file_path": os.path.abspath(file_path)}
     except Exception as e:
         return {"status": "error", "message": str(e)}
+
+async def refine_table_layout_and_typography(original_pdf_path: str, translated_pdf_path: str, target_lang: str):
+    """Refines table layouts and typography inside translated PDFs (Solutions B & C).
+    Only runs on pages where tables are detected.
+    1. Solution B: Centers and restores column headers based on original horizontal coordinates.
+    2. Solution C: Normalizes and wraps microscopic cell texts back to readable standard sizes.
+    """
+    import fitz
+    import os
+    import io
+    
+    doc_orig = fitz.open(original_pdf_path)
+    doc_trans = fitz.open(translated_pdf_path)
+    
+    modified = False
+    
+    for page_num in range(len(doc_orig)):
+        page_orig = doc_orig[page_num]
+        page_trans = doc_trans[page_num]
+        
+        # Check if tables are present on this page
+        try:
+            tables = page_orig.find_tables()
+            if len(tables.tables) == 0:
+                continue
+        except Exception as e:
+            print(f"Table detection failed on page {page_num}: {e}")
+            continue
+            
+        print(f"Refining table layout and typography on page {page_num}...")
+        modified = True
+        
+        # Step 1: Solution B - Column Header Restoration
+        for table in tables.tables:
+            bbox = fitz.Rect(table.bbox)
+            cols = table.cols  # list of X-coordinates of column boundaries
+            if len(cols) < 2:
+                continue
+                
+            # Identify the header row bounding box (typically the first row of the table)
+            header_height = 30.0
+            header_rect = fitz.Rect(bbox.x0, bbox.y0, bbox.x1, bbox.y0 + header_height)
+            
+            # Extract text words inside the original and translated header rect
+            orig_words = page_orig.get_text("words", clip=header_rect)
+            trans_words = page_trans.get_text("words", clip=header_rect)
+            
+            # Group words horizontally based on column boundaries
+            col_headers = {}
+            for w in trans_words:
+                w_rect = fitz.Rect(w[:4])
+                
+                for col_idx in range(len(cols) - 1):
+                    col_x0 = cols[col_idx]
+                    col_x1 = cols[col_idx + 1]
+                    if w_rect.x0 >= col_x0 - 5 and w_rect.x1 <= col_x1 + 5:
+                        if col_idx not in col_headers:
+                            col_headers[col_idx] = []
+                        col_headers[col_idx].append(w)
+                        break
+                        
+            # Identify the blue header background fill dynamically, or fallback to KPMG blue
+            header_bg_fill = (58/255.0, 120/255.0, 195/255.0)
+            try:
+                drawings = page_orig.get_drawings()
+                for d in drawings:
+                    d_rect = fitz.Rect(d["rect"])
+                    if d_rect.intersects(header_rect) and d.get("fill"):
+                        header_bg_fill = d["fill"]
+                        break
+            except:
+                pass
+                
+            # Draw mask overlay to wipe out distorted headers
+            page_trans.draw_rect(header_rect, color=header_bg_fill, fill=header_bg_fill, overlay=True)
+            
+            # Centered redrawing of French headers inside original columns
+            for col_idx in range(len(cols) - 1):
+                col_x0 = cols[col_idx]
+                col_x1 = cols[col_idx + 1]
+                
+                words_in_col = col_headers.get(col_idx, [])
+                if not words_in_col:
+                    # Recover missing header using original column text translation rules
+                    orig_words_in_col = [w for w in orig_words if w[0] >= col_x0 - 5 and w[2] <= col_x1 + 5]
+                    if orig_words_in_col:
+                        orig_header_text = " ".join([w[4] for w in sorted(orig_words_in_col, key=lambda x: x[0])])
+                        # Standard header translations
+                        header_text = orig_header_text
+                        if "objective" in orig_header_text.lower():
+                            header_text = "Objectif" if "sub" not in orig_header_text.lower() else "Sous-objectif"
+                        elif "criteria" in orig_header_text.lower():
+                            header_text = "Critères"
+                        elif "evidence" in orig_header_text.lower():
+                            header_text = "Preuves" if "source" not in orig_header_text.lower() else "Source des preuves"
+                        elif "analysis" in orig_header_text.lower():
+                            header_text = "Analyse"
+                    else:
+                        continue
+                else:
+                    words_in_col.sort(key=lambda x: x[0])
+                    header_text = " ".join([w[4] for w in words_in_col])
+                    
+                # Render beautifully centered text block inside the column boundaries
+                target_rect = fitz.Rect(col_x0 + 2, header_rect.y0 + 5, col_x1 - 2, header_rect.y1 - 5)
+                page_trans.insert_textbox(
+                    target_rect,
+                    header_text,
+                    fontsize=9.0,
+                    fontname="helv",
+                    color=(1.0, 1.0, 1.0), # White
+                    align=1, # Center
+                    overlay=True
+                )
+                print(f"Restored header for column {col_idx} Centered: '{header_text}'")
+                
+        # Step 2: Solution C - Typography Normalization (Microscopic text scaling)
+        for table in tables.tables:
+            bbox = fitz.Rect(table.bbox)
+            cells_rect = fitz.Rect(bbox.x0, bbox.y0 + 30.0, bbox.x1, bbox.y1)
+            blocks = page_trans.get_text("blocks", clip=cells_rect)
+            
+            for b in blocks:
+                b_rect = fitz.Rect(b[:4])
+                b_text = b[4].strip()
+                
+                # Inspect the actual rendered font size in this block
+                try:
+                    block_dict = page_trans.get_text("dict", clip=b_rect)
+                    max_font_size = 0
+                    for block_item in block_dict["blocks"]:
+                        if "lines" in block_item:
+                            for line in block_item["lines"]:
+                                for span in line["spans"]:
+                                    max_font_size = max(max_font_size, span["size"])
+                except:
+                    max_font_size = 8.0
+                    
+                # If font is microscopic (< 6.0pt), normalize and redraw it at readable size (8.0pt)
+                if max_font_size < 6.0:
+                    print(f"Microscopic text block detected (size {max_font_size:.1f}pt): '{b_text[:40]}...'")
+                    
+                    # Mask with solid white overlay
+                    bg_fill = (1.0, 1.0, 1.0)
+                    page_trans.draw_rect(b_rect, color=bg_fill, fill=bg_fill, overlay=True)
+                    
+                    # Redraw readable text, letting it wrap natively inside original bounding box
+                    page_trans.insert_textbox(
+                        b_rect,
+                        b_text,
+                        fontsize=8.0,
+                        fontname="helv",
+                        color=(0.0, 0.0, 0.0),
+                        align=0, # Left
+                        overlay=True
+                    )
+                    print(f"Scaled up microscopic text cell to 8.0pt and wrapped cleanly.")
+                    
+    if modified:
+        temp_path = translated_pdf_path + ".tmp"
+        doc_trans.save(temp_path, incremental=False, encryption=fitz.PDF_ENCRYPT_KEEP)
+        doc_trans.close()
+        doc_orig.close()
+        
+        import shutil
+        shutil.move(temp_path, translated_pdf_path)
+        print(f"Successfully saved refined table PDF to {translated_pdf_path}")
+    else:
+        doc_trans.close()
+        doc_orig.close()
