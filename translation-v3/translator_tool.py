@@ -892,23 +892,29 @@ def save_dynamic_glossary(terms: list, filename: str = "dynamic_glossary.csv") -
         return {"status": "error", "message": str(e)}
 
 async def refine_table_layout_and_typography(original_pdf_path: str, translated_pdf_path: str, target_lang: str):
-    """Refines table layouts and typography inside translated PDFs (Solutions B & C).
+    """Refines table layouts and typography inside translated PDFs using Gemini Image-to-Image Translation.
     Only runs on pages where tables are detected.
-    1. Solution B: Centers and restores column headers based on original horizontal coordinates.
-    2. Solution C: Normalizes and wraps microscopic cell texts back to readable standard sizes.
+    1. Converts the entire table page to a high-res image.
+    2. Translates the image using gemini-2.5-flash-image.
+    3. Replaces the original text/vector page in the translated PDF with the fully translated raster image.
     """
     import fitz
     import os
     import io
+    from google import genai
+    from google.genai import types
+    
+    project_id = os.getenv("GOOGLE_CLOUD_PROJECT", "uppdemos")
+    client = genai.Client(vertexai=True, project=project_id, location="global")
     
     doc_orig = fitz.open(original_pdf_path)
     doc_trans = fitz.open(translated_pdf_path)
     
     modified = False
+    pages_to_replace = []
     
     for page_num in range(len(doc_orig)):
         page_orig = doc_orig[page_num]
-        page_trans = doc_trans[page_num]
         
         # Check if tables are present on this page
         try:
@@ -919,160 +925,64 @@ async def refine_table_layout_and_typography(original_pdf_path: str, translated_
             print(f"Table detection failed on page {page_num}: {e}")
             continue
             
-        print(f"Refining table layout and typography on page {page_num}...")
-        modified = True
+        print(f"Page {page_num}: Table detected! Running image translation...")
+        pages_to_replace.append(page_num)
         
-        # Step 1: Solution B - Column Header Restoration
-        for table in tables.tables:
-            bbox = fitz.Rect(table.bbox)
-            try:
-                cols = [cell[0] for cell in table.rows[0].cells] + [table.rows[0].cells[-1][2]]
-            except Exception as ex:
-                print(f"Table boundary extraction failed: {ex}")
-                continue
-            if len(cols) < 2:
-                continue
-                
-            # Step 1: Define header translations
-            HEADER_TRANSLATIONS = {
-                "fr": {
-                    "objective": "Objectif",
-                    "sub-objective": "Sous-objectif",
-                    "criteria": "Critères",
-                    "evidence": "Preuves",
-                    "source of evidence": "Source des preuves",
-                    "audit analysis/ results of audit": "Analyse de l'audit / Résultats de l'audit",
-                },
-                "de": {
-                    "objective": "Zielsetzung",
-                    "sub-objective": "Unterziel",
-                    "criteria": "Kriterien",
-                    "evidence": "Nachweise",
-                    "source of evidence": "Nachweisquelle",
-                    "audit analysis/ results of audit": "Prüfungsanalyse / Ergebnisse der Prüfung",
-                },
-                "ja": {
-                    "objective": "目的",
-                    "sub-objective": "サブ目的",
-                    "criteria": "基準",
-                    "evidence": "証拠",
-                    "source of evidence": "証拠の出所",
-                    "audit analysis/ results of audit": "監査分析・監査結果",
-                }
-            }
-
-            def translate_header(orig_text: str, lang: str) -> str:
-                norm = orig_text.lower().strip()
-                norm = " ".join(norm.split())
-                norm = norm.replace("­", "") # remove soft hyphen
-                
-                lang_dict = HEADER_TRANSLATIONS.get(lang.lower()[:2], {})
-                
-                if "sub-objective" in norm or "sub objective" in norm:
-                    return lang_dict.get("sub-objective", orig_text)
-                elif "objective" in norm:
-                    return lang_dict.get("objective", orig_text)
-                elif "criteria" in norm:
-                    return lang_dict.get("criteria", orig_text)
-                elif "source of" in norm or "source de" in norm:
-                    return lang_dict.get("source of evidence", orig_text)
-                elif "evidence" in norm:
-                    return lang_dict.get("evidence", orig_text)
-                elif "audit analysis" in norm or "results of audit" in norm or "analyse" in norm:
-                    return lang_dict.get("audit analysis/ results of audit", orig_text)
-                
-                return orig_text
-
-            # Identify the header row bounding box dynamically from table header
-            header_rect = fitz.Rect(table.header.bbox)
+    for page_num in pages_to_replace:
+        page_orig = doc_orig[page_num]
+        width = page_orig.rect.width
+        height = page_orig.rect.height
+        
+        # Render high-resolution image of the original page
+        pix = page_orig.get_pixmap(dpi=300)
+        img_bytes = pix.tobytes("png")
+        
+        # Query gemini-2.5-flash-image for localized translation
+        prompt = f"""
+        Translate ALL English text within this table image into the target language: '{target_lang}'.
+        It is CRITICAL that every single word, label, title, header, and number is translated accurately.
+        Generate a new image that is identical in style, layout, colors, grid lines, and structure as the input image, but with the fully translated text.
+        Ensure high visual fidelity, crisp legible text, and correct alignment inside cells.
+        """
+        
+        try:
+            print(f"Calling gemini-3.1-flash-image for page {page_num}...")
+            response = client.models.generate_content(
+                model="gemini-3.1-flash-image",
+                contents=[
+                    types.Part.from_bytes(data=img_bytes, mime_type="image/png"),
+                    types.Part.from_text(text=prompt)
+                ]
+            )
             
-            # Extract text words inside the original header rect
-            orig_words = page_orig.get_text("words", clip=header_rect)
-            
-            # Identify the blue header background fill dynamically, fallback to KPMG blue
-            header_bg_fill = (91/255.0, 155/255.0, 213/255.0) # RGB (91, 155, 213)
-            try:
-                drawings = page_orig.get_drawings()
-                for d in drawings:
-                    d_rect = fitz.Rect(d["rect"])
-                    if d_rect.intersects(header_rect) and d.get("fill"):
-                        if d_rect.width < page_orig.rect.width * 0.8:
-                            header_bg_fill = d["fill"]
-                            break
-            except Exception as e:
-                print(f"Failed to find header fill dynamically: {e}")
+            print(f"Response for page {page_num} received:")
+            for part_idx, part in enumerate(response.candidates[0].content.parts):
+                text_prev = part.text[:200] if getattr(part, 'text', None) else "None"
+                mime_prev = part.inline_data.mime_type if getattr(part, 'inline_data', None) and part.inline_data else "None"
+                length_prev = len(part.inline_data.data) if getattr(part, 'inline_data', None) and part.inline_data else 0
+                print(f"  Part {part_idx}: text={text_prev}, mime={mime_prev}, length={length_prev}")
                 
-            # Draw mask overlay to wipe out distorted/misaligned translated headers
-            page_trans.draw_rect(header_rect, color=header_bg_fill, fill=header_bg_fill, overlay=True)
-            
-            # Centered high-fidelity redrawing of translated headers inside original columns
-            for col_idx in range(len(cols) - 1):
-                col_x0 = cols[col_idx]
-                col_x1 = cols[col_idx + 1]
+            translated_img_bytes = None
+            for part in response.candidates[0].content.parts:
+                if getattr(part, 'inline_data', None) and part.inline_data and part.inline_data.mime_type.startswith("image/"):
+                    translated_img_bytes = part.inline_data.data
+                    break
+                    
+            if translated_img_bytes:
+                print(f"Successfully received translated image from Gemini for page {page_num}!")
                 
-                # Group original words horizontally to find the original English header using midpoint matching
-                orig_words_in_col = [w for w in orig_words if col_x0 <= (w[0] + w[2]) / 2.0 <= col_x1]
-                if orig_words_in_col:
-                    orig_header_text = " ".join([w[4] for w in sorted(orig_words_in_col, key=lambda x: x[0])])
-                    header_text = translate_header(orig_header_text, target_lang)
-                else:
-                    continue
-                    
-                # Render beautifully centered text block inside the column boundaries
-                target_rect = fitz.Rect(col_x0 + 2, header_rect.y0 + 8, col_x1 - 2, header_rect.y1 - 8)
-                res = page_trans.insert_textbox(
-                    target_rect,
-                    header_text,
-                    fontsize=9.0,
-                    fontname="helv",
-                    color=(1.0, 1.0, 1.0), # White
-                    align=1, # Center
-                    overlay=True
-                )
-                print(f"Restored header for column {col_idx} Centered: '{header_text}' in rect {target_rect}. Result: {res}")
+                # Insert new page with translated image
+                new_page = doc_trans.new_page(page_num + 1, width=width, height=height)
+                new_page.insert_image(new_page.rect, stream=translated_img_bytes)
                 
-        # Step 2: Solution C - Typography Normalization (Microscopic text scaling)
-        for table in tables.tables:
-            bbox = fitz.Rect(table.bbox)
-            cells_rect = fitz.Rect(bbox.x0, bbox.y0 + 30.0, bbox.x1, bbox.y1)
-            blocks = page_trans.get_text("blocks", clip=cells_rect)
-            
-            for b in blocks:
-                b_rect = fitz.Rect(b[:4])
-                b_text = b[4].strip()
+                # Delete original page
+                doc_trans.delete_page(page_num)
                 
-                # Inspect the actual rendered font size in this block
-                try:
-                    block_dict = page_trans.get_text("dict", clip=b_rect)
-                    max_font_size = 0
-                    for block_item in block_dict["blocks"]:
-                        if "lines" in block_item:
-                            for line in block_item["lines"]:
-                                for span in line["spans"]:
-                                    max_font_size = max(max_font_size, span["size"])
-                except:
-                    max_font_size = 8.0
-                    
-                # If font is microscopic (< 6.0pt), normalize and redraw it at readable size (8.0pt)
-                if max_font_size < 6.0:
-                    print(f"Microscopic text block detected (size {max_font_size:.1f}pt): '{b_text[:40]}...'")
-                    
-                    # Mask with solid white overlay
-                    bg_fill = (1.0, 1.0, 1.0)
-                    page_trans.draw_rect(b_rect, color=bg_fill, fill=bg_fill, overlay=True)
-                    
-                    # Redraw readable text, letting it wrap natively inside original bounding box
-                    page_trans.insert_textbox(
-                        b_rect,
-                        b_text,
-                        fontsize=8.0,
-                        fontname="helv",
-                        color=(0.0, 0.0, 0.0),
-                        align=0, # Left
-                        overlay=True
-                    )
-                    print(f"Scaled up microscopic text cell to 8.0pt and wrapped cleanly.")
-                    
+                modified = True
+            else:
+                print(f"Model failed to return a translated image for page {page_num}.")
+        except Exception as e:
+            print(f"Image translation failed on page {page_num}: {e}")
     if modified:
         temp_path = translated_pdf_path + ".tmp"
         doc_trans.save(temp_path, incremental=False, encryption=fitz.PDF_ENCRYPT_KEEP)
