@@ -175,6 +175,39 @@ async def adaptive_translate_tool(
                 await fix_tables_in_pdf(file_path, output_file_path, target_language_code)
             except Exception as e:
                 print(f"Table fix failed: {e}")
+                
+            # Embed native CJK font subset if target is Japanese, Chinese, or Korean
+            if target_language_code in ["ja", "zh", "ko"]:
+                try:
+                    print(f"Embedding native CJK font subset into {output_file_path}...")
+                    doc_cjk = fitz.open(output_file_path)
+                    cjk_paths = [
+                        "/System/Library/Fonts/STHeiti Light.ttc",
+                        "/System/Library/Fonts/Supplemental/AppleGothic.ttf",
+                        "/usr/share/fonts/truetype/droid/DroidSansFallback.ttf",
+                        "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+                        "C:\\Windows\\Fonts\\msgothic.ttc"
+                    ]
+                    cjk_font_path = None
+                    for path in cjk_paths:
+                        if os.path.exists(path):
+                            cjk_font_path = path
+                            break
+                            
+                    if cjk_font_path:
+                        for page in doc_cjk:
+                            page.insert_font(fontname="cjk", fontfile=cjk_font_path)
+                        temp_cjk_path = output_file_path + ".cjk.pdf"
+                        doc_cjk.save(temp_cjk_path, incremental=False)
+                        doc_cjk.close()
+                        import shutil
+                        shutil.move(temp_cjk_path, output_file_path)
+                        print("Native CJK font subset embedded successfully!")
+                    else:
+                        doc_cjk.close()
+                        print("No CJK system font found to embed.")
+                except Exception as cjk_err:
+                    print(f"CJK font embedding failed: {cjk_err}")
         elif ext == ".docx":
             try:
                 print(f"Processing images in DOCX {output_file_path}...")
