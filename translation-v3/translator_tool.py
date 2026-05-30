@@ -91,7 +91,7 @@ async def adaptive_translate_tool(
                     """
                     
                     gen_response = client_gen.models.generate_content(
-                        model="gemini-2.5-flash-image",
+                        model="publishers/google/models/gemini-3.1-flash-image",
                         contents=[
                             types.Part.from_bytes(data=img_bytes, mime_type="image/png"),
                             types.Part.from_text(text=generator_prompt)
@@ -245,7 +245,7 @@ async def localize_images_in_docx(original_path: str, translated_path: str, targ
         try:
             def sync_call():
                 return client_obj.models.generate_content(
-                    model="gemini-2.5-flash-image",
+                    model="publishers/google/models/gemini-3.1-flash-image",
                     contents=[
                         types.Part.from_bytes(data=bytes_data, mime_type=mime_type),
                         types.Part.from_text(text=prompt_text)
@@ -314,7 +314,7 @@ async def localize_images_in_pptx(original_path: str, translated_path: str, targ
         try:
             def sync_call():
                 return client_obj.models.generate_content(
-                    model="gemini-2.5-flash-image",
+                    model="publishers/google/models/gemini-3.1-flash-image",
                     contents=[
                         types.Part.from_bytes(data=bytes_data, mime_type=mime_type),
                         types.Part.from_text(text=prompt_text)
@@ -393,7 +393,7 @@ async def localize_images_in_pdf(original_pdf_path: str, translated_pdf_path: st
         try:
             def sync_call():
                 return client_obj.models.generate_content(
-                    model="gemini-2.5-flash-image",
+                    model="publishers/google/models/gemini-3.1-flash-image",
                     contents=[
                         types.Part.from_bytes(data=bytes_data, mime_type=mime_type),
                         types.Part.from_text(text=prompt_text)
@@ -617,7 +617,7 @@ async def fix_tables_in_pdf(original_pdf_path: str, translated_pdf_path: str, ta
                     
                     def sync_call_detect():
                         return client.models.generate_content(
-                            model="gemini-2.5-flash",
+                            model="publishers/google/models/gemini-3.5-flash",
                             contents=[
                                 types.Part.from_bytes(data=img_bytes, mime_type="image/png"),
                                 types.Part.from_text(text=detect_prompt)
@@ -670,7 +670,7 @@ async def fix_tables_in_pdf(original_pdf_path: str, translated_pdf_path: str, ta
                 
                 def sync_call():
                     return client.models.generate_content(
-                        model="gemini-2.5-flash",
+                        model="publishers/google/models/gemini-3.5-flash",
                         contents=[
                             types.Part.from_bytes(data=img_bytes, mime_type="image/png"),
                             types.Part.from_text(text=prompt)
