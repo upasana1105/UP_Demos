@@ -1,4 +1,5 @@
 import os
+import re
 try:
     import importlib.metadata as metadata
 except ImportError:
