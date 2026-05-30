@@ -169,12 +169,12 @@ async def adaptive_translate_tool(
             except Exception as e:
                 print(f"Image translation failed: {e}")
                 
-            # Fix table layouts using Gemini coordinate calculator
-            try:
-                print(f"Fixing tables in {output_file_path}...")
-                await fix_tables_in_pdf(file_path, output_file_path, target_language_code)
-            except Exception as e:
-                print(f"Table fix failed: {e}")
+            # Fix table layouts using Gemini coordinate calculator (Bypassed to allow Translation API to render grids and cells natively)
+            # try:
+            #     print(f"Fixing tables in {output_file_path}...")
+            #     await fix_tables_in_pdf(file_path, output_file_path, target_language_code)
+            # except Exception as e:
+            #     print(f"Table fix failed: {e}")
                 
             # Embed native CJK font subset if target is Japanese, Chinese, or Korean
             if target_language_code in ["ja", "zh", "ko"]:
