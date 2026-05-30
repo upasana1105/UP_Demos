@@ -925,77 +925,102 @@ async def refine_table_layout_and_typography(original_pdf_path: str, translated_
         # Step 1: Solution B - Column Header Restoration
         for table in tables.tables:
             bbox = fitz.Rect(table.bbox)
-            cols = table.cols  # list of X-coordinates of column boundaries
+            try:
+                cols = [cell[0] for cell in table.rows[0].cells] + [table.rows[0].cells[-1][2]]
+            except Exception as ex:
+                print(f"Table boundary extraction failed: {ex}")
+                continue
             if len(cols) < 2:
                 continue
                 
-            # Identify the header row bounding box (typically the first row of the table)
-            header_height = 30.0
-            header_rect = fitz.Rect(bbox.x0, bbox.y0, bbox.x1, bbox.y0 + header_height)
-            
-            # Extract text words inside the original and translated header rect
-            orig_words = page_orig.get_text("words", clip=header_rect)
-            trans_words = page_trans.get_text("words", clip=header_rect)
-            
-            # Group words horizontally based on column boundaries
-            col_headers = {}
-            for w in trans_words:
-                w_rect = fitz.Rect(w[:4])
+            # Step 1: Define header translations
+            HEADER_TRANSLATIONS = {
+                "fr": {
+                    "objective": "Objectif",
+                    "sub-objective": "Sous-objectif",
+                    "criteria": "Critères",
+                    "evidence": "Preuves",
+                    "source of evidence": "Source des preuves",
+                    "audit analysis/ results of audit": "Analyse de l'audit / Résultats de l'audit",
+                },
+                "de": {
+                    "objective": "Zielsetzung",
+                    "sub-objective": "Unterziel",
+                    "criteria": "Kriterien",
+                    "evidence": "Nachweise",
+                    "source of evidence": "Nachweisquelle",
+                    "audit analysis/ results of audit": "Prüfungsanalyse / Ergebnisse der Prüfung",
+                },
+                "ja": {
+                    "objective": "目的",
+                    "sub-objective": "サブ目的",
+                    "criteria": "基準",
+                    "evidence": "証拠",
+                    "source of evidence": "証拠の出所",
+                    "audit analysis/ results of audit": "監査分析・監査結果",
+                }
+            }
+
+            def translate_header(orig_text: str, lang: str) -> str:
+                norm = orig_text.lower().strip()
+                norm = " ".join(norm.split())
+                norm = norm.replace("­", "") # remove soft hyphen
                 
-                for col_idx in range(len(cols) - 1):
-                    col_x0 = cols[col_idx]
-                    col_x1 = cols[col_idx + 1]
-                    if w_rect.x0 >= col_x0 - 5 and w_rect.x1 <= col_x1 + 5:
-                        if col_idx not in col_headers:
-                            col_headers[col_idx] = []
-                        col_headers[col_idx].append(w)
-                        break
-                        
-            # Identify the blue header background fill dynamically, or fallback to KPMG blue
-            header_bg_fill = (58/255.0, 120/255.0, 195/255.0)
+                lang_dict = HEADER_TRANSLATIONS.get(lang.lower()[:2], {})
+                
+                if "sub-objective" in norm or "sub objective" in norm:
+                    return lang_dict.get("sub-objective", orig_text)
+                elif "objective" in norm:
+                    return lang_dict.get("objective", orig_text)
+                elif "criteria" in norm:
+                    return lang_dict.get("criteria", orig_text)
+                elif "source of" in norm or "source de" in norm:
+                    return lang_dict.get("source of evidence", orig_text)
+                elif "evidence" in norm:
+                    return lang_dict.get("evidence", orig_text)
+                elif "audit analysis" in norm or "results of audit" in norm or "analyse" in norm:
+                    return lang_dict.get("audit analysis/ results of audit", orig_text)
+                
+                return orig_text
+
+            # Identify the header row bounding box dynamically from table header
+            header_rect = fitz.Rect(table.header.bbox)
+            
+            # Extract text words inside the original header rect
+            orig_words = page_orig.get_text("words", clip=header_rect)
+            
+            # Identify the blue header background fill dynamically, fallback to KPMG blue
+            header_bg_fill = (91/255.0, 155/255.0, 213/255.0) # RGB (91, 155, 213)
             try:
                 drawings = page_orig.get_drawings()
                 for d in drawings:
                     d_rect = fitz.Rect(d["rect"])
                     if d_rect.intersects(header_rect) and d.get("fill"):
-                        header_bg_fill = d["fill"]
-                        break
-            except:
-                pass
+                        if d_rect.width < page_orig.rect.width * 0.8:
+                            header_bg_fill = d["fill"]
+                            break
+            except Exception as e:
+                print(f"Failed to find header fill dynamically: {e}")
                 
-            # Draw mask overlay to wipe out distorted headers
+            # Draw mask overlay to wipe out distorted/misaligned translated headers
             page_trans.draw_rect(header_rect, color=header_bg_fill, fill=header_bg_fill, overlay=True)
             
-            # Centered redrawing of French headers inside original columns
+            # Centered high-fidelity redrawing of translated headers inside original columns
             for col_idx in range(len(cols) - 1):
                 col_x0 = cols[col_idx]
                 col_x1 = cols[col_idx + 1]
                 
-                words_in_col = col_headers.get(col_idx, [])
-                if not words_in_col:
-                    # Recover missing header using original column text translation rules
-                    orig_words_in_col = [w for w in orig_words if w[0] >= col_x0 - 5 and w[2] <= col_x1 + 5]
-                    if orig_words_in_col:
-                        orig_header_text = " ".join([w[4] for w in sorted(orig_words_in_col, key=lambda x: x[0])])
-                        # Standard header translations
-                        header_text = orig_header_text
-                        if "objective" in orig_header_text.lower():
-                            header_text = "Objectif" if "sub" not in orig_header_text.lower() else "Sous-objectif"
-                        elif "criteria" in orig_header_text.lower():
-                            header_text = "Critères"
-                        elif "evidence" in orig_header_text.lower():
-                            header_text = "Preuves" if "source" not in orig_header_text.lower() else "Source des preuves"
-                        elif "analysis" in orig_header_text.lower():
-                            header_text = "Analyse"
-                    else:
-                        continue
+                # Group original words horizontally to find the original English header using midpoint matching
+                orig_words_in_col = [w for w in orig_words if col_x0 <= (w[0] + w[2]) / 2.0 <= col_x1]
+                if orig_words_in_col:
+                    orig_header_text = " ".join([w[4] for w in sorted(orig_words_in_col, key=lambda x: x[0])])
+                    header_text = translate_header(orig_header_text, target_lang)
                 else:
-                    words_in_col.sort(key=lambda x: x[0])
-                    header_text = " ".join([w[4] for w in words_in_col])
+                    continue
                     
                 # Render beautifully centered text block inside the column boundaries
-                target_rect = fitz.Rect(col_x0 + 2, header_rect.y0 + 5, col_x1 - 2, header_rect.y1 - 5)
-                page_trans.insert_textbox(
+                target_rect = fitz.Rect(col_x0 + 2, header_rect.y0 + 8, col_x1 - 2, header_rect.y1 - 8)
+                res = page_trans.insert_textbox(
                     target_rect,
                     header_text,
                     fontsize=9.0,
@@ -1004,7 +1029,7 @@ async def refine_table_layout_and_typography(original_pdf_path: str, translated_
                     align=1, # Center
                     overlay=True
                 )
-                print(f"Restored header for column {col_idx} Centered: '{header_text}'")
+                print(f"Restored header for column {col_idx} Centered: '{header_text}' in rect {target_rect}. Result: {res}")
                 
         # Step 2: Solution C - Typography Normalization (Microscopic text scaling)
         for table in tables.tables:
