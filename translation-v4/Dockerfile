@@ -28,11 +28,8 @@ COPY . .
 # Copy Built Frontend from Stage 1
 COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
 
-EXPOSE 8000
-
-ENV PORT=8000
 ENV GOOGLE_CLOUD_PROJECT=uppdemos
 ENV GOOGLE_CLOUD_LOCATION=us-central1
 
 # Run the backend (which also serves the frontend)
-CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["sh", "-c", "uvicorn server:app --host 0.0.0.0 --port ${PORT:-8080}"]

@@ -1,0 +1,11 @@
+.gcloudignore
+.git
+.gitignore
+node_modules/
+frontend/node_modules/
+venv/
+.venv/
+__pycache__/
+uploads/
+debug_images/
+scratch/
