@@ -61,7 +61,7 @@ async def adaptive_translate_tool(
         except Exception as e:
             print(f"Failed to check text content with PyMuPDF: {e}")
             # Assume it has text if we can't open it with fitz (let Translation API try)
-        has_text = True # Force standard Document Translation API (handles scanned document OCR natively)
+            has_text = True
         if not has_text:
             print("Document has very little or no searchable text. Triggering full Gemini translation fallback...")
             try:
