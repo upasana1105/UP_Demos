@@ -892,11 +892,13 @@ def save_dynamic_glossary(terms: list, filename: str = "dynamic_glossary.csv") -
         return {"status": "error", "message": str(e)}
 
 async def refine_table_layout_and_typography(original_pdf_path: str, translated_pdf_path: str, target_lang: str):
-    """Refines table layouts and typography inside translated PDFs using Gemini Image-to-Image Translation.
-    Only runs on pages where tables are detected.
-    1. Converts the entire table page to a high-res image.
-    2. Translates the image using gemini-2.5-flash-image.
-    3. Replaces the original text/vector page in the translated PDF with the fully translated raster image.
+    """Refines table layouts and typography inside translated PDFs using targeted Gemini Image-to-Image Translation.
+    Only runs on specific page regions where tables are detected.
+    1. Identifies the precise table bounding box on the original page.
+    2. Renders only that table bounding box as a high-res image.
+    3. Translates the table image using gemini-3.1-flash-image.
+    4. Wipes out only the table bounding box on the translated page with a white mask.
+    5. Overlays the fully translated table image exactly on top of the table region.
     """
     import fitz
     import os
@@ -911,10 +913,10 @@ async def refine_table_layout_and_typography(original_pdf_path: str, translated_
     doc_trans = fitz.open(translated_pdf_path)
     
     modified = False
-    pages_to_replace = []
     
     for page_num in range(len(doc_orig)):
         page_orig = doc_orig[page_num]
+        page_trans = doc_trans[page_num]
         
         # Check if tables are present on this page
         try:
@@ -925,64 +927,55 @@ async def refine_table_layout_and_typography(original_pdf_path: str, translated_
             print(f"Table detection failed on page {page_num}: {e}")
             continue
             
-        print(f"Page {page_num}: Table detected! Running image translation...")
-        pages_to_replace.append(page_num)
+        print(f"Page {page_num}: {len(tables.tables)} Table(s) detected! Running targeted visual translation...")
         
-    for page_num in pages_to_replace:
-        page_orig = doc_orig[page_num]
-        width = page_orig.rect.width
-        height = page_orig.rect.height
-        
-        # Render high-resolution image of the original page
-        pix = page_orig.get_pixmap(dpi=300)
-        img_bytes = pix.tobytes("png")
-        
-        # Query gemini-2.5-flash-image for localized translation
-        prompt = f"""
-        Translate ALL English text within this table image into the target language: '{target_lang}'.
-        It is CRITICAL that every single word, label, title, header, and number is translated accurately.
-        Generate a new image that is identical in style, layout, colors, grid lines, and structure as the input image, but with the fully translated text.
-        Ensure high visual fidelity, crisp legible text, and correct alignment inside cells.
-        """
-        
-        try:
-            print(f"Calling gemini-3.1-flash-image for page {page_num}...")
-            response = client.models.generate_content(
-                model="gemini-3.1-flash-image",
-                contents=[
-                    types.Part.from_bytes(data=img_bytes, mime_type="image/png"),
-                    types.Part.from_text(text=prompt)
-                ]
-            )
+        for tab_idx, table in enumerate(tables.tables):
+            bbox = fitz.Rect(table.bbox)
             
-            print(f"Response for page {page_num} received:")
-            for part_idx, part in enumerate(response.candidates[0].content.parts):
-                text_prev = part.text[:200] if getattr(part, 'text', None) else "None"
-                mime_prev = part.inline_data.mime_type if getattr(part, 'inline_data', None) and part.inline_data else "None"
-                length_prev = len(part.inline_data.data) if getattr(part, 'inline_data', None) and part.inline_data else 0
-                print(f"  Part {part_idx}: text={text_prev}, mime={mime_prev}, length={length_prev}")
+            # Render high-resolution image of the targeted table region only
+            pix = page_orig.get_pixmap(clip=bbox, dpi=300)
+            img_bytes = pix.tobytes("png")
+            
+            prompt = f"""
+            Translate ALL English text within this table image into the target language: '{target_lang}'.
+            It is CRITICAL that every single word, label, title, header, and number is translated accurately.
+            Generate a new image that is identical in style, layout, colors, grid lines, and structure as the input image, but with the fully translated text.
+            Ensure high visual fidelity, crisp legible text, and correct alignment inside cells.
+            """
+            
+            try:
+                print(f"Calling gemini-3.1-flash-image for table {tab_idx} on page {page_num}...")
+                response = client.models.generate_content(
+                    model="gemini-3.1-flash-image",
+                    contents=[
+                        types.Part.from_bytes(data=img_bytes, mime_type="image/png"),
+                        types.Part.from_text(text=prompt)
+                    ]
+                )
                 
-            translated_img_bytes = None
-            for part in response.candidates[0].content.parts:
-                if getattr(part, 'inline_data', None) and part.inline_data and part.inline_data.mime_type.startswith("image/"):
-                    translated_img_bytes = part.inline_data.data
-                    break
+                # Iterate backwards through the response parts to grab the final/best generated image
+                translated_img_bytes = None
+                if response.candidates and response.candidates[0].content.parts:
+                    for part in reversed(response.candidates[0].content.parts):
+                        if getattr(part, 'inline_data', None) and part.inline_data and part.inline_data.mime_type.startswith("image/"):
+                            translated_img_bytes = part.inline_data.data
+                            break
+                            
+                if translated_img_bytes:
+                    print(f"Successfully received translated image for table {tab_idx} on page {page_num}!")
                     
-            if translated_img_bytes:
-                print(f"Successfully received translated image from Gemini for page {page_num}!")
+                    # 1. Wipe out only the table region on the translated page
+                    page_trans.draw_rect(bbox, color=(1, 1, 1), fill=(1, 1, 1), overlay=True)
+                    
+                    # 2. Overlay the translated table image perfectly on top
+                    page_trans.insert_image(bbox, stream=translated_img_bytes, keep_proportion=False, overlay=True)
+                    
+                    modified = True
+                else:
+                    print(f"Model failed to return a translated image for table {tab_idx} on page {page_num}.")
+            except Exception as e:
+                print(f"Image translation failed on table {tab_idx} on page {page_num}: {e}")
                 
-                # Insert new page with translated image
-                new_page = doc_trans.new_page(page_num + 1, width=width, height=height)
-                new_page.insert_image(new_page.rect, stream=translated_img_bytes)
-                
-                # Delete original page
-                doc_trans.delete_page(page_num)
-                
-                modified = True
-            else:
-                print(f"Model failed to return a translated image for page {page_num}.")
-        except Exception as e:
-            print(f"Image translation failed on page {page_num}: {e}")
     if modified:
         temp_path = translated_pdf_path + ".tmp"
         doc_trans.save(temp_path, incremental=False, encryption=fitz.PDF_ENCRYPT_KEEP)
@@ -995,3 +988,4 @@ async def refine_table_layout_and_typography(original_pdf_path: str, translated_
     else:
         doc_trans.close()
         doc_orig.close()
+
