@@ -893,16 +893,17 @@ def save_dynamic_glossary(terms: list, filename: str = "dynamic_glossary.csv") -
 
 async def refine_table_layout_and_typography(original_pdf_path: str, translated_pdf_path: str, target_lang: str):
     """Refines table layouts and typography inside translated PDFs using targeted Gemini Image-to-Image Translation.
-    Only runs on specific page regions where tables are detected.
+    Only runs on specific page regions where tables are detected. Uses parallel processing with a concurrency throttle.
     1. Identifies the precise table bounding box on the original page.
     2. Renders only that table bounding box as a high-res image.
-    3. Translates the table image using gemini-3.1-flash-image.
+    3. Translates all tables in parallel using gemini-3.1-flash-image (throttled to max 10 concurrent requests).
     4. Wipes out only the table bounding box on the translated page with a white mask.
     5. Overlays the fully translated table image exactly on top of the table region.
     """
     import fitz
     import os
     import io
+    import asyncio
     from google import genai
     from google.genai import types
     
@@ -912,11 +913,33 @@ async def refine_table_layout_and_typography(original_pdf_path: str, translated_
     doc_orig = fitz.open(original_pdf_path)
     doc_trans = fitz.open(translated_pdf_path)
     
-    modified = False
+    # Define a semaphore to throttle concurrency (max 10 parallel requests to respect API quotas/sockets)
+    sem = asyncio.Semaphore(10)
     
+    # Helper to call Gemini asynchronously using threads and a semaphore throttle
+    async def call_gemini_async(client_obj, bytes_data, prompt_text, semaphore):
+        async with semaphore:
+            try:
+                def sync_call():
+                    return client_obj.models.generate_content(
+                        model="gemini-3.1-flash-image",
+                        contents=[
+                            types.Part.from_bytes(data=bytes_data, mime_type="image/png"),
+                            types.Part.from_text(text=prompt_text)
+                        ]
+                    )
+                # Run the synchronous call in a separate thread to avoid blocking
+                response = await asyncio.to_thread(sync_call)
+                return response
+            except Exception as e:
+                print(f"Async Gemini table call via thread failed: {e}")
+                return None
+
+    tasks = []
+    
+    # Step 1: Gather all table tasks across all pages
     for page_num in range(len(doc_orig)):
         page_orig = doc_orig[page_num]
-        page_trans = doc_trans[page_num]
         
         # Check if tables are present on this page
         try:
@@ -927,7 +950,7 @@ async def refine_table_layout_and_typography(original_pdf_path: str, translated_
             print(f"Table detection failed on page {page_num}: {e}")
             continue
             
-        print(f"Page {page_num}: {len(tables.tables)} Table(s) detected! Running targeted visual translation...")
+        print(f"Page {page_num}: {len(tables.tables)} Table(s) detected for parallel refinement.")
         
         for tab_idx, table in enumerate(tables.tables):
             bbox = fitz.Rect(table.bbox)
@@ -943,39 +966,66 @@ async def refine_table_layout_and_typography(original_pdf_path: str, translated_
             Ensure high visual fidelity, crisp legible text, and correct alignment inside cells.
             """
             
-            try:
-                print(f"Calling gemini-3.1-flash-image for table {tab_idx} on page {page_num}...")
-                response = client.models.generate_content(
-                    model="gemini-3.1-flash-image",
-                    contents=[
-                        types.Part.from_bytes(data=img_bytes, mime_type="image/png"),
-                        types.Part.from_text(text=prompt)
-                    ]
-                )
-                
-                # Iterate backwards through the response parts to grab the final/best generated image
-                translated_img_bytes = None
-                if response.candidates and response.candidates[0].content.parts:
-                    for part in reversed(response.candidates[0].content.parts):
-                        if getattr(part, 'inline_data', None) and part.inline_data and part.inline_data.mime_type.startswith("image/"):
-                            translated_img_bytes = part.inline_data.data
-                            break
-                            
-                if translated_img_bytes:
-                    print(f"Successfully received translated image for table {tab_idx} on page {page_num}!")
-                    
-                    # 1. Wipe out only the table region on the translated page
-                    page_trans.draw_rect(bbox, color=(1, 1, 1), fill=(1, 1, 1), overlay=True)
-                    
-                    # 2. Overlay the translated table image perfectly on top
-                    page_trans.insert_image(bbox, stream=translated_img_bytes, keep_proportion=False, overlay=True)
-                    
-                    modified = True
-                else:
-                    print(f"Model failed to return a translated image for table {tab_idx} on page {page_num}.")
-            except Exception as e:
-                print(f"Image translation failed on table {tab_idx} on page {page_num}: {e}")
-                
+            tasks.append({
+                "page_num": page_num,
+                "tab_idx": tab_idx,
+                "bbox": bbox,
+                "bytes": img_bytes,
+                "prompt": prompt
+            })
+
+    if not tasks:
+        print("No tables detected in document. Table refinement skipped.")
+        doc_trans.close()
+        doc_orig.close()
+        return
+
+    # Step 2: Execute all table translation tasks in parallel (throttled by the semaphore)
+    async def run_tasks():
+        coroutines = []
+        for t in tasks:
+            coroutines.append(call_gemini_async(client, t["bytes"], t["prompt"], sem))
+        return await asyncio.gather(*coroutines)
+        
+    print(f"Executing {len(tasks)} table translation tasks in parallel (throttled)...")
+    results = await run_tasks()
+    print("All parallel table tasks completed.")
+    
+    modified = False
+    
+    # Step 3: Apply results sequentially to the document
+    for i, response in enumerate(results):
+        task = tasks[i]
+        if not response:
+            print(f"Skipping failed table result for table {task['tab_idx']} on page {task['page_num']}")
+            continue
+            
+        # Iterate backwards through the response parts to grab the final/best generated image
+        translated_img_bytes = None
+        try:
+            if response.candidates and response.candidates[0].content.parts:
+                for part in reversed(response.candidates[0].content.parts):
+                    if getattr(part, 'inline_data', None) and part.inline_data and part.inline_data.mime_type.startswith("image/"):
+                        translated_img_bytes = part.inline_data.data
+                        break
+        except Exception as part_err:
+            print(f"Error parsing response parts for table {task['tab_idx']} on page {task['page_num']}: {part_err}")
+            
+        if translated_img_bytes:
+            print(f"Successfully received translated image for table {task['tab_idx']} on page {task['page_num']}!")
+            page_trans = doc_trans[task["page_num"]]
+            bbox = task["bbox"]
+            
+            # 1. Wipe out only the table region on the translated page
+            page_trans.draw_rect(bbox, color=(1, 1, 1), fill=(1, 1, 1), overlay=True)
+            
+            # 2. Overlay the translated table image perfectly on top
+            page_trans.insert_image(bbox, stream=translated_img_bytes, keep_proportion=False, overlay=True)
+            
+            modified = True
+        else:
+            print(f"Model failed to return a translated image for table {task['tab_idx']} on page {task['page_num']}.")
+
     if modified:
         temp_path = translated_pdf_path + ".tmp"
         doc_trans.save(temp_path, incremental=False, encryption=fitz.PDF_ENCRYPT_KEEP)
