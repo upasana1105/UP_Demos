@@ -18,7 +18,7 @@ Seamlessly process and translate:
 - **PowerPoint Presentations** (`.pptx`)
 
 ### 🧠 AI-Powered Image Localization
-Leverages **Gemini 2.5 Flash Image** to:
+Leverages **Gemini 3.1 Flash Image** to:
 - Detect text embedded within images, charts, and diagrams.
 - Translate the text while preserving the original visual style, colors, and layout.
 - Re-insert the translated image back into the document.
@@ -46,7 +46,7 @@ graph TD
     D --> H
     E --> H
     
-    H --> I[Gemini 2.5 Flash Image]
+    H --> I[Gemini 3.1 Flash Image]
     I --> J[Final Output & Audit]
 ```
 
