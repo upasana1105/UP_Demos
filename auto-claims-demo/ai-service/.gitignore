@@ -1,0 +1,86 @@
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+__pycache__/
+
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+.cache
+*.cover
+*.py,cover
+.pytest_cache/
+
+
+# PyBuilder
+target/
+
+# pyenv
+.python-version
+
+# pipenv
+#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
+#   However, in case of collaboration, if having platform-specific dependencies or dependencies
+#   having no cross-platform support, pipenv may install dependencies that don't work, or not
+#   install all needed dependencies.
+Pipfile.lock
+Pipfile
+
+# PEP 582; used by e.g. github.com/David-OConnor/pyflow
+__pypackages__/
+
+# Environments
+.env
+.venv
+.venv*
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+
+# macOS
+.DS_Store
+
+# PyCharm
+.idea
+
+# User-specific files
+.terraform*
+.Terraform*
+
+tmp*
+
+# SQLite Sessiondb
+sessions.db
+
+# vertex ai runtime
+deployment_metadata.json
+.requirements.txt
+sessionid.txtdeployment_metadata.json

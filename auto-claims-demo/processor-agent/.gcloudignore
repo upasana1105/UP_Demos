@@ -1,0 +1,44 @@
+# This file tells the gcloud CLI which files to ignore when deploying.
+# For more information, see: https://cloud.google.com/sdk/gcloud/reference/topic/gcloudignore
+
+# Python build artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Python virtual environment created by uv or venv
+.venv/
+venv/
+env/
+
+# Local SQLite database
+sessions.db
+
+# Temporary dependency file created by `make agent-engine`
+.requirements.txt
+
+# Testing and linting caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+coverage.xml
+
+# Directories not needed for the application runtime
+/deployment/
+/notebooks/
+/tests/
+
+# IDE and editor configuration files
+.idea/
+.vscode/
+.DS_Store
+
+# Git directory and ignore files
+.git/
+.gitignore
+
+# Local development tools
+Makefile
+Makefile.mk
+README.md

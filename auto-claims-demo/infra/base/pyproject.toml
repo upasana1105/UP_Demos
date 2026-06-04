@@ -1,0 +1,16 @@
+[project]
+name = "auto-claims-ai-base"
+version = "0.1.0"
+description = "A base container image with common Python dependencies for all AI services in the Auto Claims Demo."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "google-cloud-aiplatform>=1.136.0",
+    "google-cloud-vision>=3.12.1",
+    "python-multipart==0.0.26",
+    "ultralytics>=8.4.13",
+    "opencv-python-headless>=4.13.0.92",
+    "pillow==12.2.0",
+    "huggingface-hub>=1.4.1",
+    "cryptography==46.0.7",
+]

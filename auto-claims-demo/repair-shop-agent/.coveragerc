@@ -1,0 +1,4 @@
+[run]
+omit =
+    app/agent_engine_app.py
+    tests/*
