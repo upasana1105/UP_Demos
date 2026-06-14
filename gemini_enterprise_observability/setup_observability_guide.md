@@ -41,7 +41,8 @@ You must enable observability on your Gemini Enterprise engine (app) so it emits
 > [!IMPORTANT]
 > Sensitive logging must be enabled to capture the actual text of the user queries.
 
-![Observability Configuration](images/observability_config.png)
+![Observability Configuration](images/GE_token analytics_img1.png)
+
 
 ---
 
