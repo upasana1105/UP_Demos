@@ -1,133 +1,183 @@
-# Snowflake Custom MCP Server ❄️
+# Snowflake Managed MCP Server Setup
 
-A Model Context Protocol (MCP) server that enables Large Language Models (such as Gemini Enterprise and Custom Agents) to directly query and manage your **Snowflake Data Warehouse** using natural language and SQL.
+This guide walks through setting up a Snowflake Managed MCP Server and connecting it to a Gemini Enterprise (GE) app using OAuth authentication.
 
----
+## **Architecture**
 
-## 📦 Overview
-
-The **Snowflake MCP Proxy Server** is a containerized Node.js express application. It implements the stable MCP standard over HTTP, serving as a robust interface for standard MCP clients. It exposes database metadata discovery, read-only query execution, schema-writing utilities, and Snowflake's state-of-the-art **Cortex Analyst (Natural Language to SQL)**.
-
----
-
-## 🛡️ Security Design: Read-Only & Destructive Hints
-
-To provide a premium, frictionless user experience under Gemini Enterprise (Vertex AI Search and Conversation), this proxy implements standard tool-level **Read-Only** and **Destructive** annotations:
-
-* **Frictionless Read Operations**: Non-altering tasks—such as listing tables, using Cortex Analyst, or querying databases with standard SELECT commands—are annotated with `readOnlyHint: true`. This allows Gemini to run background queries instantly **without interrupting you with popup confirmations**.
-* **Secure Destructive Guards**: Modifying queries (e.g., INSERT, UPDATE, DELETE, ALTER, DROP) are routed to `execute_sql` which is annotated with `destructiveHint: true`. This triggers the client-side safety confirmation prompt, preventing accidental writes or database schema alteration without your explicit consent.
-
----
-
-## 🛠️ Supported MCP Tools
-
-| Tool Name | Description | Annotations | Safety Guard / Rules |
-| :--- | :--- | :--- | :--- |
-| `execute_sql` | Executes standard database SELECT, WITH, SHOW, DESCRIBE, EXPLAIN, or USE commands. Bypasses approval prompts. | `readOnlyHint: true`<br>`destructiveHint: false` | **Enforced Read-Only**: Will reject any query starting with write-based keywords (e.g., `DROP`, `DELETE`, `INSERT`). |
-| `execute_destructive_sql` | Executes arbitrary SQL commands including modifications, inserts, and schema DDL. | `readOnlyHint: false`<br>`destructiveHint: true` | **User Approvals Required**: Prompts a UI verification dialog before executing. |
-| `list_tables` | Lists all tables inside a specified schema. Bypasses approval prompts. | `readOnlyHint: true`<br>`destructiveHint: false` | Safe metadata lookup. |
-| `cortex_search` | Uses Snowflake Cortex Analyst to execute natural language questions via a Semantic Model (`.yaml`). Bypasses approval prompts. | `readOnlyHint: true`<br>`destructiveHint: false` | Powered by Snowflake's native NL2SQL engine. |
-
----
-
-## ⚙️ Configuration
-
-The server is configured using environment variables. Create a `.env` file in the root of the `snowflake-mcp-server` directory for local development:
-
-| Variable | Description | Default / Example |
-| :--- | :--- | :--- |
-| `PORT` | The port the Express HTTP server listens on. | `8080` |
-| `SNOWFLAKE_ACCOUNT` | Your Snowflake Account Identifier. | `dikgrbu-tv54598` |
-| `SNOWFLAKE_USER` | Username for service account authentication. | `upasanapati` |
-| `SNOWFLAKE_PASSWORD` | Password for the service account username. | `********` |
-| `SNOWFLAKE_CLIENT_ID` | Your Custom OAuth Application Client ID. | `your_snowflake_client_id` |
-| `SNOWFLAKE_CLIENT_SECRET` | Your Custom OAuth Application Client Secret. | `your_snowflake_client_secret` |
-| `SNOWFLAKE_WAREHOUSE` | The virtual warehouse to compute queries. | `COMPUTE_WH` |
-| `SNOWFLAKE_DATABASE` | Default active database. | `SNOWFLAKE_SAMPLE_DATA` |
-| `SNOWFLAKE_SCHEMA` | Default active schema. | `PUBLIC` |
-
----
-
-## 🚀 Getting Started
-
-### Local Development
-
-1. Navigate to the directory:
-   ```bash
-   cd byomcp/snowflake-mcp-server
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Start the server:
-   ```bash
-   npm start
-   ```
-
-4. Verify local health check:
-   ```bash
-   curl http://localhost:8080/
-   # Output: Bulletproof Snowflake Pure-Express Library active.
-   ```
-
----
-
-## ☁️ Deployment to GCP Cloud Run
-
-The project comes equipped with a standard `Dockerfile` and `deploy.sh` script to facilitate deployment to Google Cloud Run using **Cloud Build** (no local Docker daemon required).
-
-### Automating Deployment
-
-Run the deploy helper script to build and push the container:
-```bash
-chmod +x deploy.sh
-./deploy.sh
+```
+GCP Agent (Gemini) → OAuth → Snowflake MCP Server → SQL Execution → Your Data
 ```
 
 ---
 
-## 🔌 Registering with Gemini Enterprise
+## **Part 1: Snowflake Setup**
 
-To configure this server as a Custom MCP Datastore with secure delegated Snowflake OAuth:
+Run the following SQL commands in your Snowflake worksheet as `ACCOUNTADMIN` (or appropriate roles as specified).
 
-1. Open your **Vertex AI Search and Conversation** Console.
-2. Select **Data stores** ➡️ **Create data store** ➡️ **Custom MCP Server**.
-3. Fill out the form using your deployed Cloud Run URL:
+### **Step 1: Create a Dedicated Role and Grants**
+This creates a role `MCP_ROLE` with limited access to your database and warehouse.
+Replace `<your_snowflake_user>` with your actual Snowflake username.
 
-| Field | Entry Value |
-| :--- | :--- |
-| **MCP Server URL \*** | `https://<YOUR_CLOUD_RUN_URL>/mcp` |
-| **Authorization URL \*** | `https://<YOUR_CLOUD_RUN_URL>/auth` |
-| **Token URL \*** | `https://<YOUR_CLOUD_RUN_URL>/token` |
-| **Client ID \*** | *Enter your real **Snowflake Custom OAuth Client ID*** |
-| **Client Secret \*** | *Enter your real **Snowflake Custom OAuth Client Secret*** |
-| **Scopes** | *The scopes authorized under your Snowflake custom integration (e.g., `session:role-any`)* |
+```sql
+USE ROLE ACCOUNTADMIN;
 
-4. Click **Login** to start the delegated OAuth flow. You will be securely redirected to your Snowflake login page to authenticate:
-   
-   ![Snowflake OAuth Sign-in Dialog](screenshots/snowflake_login.png)
+-- Create Role
+CREATE ROLE IF NOT EXISTS MCP_ROLE;
 
-5. Once authenticated, save the connection and enable/authorize it inside the **Gemini Enterprise** chat connectors panel:
+-- Database & Schema Access
+-- (Ensure your database and schema exist, e.g., DASH_MCP_DB.DATA)
+GRANT USAGE ON DATABASE DASH_MCP_DB TO ROLE MCP_ROLE;
+GRANT USAGE ON SCHEMA DASH_MCP_DB.DATA TO ROLE MCP_ROLE;
 
-   ![Enable Snowflake Connector Panel](screenshots/connector_panel.png)
+-- Table access (Grant select on tables you want to expose)
+GRANT SELECT ON TABLE DASH_MCP_DB.DATA.FACT_RISK_ASSESSMENTS TO ROLE MCP_ROLE;
+GRANT SELECT ON TABLE DASH_MCP_DB.DATA.DIM_CUSTOMERS TO ROLE MCP_ROLE;
+
+-- Warehouse access
+GRANT USAGE ON WAREHOUSE DASH_WH_S TO ROLE MCP_ROLE;
+GRANT OPERATE ON WAREHOUSE DASH_WH_S TO ROLE MCP_ROLE;
+
+-- Assign to your user
+GRANT ROLE MCP_ROLE TO USER <your_snowflake_user>;
+GRANT ROLE MCP_ROLE TO ROLE SYSADMIN;
+```
+
+### **Step 2: Create OAuth Security Integration**
+This allows GCP to authenticate with Snowflake.
+
+```sql
+USE ROLE ACCOUNTADMIN;
+
+CREATE OR REPLACE SECURITY INTEGRATION MY_OAUTH_INT
+  TYPE = OAUTH
+  ENABLED = TRUE
+  OAUTH_CLIENT = CUSTOM
+  OAUTH_CLIENT_TYPE = 'CONFIDENTIAL'
+  OAUTH_REDIRECT_URI = 'https://vertexaisearch.cloud.google.com/oauth-redirect'
+  OAUTH_ISSUE_REFRESH_TOKENS = TRUE
+  OAUTH_REFRESH_TOKEN_VALIDITY = 7776000
+  OAUTH_USE_SECONDARY_ROLES = IMPLICIT
+  COMMENT = 'OAuth integration for GCP MCP access';
+
+-- Retrieve Client ID and Secret (CRITICAL: Save these for GCP setup)
+SELECT SYSTEM$SHOW_OAUTH_CLIENT_SECRETS('MY_OAUTH_INT');
+DESCRIBE SECURITY INTEGRATION MY_OAUTH_INT;
+```
+*Save the `OAUTH_CLIENT_ID` and the client secret returned by the query.*
+
+### **Step 3: Create Semantic View (Optional)**
+A semantic view defines your data model so Cortex Analyst can translate natural language into SQL.
+Example:
+```sql
+USE ROLE ACCOUNTADMIN;
+
+CREATE OR REPLACE SEMANTIC VIEW DASH_MCP_DB.DATA.RISK_ASSESSMENT_SV
+  TABLES (
+    customers AS DASH_MCP_DB.DATA.DIM_CUSTOMERS
+      PRIMARY KEY (CUSTOMER_ID)
+      COMMENT = 'Customer dimension table',
+    risk_assessments AS DASH_MCP_DB.DATA.FACT_RISK_ASSESSMENTS
+      PRIMARY KEY (ASSESSMENT_ID)
+      COMMENT = 'Risk assessment fact table'
+  )
+  RELATIONSHIPS (
+    risk_to_customer AS
+      risk_assessments (CUSTOMER_ID) REFERENCES customers
+  )
+  FACTS (
+    risk_assessments.risk_score AS RISK_SCORE
+  )
+  DIMENSIONS (
+    customers.first_name AS FIRST_NAME,
+    customers.last_name AS LAST_NAME,
+    customers.email AS EMAIL,
+    customers.segment AS CUSTOMER_SEGMENT,
+    risk_assessments.risk_category AS RISK_CATEGORY,
+    risk_assessments.assessment_date AS ASSESSMENT_DATE
+  )
+  METRICS (
+    customers.customer_count AS COUNT(CUSTOMER_ID)
+  )
+  COMMENT = 'Semantic view for customer risk assessment analysis';
+```
+
+### **Step 4: Create the MCP Server**
+Define the tools exposed by the MCP server.
+
+```sql
+USE ROLE ACCOUNTADMIN;
+
+CREATE OR REPLACE MCP SERVER DASH_MCP_DB.DATA.DASH_MCP_SERVER
+FROM SPECIFICATION $$
+tools:
+  - name: "risk_assessment_analyst"
+    type: "CORTEX_ANALYST_MESSAGE"
+    title: "Risk Assessment Analyst"
+    description: "Translates natural language questions about customer risk assessments into SQL. Returns SQL."
+    config:
+      semantic_view: DASH_MCP_DB.DATA.RISK_ASSESSMENT_SV
+  - name: "SQL_Execution_Tool"
+    type: "SYSTEM_EXECUTE_SQL"
+    title: "SQL Execution Tool"
+    description: "Executes SQL queries against Snowflake."
+    config:
+      warehouse: DASH_WH_S
+      read_only: false
+      query_timeout: 300
+$$;
+```
+
+### **Step 5: Grant Access and Configure Network Policy**
+Grant `MODIFY` privilege to the role.
+
+```sql
+GRANT USAGE ON MCP SERVER DASH_MCP_DB.DATA.DASH_MCP_SERVER TO ROLE MCP_ROLE;
+GRANT MODIFY ON MCP SERVER DASH_MCP_DB.DATA.DASH_MCP_SERVER TO ROLE MCP_ROLE;
+```
+
+Configure Network Policy to allow GCP IPs (adjust allowed IPs as needed):
+```sql
+CREATE OR REPLACE NETWORK POLICY MCP_NETWORK_POLICY
+  ALLOWED_IP_LIST = (
+    '35.190.0.0/16',       -- GCP us-central1 range
+    '172.253.0.0/16',      -- Google API infrastructure
+    '<your_local_ip>/32'   -- Your own IP for Snowsight access
+  )
+  COMMENT = 'Network policy for MCP access from GCP';
+
+ALTER USER <your_snowflake_user> SET NETWORK_POLICY = MCP_NETWORK_POLICY;
+```
 
 ---
 
-## 🧪 Example Prompts & Use Cases
+## **Part 2: GCP Configuration**
 
-### 1. Instant Read-Only Verification (Popup-Free)
-> **"Describe the SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.ORDERS table"**
-*Expectation: Executes in the background instantly using `execute_sql` to output table description schemas, returning a clean, readable structure with zero popup interruptions.*
+In your GCP Agent configuration (Vertex AI Agent Builder), use these connection parameters:
 
-![Snowflake Describe Table Output](screenshots/describe_table.png)
+| Parameter | Value |
+| ----- | ----- |
+| **MCP Server URL** | `https://<your-account>.snowflakecomputing.com/api/v2/databases/DASH_MCP_DB/schemas/DATA/mcp-servers/DASH_MCP_SERVER/sse` |
+| **Authorization URL** | `https://<your-account>.snowflakecomputing.com/oauth/authorize` |
+| **Token URL** | `https://<your-account>.snowflakecomputing.com/oauth/token-request` |
+| **Client ID** | *[From Step 2]* |
+| **Client Secret** | *[From Step 2]* |
+| **Scope** | `session:role:MCP_ROLE` |
 
-### 2. Natural Language Queries via Cortex Analyst
-> **"Ask Cortex search in our Sample Sales model (@MY_STAGE/sales_model.yaml): 'What were the total sales last week?'"**
-*Expectation: Instantly triggers `cortex_search` to return natural language insights translated from backend data.*
+> [!IMPORTANT]
+> The MCP Server URL must end with `/sse`.
 
-### 3. Secure Write Approval Check
-> **"Execute a command in Snowflake to create a new empty log table called 'METRIC_RUNS'."**
-*Expectation: Triggers `execute_sql` and prompts a client-side user confirmation box because it is marked destructive.*
+### **GCP Allowlist (Google Internal)**
+If you are using this within Google-internal projects, you must allowlist your Snowflake instance in:
+`google3/cloud/ml/discoveryengine/common/allowlist/google_internal/data_source_allowlist_config.textproto`
+
+Example entry:
+```textproto
+# Project: your-project-name (Number: <project_number>)
+project_allowlist {
+  key: <project_number>
+  value {
+    is_allow1p_connector: true
+    permitted3p_uris: "https://<your-account>.snowflakecomputing.com"
+  }
+}
+```
