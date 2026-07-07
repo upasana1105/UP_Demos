@@ -1,0 +1,39 @@
+evolution:
+  skill_name: billing-support
+  iterations: 5
+  eval_source: golden
+  optimizer_model: gemini-3.1-pro-preview
+  eval_model: gemini-3.1-pro-preview
+  vertex_ai:
+    project: ${GOOGLE_CLOUD_PROJECT}
+    location: global
+
+dataset:
+  source: tests/eval/datasets/billing-eval-medium.json
+  train_split: 0.6
+  val_split: 0.4
+
+gepa:
+  population_size: 3
+  candidates_per_iteration: 2
+  mutation_strategies:
+    - add_detail
+    - rephrase
+    - add_constraint
+    - add_example
+  selection: pareto
+
+constraints:
+  max_instruction_tokens: 500
+  min_improvement: 0.05
+  preserve_semantics: true
+
+output:
+  dir: hermes/output
+  save_baseline: true
+  save_metrics: true
+  save_all_candidates: true
+
+logging:
+  level: INFO
+  file: hermes/evolution.log

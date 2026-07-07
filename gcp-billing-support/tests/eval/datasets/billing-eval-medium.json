@@ -1,0 +1,214 @@
+{
+  "eval_cases": [
+    {
+      "eval_case_id": "quota_bq_001",
+      "prompt": {
+        "role": "user",
+        "parts": [{"text": "I'm getting 'Exceeded rate limits: too many concurrent queries' when running my BigQuery ETL. What's happening?"}]
+      },
+      "reference": {
+        "response": {
+          "role": "model",
+          "parts": [{"text": "You've hit BigQuery's default concurrent query limit of 100 queries per project. Your ETL pipeline is attempting more than 100 concurrent queries. Solutions: 1) Use query queuing in your ETL tool to limit concurrency to <100, 2) Request a quota increase via GCP Console → IAM → Quotas → BigQuery API → Concurrent rate limit per user, 3) Split workload across multiple projects."}]
+        }
+      },
+      "metadata": {"category": "quota_exceeded", "difficulty": "medium"}
+    },
+    {
+      "eval_case_id": "quota_bq_002",
+      "prompt": {
+        "role": "user",
+        "parts": [{"text": "My BigQuery jobs are getting 'Exceeded slot quota' errors during peak hours. We already have 2000 slots reserved."}]
+      },
+      "reference": {
+        "response": {
+          "role": "model",
+          "parts": [{"text": "Your on-demand slot usage is exceeding the 2000 slot reservation during peak hours. Check INFORMATION_SCHEMA.JOBS for concurrent slot consumption. Solutions: 1) Increase slot reservation capacity, 2) Implement job scheduling to spread workload, 3) Use query priority settings to manage concurrent jobs, 4) Consider flex slots for burst capacity."}]
+        }
+      },
+      "metadata": {"category": "quota_exceeded", "difficulty": "hard"}
+    },
+    {
+      "eval_case_id": "quota_compute_001",
+      "prompt": {
+        "role": "user",
+        "parts": [{"text": "Cannot create more VMs in us-central1. Error says 'Quota CPUS exceeded'. What should I do?"}]
+      },
+      "reference": {
+        "response": {
+          "role": "model",
+          "parts": [{"text": "You've reached the regional CPU quota limit for us-central1. Check current usage: gcloud compute project-info describe --project=PROJECT_ID. Solutions: 1) Request quota increase via GCP Console → IAM → Quotas → Compute Engine API → CPUs, 2) Delete unused VMs in that region, 3) Use a different region with available quota, 4) Consider using smaller machine types."}]
+        }
+      },
+      "metadata": {"category": "quota_exceeded", "difficulty": "medium"}
+    },
+    {
+      "eval_case_id": "cost_spike_001",
+      "prompt": {
+        "role": "user",
+        "parts": [{"text": "Our Compute Engine bill jumped from $500 to $2000 last week. How do I find out what caused this?"}]
+      },
+      "reference": {
+        "response": {
+          "role": "model",
+          "parts": [{"text": "Check Cloud Billing Reports filtered by SKU and time range. Likely causes: 1) New instances left running (check gcloud compute instances list --filter='creationTimestamp>LAST_WEEK_DATE'), 2) Instance type changes to larger machines, 3) Increased usage of existing instances. Use Cloud Asset Inventory to find who created resources: gcloud asset search-all-resources. Set up budget alerts to prevent future surprises."}]
+        }
+      },
+      "metadata": {"category": "cost_spike", "difficulty": "hard"}
+    },
+    {
+      "eval_case_id": "cost_spike_002",
+      "prompt": {
+        "role": "user",
+        "parts": [{"text": "BigQuery costs increased 300% this month. We run the same queries daily. What could cause this?"}]
+      },
+      "reference": {
+        "response": {
+          "role": "model",
+          "parts": [{"text": "Common causes for BigQuery cost spikes: 1) New queries without partition/cluster filters causing full table scans, 2) Tables grew significantly in size, 3) Someone ran SELECT * on large tables. Check INFORMATION_SCHEMA.JOBS_BY_PROJECT for top queries by bytes_billed. Identify the user and specific queries. Solutions: Require partition filters on large tables, set up query cost alerts, educate users on query optimization."}]
+        }
+      },
+      "metadata": {"category": "cost_spike", "difficulty": "medium"}
+    },
+    {
+      "eval_case_id": "cost_spike_003",
+      "prompt": {
+        "role": "user",
+        "parts": [{"text": "Unexpected $1500 network egress charge appeared. We don't transfer much data externally."}]
+      },
+      "reference": {
+        "response": {
+          "role": "model",
+          "parts": [{"text": "Network egress charges occur for: 1) Data transfer between GCP regions (inter-region), 2) Data transfer to external destinations, 3) Cloud CDN cache misses. Check Cloud Billing Reports filtered by SKU containing 'network egress'. Use VPC Flow Logs to identify source/destination of traffic. Common causes: misconfigured Cloud Storage buckets serving public content, cross-region BigQuery exports, VPN traffic."}]
+        }
+      },
+      "metadata": {"category": "cost_spike", "difficulty": "hard"}
+    },
+    {
+      "eval_case_id": "budget_alert_001",
+      "prompt": {
+        "role": "user",
+        "parts": [{"text": "We received a budget alert saying we're at 90% of our monthly budget. How do I see what's consuming the budget?"}]
+      },
+      "reference": {
+        "response": {
+          "role": "model",
+          "parts": [{"text": "Go to Cloud Billing → Reports and filter by current month. Group by Service and SKU to see breakdown. Check for: 1) Unexpected resource creation, 2) Quota/limit increases leading to higher usage, 3) Traffic spikes. Use Cost Table view for detailed SKU-level costs. Set up Cloud Billing export to BigQuery for deeper analysis with SQL queries."}]
+        }
+      },
+      "metadata": {"category": "budget_alert", "difficulty": "medium"}
+    },
+    {
+      "eval_case_id": "budget_alert_002",
+      "prompt": {
+        "role": "user",
+        "parts": [{"text": "Our budget forecasts show we'll exceed the monthly limit by 50%. What immediate actions can we take?"}]
+      },
+      "reference": {
+        "response": {
+          "role": "model",
+          "parts": [{"text": "Immediate cost reduction actions: 1) Identify and stop unused VMs: gcloud compute instances list, 2) Delete old snapshots and unused disks, 3) Review and disable expensive APIs if not needed, 4) Check for runaway processes (e.g., infinite retry loops), 5) Implement budget-based alerts with Cloud Functions to auto-stop non-critical resources when budget threshold is reached. Use Recommender API for cost optimization suggestions."}]
+        }
+      },
+      "metadata": {"category": "budget_alert", "difficulty": "hard"}
+    },
+    {
+      "eval_case_id": "budget_alert_003",
+      "prompt": {
+        "role": "user",
+        "parts": [{"text": "How do I set up budget alerts that actually prevent overspending instead of just notifying me after the fact?"}]
+      },
+      "reference": {
+        "response": {
+          "role": "model",
+          "parts": [{"text": "Budget alerts are notifications only - they don't block spending. To enforce limits: 1) Set up Pub/Sub notifications from budget alerts, 2) Create Cloud Function triggered by Pub/Sub to disable billing or stop resources, 3) Use Programmatic budget notifications with Cloud Run to implement custom logic, 4) Set restrictive quotas on expensive services. WARNING: Disabling billing can break production - use with caution. Better approach: automated resource shutdown for non-prod environments."}]
+        }
+      },
+      "metadata": {"category": "budget_alert", "difficulty": "medium"}
+    },
+    {
+      "eval_case_id": "optimization_001",
+      "prompt": {
+        "role": "user",
+        "parts": [{"text": "What are the best ways to reduce our GCP costs without impacting performance?"}]
+      },
+      "reference": {
+        "response": {
+          "role": "model",
+          "parts": [{"text": "Top cost optimization strategies: 1) Committed use discounts (1-year or 3-year for predictable workloads = 25-50% savings), 2) Sustained use discounts (automatic for Compute), 3) Preemptible/Spot VMs for batch workloads (up to 80% savings), 4) Rightsizing VMs using Recommender API, 5) Cloud Storage lifecycle policies (move old data to Nearline/Coldline), 6) BigQuery clustering and partitioning, 7) Delete orphaned resources (disks, IPs, snapshots). Use Cloud Billing reports to identify top spending SKUs."}]
+        }
+      },
+      "metadata": {"category": "optimization", "difficulty": "hard"}
+    },
+    {
+      "eval_case_id": "optimization_002",
+      "prompt": {
+        "role": "user",
+        "parts": [{"text": "We have many VMs running 24/7 but only need them during business hours. What's the best approach?"}]
+      },
+      "reference": {
+        "response": {
+          "role": "model",
+          "parts": [{"text": "Implement instance scheduling: 1) Use Cloud Scheduler + Cloud Functions to start/stop VMs, 2) Install ops agent to set schedules via metadata, 3) Use third-party tools like Terraform with time-based schedules, 4) For dev/test: stop instances at 6pm, start at 8am weekdays = 65% cost reduction. Sample: gcloud compute instances stop INSTANCE_NAME --zone=ZONE (in Cloud Function triggered by Cloud Scheduler). Ensure applications handle graceful shutdown."}]
+        }
+      },
+      "metadata": {"category": "optimization", "difficulty": "medium"}
+    },
+    {
+      "eval_case_id": "optimization_003",
+      "prompt": {
+        "role": "user",
+        "parts": [{"text": "Our Cloud Storage costs are high. How can we reduce storage costs?"}]
+      },
+      "reference": {
+        "response": {
+          "role": "model",
+          "parts": [{"text": "Cloud Storage cost optimization: 1) Implement lifecycle policies to move old data: Standard → Nearline (30 days) → Coldline (90 days) → Archive (365 days), 2) Enable object versioning limits (keep only 3 versions), 3) Delete incomplete multipart uploads, 4) Compress objects before upload, 5) Use gsutil du to find large objects: gsutil du -sh gs://bucket/**, 6) Review bucket storage class - don't use Standard for infrequently accessed data. Savings: up to 80% moving to Archive class."}]
+        }
+      },
+      "metadata": {"category": "optimization", "difficulty": "medium"}
+    },
+    {
+      "eval_case_id": "report_001",
+      "prompt": {
+        "role": "user",
+        "parts": [{"text": "How do I understand what all these SKUs mean in my billing report?"}]
+      },
+      "reference": {
+        "response": {
+          "role": "model",
+          "parts": [{"text": "SKU (Stock Keeping Unit) breakdown: 1) Format: [Service] [Resource Type] [Region] [Details], 2) Example: 'Compute Engine N1 Predefined Instance Core running in Americas' = N1 VM CPU usage in Americas region, 3) Use Cloud Billing Reports with SKU description column, 4) Common prefixes: Compute Engine = VMs/disks, Cloud Storage = storage/network, Networking = egress/load balancers. Filter by top SKUs to focus on biggest costs. Export to BigQuery for easier analysis: billing_export_v1 dataset."}]
+        }
+      },
+      "metadata": {"category": "report", "difficulty": "medium"}
+    },
+    {
+      "eval_case_id": "report_002",
+      "prompt": {
+        "role": "user",
+        "parts": [{"text": "I need to do a chargeback to different departments based on their GCP usage. How do I track this?"}]
+      },
+      "reference": {
+        "response": {
+          "role": "model",
+          "parts": [{"text": "Implement cost allocation with labels: 1) Apply labels to all resources: department=engineering, environment=prod, costcenter=1234, 2) Enable label-based billing export, 3) Use Cloud Billing Reports → Group By Labels, 4) Export billing data to BigQuery for detailed analysis and chargeback reports, 5) Create monthly reports by querying: SELECT labels.value, SUM(cost) FROM billing_export GROUP BY labels.value, 6) Enforce labeling with Organization Policies. Alternative: use separate projects per department for cleaner separation."}]
+        }
+      },
+      "metadata": {"category": "report", "difficulty": "hard"}
+    },
+    {
+      "eval_case_id": "report_003",
+      "prompt": {
+        "role": "user",
+        "parts": [{"text": "Where can I find historical billing data from 6 months ago?"}]
+      },
+      "reference": {
+        "response": {
+          "role": "model",
+          "parts": [{"text": "Access historical billing: 1) Cloud Billing Reports UI shows up to 12 months of data, 2) For longer retention and detailed analysis: export to BigQuery (setup: Billing → Billing export → configure dataset), 3) BigQuery export includes: standard export (daily costs), detailed usage cost (SKU-level hourly granularity), pricing export (cost rates), 4) Query example: SELECT * FROM `project.dataset.gcp_billing_export_v1_XXXXX` WHERE DATE(usage_start_time) BETWEEN 'YYYY-MM-DD' AND 'YYYY-MM-DD'. Export is free, querying has minimal cost."}]
+        }
+      },
+      "metadata": {"category": "report", "difficulty": "medium"}
+    }
+  ]
+}
