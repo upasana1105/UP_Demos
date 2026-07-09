@@ -1,0 +1,4 @@
+google-genai>=2.3.0
+fastmcp>=2.0.0
+requests
+python-dotenv
