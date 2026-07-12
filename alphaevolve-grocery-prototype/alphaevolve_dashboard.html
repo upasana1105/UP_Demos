@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AlphaEvolve Architecture & Execution Visualizer</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    :root {
+      --bg-main: var(--vscode-editor-background, #1e1e1e);
+      --fg-main: var(--vscode-foreground, #d4d4d4);
+      --card-bg: var(--vscode-editorWidget-background, #252526);
+      --border-color: var(--vscode-widget-border, #454545);
+      --accent-blue: #3b82f6;
+      --accent-green: #22c55e;
+      --accent-amber: #f59e0b;
+      --accent-purple: #a855f7;
+    }
+    body {
+      background-color: var(--bg-main);
+      color: var(--fg-main);
+      font-family: var(--vscode-font-family, system-ui, -apple-system, sans-serif);
+    }
+    .flow-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      transition: all 0.3s ease;
+    }
+    .flow-card.active {
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+      transform: scale(1.02);
+    }
+    .pulse-glow {
+      animation: pulse 1.8s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.8; transform: scale(1.03); }
+    }
+  </style>
+</head>
+<body class="p-6 space-y-6">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between border-b border-[var(--border-color)] pb-4">
+    <div>
+      <h1 class="text-2xl font-bold flex items-center gap-2 text-blue-400">
+        🧬 AlphaEvolve Principles & Execution Dashboard
+      </h1>
+      <p class="text-sm opacity-80 mt-1">
+        Interactive 1-to-1 mapping of your Grocery Planner prototype to DeepMind's official AlphaEvolve architecture.
+      </p>
+    </div>
+    <div class="flex gap-3">
+      <button id="step-btn" onclick="stepGeneration()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-lg text-sm transition">
+        ▶ Step Next Generation
+      </button>
+      <button onclick="resetSimulation()" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-200 font-medium rounded-lg text-sm transition">
+        🔄 Reset Simulation
+      </button>
+    </div>
+  </div>
+
+  <!-- Top Banner: Mapping Principles -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <!-- Green Box: Human defines What -->
+    <div class="p-4 rounded-xl border border-green-500/40 bg-green-950/20">
+      <div class="flex items-center gap-2 text-green-400 font-bold text-base mb-1">
+        <span>❓ Human Defines "What?"</span>
+      </div>
+      <p class="text-xs text-gray-300 mb-2">
+        You specified evaluation criteria ($45 budget, nutrition points, diversity bonus) and initial seed heuristic.
+      </p>
+      <div class="flex flex-wrap gap-2 text-xs">
+        <span class="px-2 py-1 bg-green-900/60 border border-green-700 rounded text-green-200 font-mono">grocery_dataset.py</span>
+        <span class="px-2 py-1 bg-green-900/60 border border-green-700 rounded text-green-200 font-mono">grocery_evaluator.py</span>
+        <span class="px-2 py-1 bg-green-900/60 border border-green-700 rounded text-green-200 font-mono">grocery_seed_program.py</span>
+      </div>
+    </div>
+
+    <!-- Blue Box: AlphaEvolve figures out How -->
+    <div class="p-4 rounded-xl border border-blue-500/40 bg-blue-950/20">
+      <div class="flex items-center gap-2 text-blue-400 font-bold text-base mb-1">
+        <span>🤖 AlphaEvolve Figures Out "How?"</span>
+      </div>
+      <p class="text-xs text-gray-300 mb-2">
+        Autonomous loop sample parents, proposes code mutations, runs evaluations, and discovers SOTA heuristics.
+      </p>
+      <div class="flex flex-wrap gap-2 text-xs">
+        <span class="px-2 py-1 bg-blue-900/60 border border-blue-700 rounded text-blue-200 font-mono">grocery_alpha_evolve_loop.py</span>
+        <span class="px-2 py-1 bg-blue-900/60 border border-blue-700 rounded text-blue-200 font-mono">run_prototype.py</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive 4-Box Architecture Diagram -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 relative">
+    
+    <!-- 1. Program Database -->
+    <div id="card-db" class="flow-card p-4 rounded-xl space-y-2">
+      <div class="flex justify-between items-center text-green-400">
+        <span class="font-bold text-sm">🗄️ Program Database</span>
+        <span class="text-xs px-2 py-0.5 rounded bg-green-950 border border-green-700 font-mono">Step 1</span>
+      </div>
+      <p class="text-xs text-gray-400">Stores historical program variants, fitness scores & insights.</p>
+      <div class="p-2 bg-black/40 rounded border border-gray-800 text-xs font-mono">
+        <div class="text-gray-400">Stored Candidates: <span id="db-count" class="text-green-400 font-bold">1</span></div>
+        <div class="text-gray-400">Top Fitness: <span id="db-top" class="text-green-400 font-bold">124.35</span></div>
+      </div>
+    </div>
+
+    <!-- 2. Prompt Sampler -->
+    <div id="card-sampler" class="flow-card p-4 rounded-xl space-y-2">
+      <div class="flex justify-between items-center text-blue-400">
+        <span class="font-bold text-sm">📥 Prompt Sampler</span>
+        <span class="text-xs px-2 py-0.5 rounded bg-blue-950 border border-blue-700 font-mono">Step 2</span>
+      </div>
+      <p class="text-xs text-gray-400">Constructs rich context with past successful heuristics as inspiration.</p>
+      <div class="p-2 bg-black/40 rounded border border-gray-800 text-xs font-mono">
+        <div id="sampler-status" class="text-blue-300">Ready to sample parent...</div>
+      </div>
+    </div>
+
+    <!-- 3. LLMs Ensemble -->
+    <div id="card-llm" class="flow-card p-4 rounded-xl space-y-2">
+      <div class="flex justify-between items-center text-purple-400">
+        <span class="font-bold text-sm">🧠 LLMs Ensemble</span>
+        <span class="text-xs px-2 py-0.5 rounded bg-purple-950 border border-purple-700 font-mono">Step 3</span>
+      </div>
+      <p class="text-xs text-gray-400">Proposes code mutations (non-linear weighting, category urgency).</p>
+      <div class="p-2 bg-black/40 rounded border border-gray-800 text-xs font-mono">
+        <div id="llm-status" class="text-purple-300">Awaiting mutation request...</div>
+      </div>
+    </div>
+
+    <!-- 4. Evaluators Pool -->
+    <div id="card-eval" class="flow-card p-4 rounded-xl space-y-2">
+      <div class="flex justify-between items-center text-amber-400">
+        <span class="font-bold text-sm">⚡ Evaluators Pool</span>
+        <span class="text-xs px-2 py-0.5 rounded bg-amber-950 border border-amber-700 font-mono">Step 4</span>
+      </div>
+      <p class="text-xs text-gray-400">Runs cart simulation, tests budget cap ($45), scores nutrition & diversity.</p>
+      <div class="p-2 bg-black/40 rounded border border-gray-800 text-xs font-mono">
+        <div id="eval-status" class="text-amber-300">Evaluator ready...</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Main View: Code Diff & Generational Trajectory -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+    <!-- Left: Heuristic Evolution Code Diff -->
+    <div class="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-xl p-4 space-y-3">
+      <div class="flex justify-between items-center">
+        <h2 class="font-bold text-base text-blue-300 flex items-center gap-2">
+          <span>💻 Heuristic Function Progression</span>
+        </h2>
+        <span id="gen-badge" class="px-2.5 py-0.5 rounded-full text-xs font-mono bg-blue-900 text-blue-200 border border-blue-700">
+          Generation 0 (Baseline)
+        </span>
+      </div>
+      <pre id="code-box" class="bg-black/60 p-3 rounded-lg text-xs font-mono overflow-x-auto text-green-300 max-h-72">
+def score_grocery_item(price, nutrition_score, category, current_budget_left, category_counts):
+    if price > current_budget_left:
+        return -1.0
+    
+    # Naive baseline: pick items purely by raw nutrition score
+    return nutrition_score
+      </pre>
+    </div>
+
+    <!-- Right: Fitness Score Progress & Metrics -->
+    <div class="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-xl p-4 space-y-4">
+      <h2 class="font-bold text-base text-green-300 flex items-center gap-2">
+        <span>📊 Generational Fitness Score Lift</span>
+      </h2>
+
+      <!-- Progress Bars -->
+      <div class="space-y-3 text-xs">
+        <div>
+          <div class="flex justify-between mb-1">
+            <span class="text-gray-400">Gen 0 Baseline Fitness:</span>
+            <span class="font-bold text-gray-200">124.35 pts</span>
+          </div>
+          <div class="w-full bg-gray-800 rounded-full h-2.5">
+            <div class="bg-gray-500 h-2.5 rounded-full" style="width: 70%"></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex justify-between mb-1">
+            <span class="text-gray-400">Current Best Fitness:</span>
+            <span id="current-fitness-label" class="font-bold text-green-400">124.35 pts</span>
+          </div>
+          <div class="w-full bg-gray-800 rounded-full h-2.5">
+            <div id="fitness-bar" class="bg-green-500 h-2.5 rounded-full transition-all duration-500" style="width: 70%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Current Metrics Breakdown -->
+      <div class="grid grid-cols-3 gap-2 text-center text-xs pt-2">
+        <div class="p-2 bg-black/40 rounded border border-gray-800">
+          <div class="text-gray-400">Total Nutrition</div>
+          <div id="metric-nutrition" class="text-blue-400 font-bold text-sm mt-0.5">88.5 pts</div>
+        </div>
+        <div class="p-2 bg-black/40 rounded border border-gray-800">
+          <div class="text-gray-400">Diversity Bonus</div>
+          <div id="metric-diversity" class="text-purple-400 font-bold text-sm mt-0.5">+36.0 pts</div>
+        </div>
+        <div class="p-2 bg-black/40 rounded border border-gray-800">
+          <div class="text-gray-400">Total Cost</div>
+          <div id="metric-cost" class="text-amber-400 font-bold text-sm mt-0.5">$44.70 / $45</div>
+        </div>
+      </div>
+
+      <div class="p-3 bg-blue-950/30 border border-blue-800/40 rounded-lg text-xs text-blue-200">
+        <span class="font-bold">✨ Fitness Improvement:</span>
+        <span id="lift-text">0.0% lift over initial baseline</span>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const generationsData = [
+      {
+        gen: 0,
+        name: "Gen 0 Baseline",
+        fitness: 124.35,
+        nutrition: 88.5,
+        diversity: 36.0,
+        cost: 44.70,
+        code: `def score_grocery_item(price, nutrition_score, category, current_budget_left, category_counts):
+    if price > current_budget_left:
+        return -1.0
+    
+    # Naive baseline: pick items purely by raw nutrition score
+    return nutrition_score`,
+        samplerMsg: "Seed heuristic loaded into DB",
+        llmMsg: "No mutation applied (Baseline)",
+        evalMsg: "Baseline evaluated (10 items, 36 div pts)"
+      },
+      {
+        gen: 1,
+        name: "Gen 1 (Category Urgency)",
+        fitness: 175.97,
+        nutrition: 122.0,
+        diversity: 54.0,
+        cost: 44.94,
+        code: `def score_grocery_item(price, nutrition_score, category, current_budget_left, category_counts):
+    if price > current_budget_left:
+        return -1.0
+    
+    # Base efficiency ratio
+    base_score = nutrition_score / max(price, 0.01)
+    
+    # Category scarcity boost (rewards picking under-represented categories)
+    count = category_counts.get(category, 0)
+    category_multiplier = 2.5 / (count + 1.0)
+    
+    return base_score * category_multiplier`,
+        samplerMsg: "Sampled Gen 0 parent (124.35 pts)",
+        llmMsg: "Proposed Category Scarcity Multiplier",
+        evalMsg: "Score = 175.97 (+41.5% Lift! SOTA discovered)"
+      },
+      {
+        gen: 2,
+        name: "Gen 2 (Nutrient Density)",
+        fitness: 169.93,
+        nutrition: 125.0,
+        diversity: 45.0,
+        cost: 44.85,
+        code: `def score_grocery_item(price, nutrition_score, category, current_budget_left, category_counts):
+    if price > current_budget_left:
+        return -1.0
+    
+    # Non-linear nutrition prioritization
+    nutrient_weight = (nutrition_score ** 2.0) / max(price, 0.5)
+    
+    # Moderate penalty after 2 items per category
+    cat_count = category_counts.get(category, 0)
+    diversity_penalty = 1.0 if cat_count < 2 else 0.5
+    
+    return nutrient_weight * diversity_penalty`,
+        samplerMsg: "Sampled Gen 1 SOTA parent",
+        llmMsg: "Proposed Non-Linear Exponent Weighting",
+        evalMsg: "Score = 169.93 (Retained Gen 1 SOTA)"
+      },
+      {
+        gen: 4,
+        name: "Gen 4 (SOTA Final)",
+        fitness: 176.17,
+        nutrition: 122.5,
+        diversity: 54.0,
+        cost: 44.34,
+        code: `def score_grocery_item(price, nutrition_score, category, current_budget_left, category_counts):
+    if price > current_budget_left:
+        return -1.0
+
+    count = category_counts.get(category, 0)
+    
+    # Premium multiplier for essential fresh nutrients
+    if category in ['vegetable', 'fruit', 'protein']:
+        category_priority = 2.2 / (count + 1.0)
+    else:
+        category_priority = 1.2 / (count + 1.0)
+        
+    # Non-linear nutrition exponent reward
+    efficiency = (nutrition_score ** 1.6) / max(price, 0.1)
+    
+    return efficiency * category_priority`,
+        samplerMsg: "Sampled top parent pool",
+        llmMsg: "Proposed Fresh Produce/Protein Priority Boost",
+        evalMsg: "Score = 176.17 (+41.7% Overall SOTA Lift!)"
+      }
+    ];
+
+    let currentIndex = 0;
+
+    function renderStep() {
+      const data = generationsData[currentIndex];
+
+      // Update Cards
+      document.getElementById('db-count').innerText = currentIndex + 1;
+      document.getElementById('db-top').innerText = data.fitness.toFixed(2);
+      document.getElementById('sampler-status').innerText = data.samplerMsg;
+      document.getElementById('llm-status').innerText = data.llmMsg;
+      document.getElementById('eval-status').innerText = data.evalMsg;
+
+      // Update Code & Badge
+      document.getElementById('gen-badge').innerText = data.name;
+      document.getElementById('code-box').innerText = data.code;
+
+      // Update Metrics
+      document.getElementById('current-fitness-label').innerText = `${data.fitness.toFixed(2)} pts`;
+      document.getElementById('metric-nutrition').innerText = `${data.nutrition.toFixed(1)} pts`;
+      document.getElementById('metric-diversity').innerText = `+${data.diversity.toFixed(1)} pts`;
+      document.getElementById('metric-cost').innerText = `$${data.cost.toFixed(2)} / $45`;
+
+      // Update Bar Width & Lift Text
+      const pct = Math.min(100, (data.fitness / 200) * 100);
+      document.getElementById('fitness-bar').style.width = `${pct}%`;
+
+      const lift = (((data.fitness - 124.35) / 124.35) * 100).toFixed(1);
+      document.getElementById('lift-text').innerText = `${lift >= 0 ? '+' : ''}${lift}% lift over initial baseline`;
+
+      // Highlight Card Sequence Animation
+      highlightActiveCard(currentIndex);
+    }
+
+    function highlightActiveCard(index) {
+      const cards = ['card-db', 'card-sampler', 'card-llm', 'card-eval'];
+      cards.forEach(c => document.getElementById(c).classList.remove('active'));
+      const activeCardId = cards[index % cards.length];
+      document.getElementById(activeCardId).classList.add('active');
+    }
+
+    function stepGeneration() {
+      currentIndex = (currentIndex + 1) % generationsData.length;
+      renderStep();
+    }
+
+    function resetSimulation() {
+      currentIndex = 0;
+      renderStep();
+    }
+
+    // Initial render
+    renderStep();
+  </script>
+</body>
+</html>

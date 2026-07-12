@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LinkedIn Carousel Slides</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    :root {
+      --bg-main: var(--vscode-editor-background, #12181f);
+      --fg-main: var(--vscode-foreground, #e2e8f0);
+      --card-bg: var(--vscode-editorWidget-background, #1a232d);
+      --border-color: var(--vscode-widget-border, #2d3748);
+    }
+    body {
+      background-color: #12181f;
+      color: var(--fg-main);
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 16px;
+      margin: 0;
+    }
+    .slide-card {
+      background: linear-gradient(135deg, #16222f 0%, #0f1720 100%);
+      border: 1px solid #2b394a;
+      border-radius: 20px;
+    }
+
+    /* Print Optimization to render 3 clean PDF pages */
+    @media print {
+      @page {
+        size: A4 landscape;
+        margin: 0;
+      }
+      body {
+        background-color: #12181f !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        padding: 10px !important;
+      }
+      .slide-card {
+        page-break-after: always !important;
+        page-break-inside: avoid !important;
+        margin-bottom: 20px !important;
+        border: none !important;
+      }
+    }
+  </style>
+</head>
+<body class="max-w-4xl mx-auto space-y-8">
+
+  <!-- SLIDE 1: Architecture Topology -->
+  <div class="slide-card p-6 space-y-4 shadow-2xl relative overflow-hidden">
+    <div class="text-center space-y-1">
+      <h2 class="text-xl font-black text-white">How AlphaEvolve Autonomous Code Discovery Works</h2>
+      <p class="text-xs text-gray-300">Shifting from prompt autocomplete to closed-loop evolutionary algorithm discovery</p>
+    </div>
+
+    <!-- Architecture Visual -->
+    <div class="space-y-4 bg-black/40 p-4 rounded-xl border border-gray-800">
+      <!-- Human Box -->
+      <div class="bg-green-950/40 border border-green-500/40 rounded-xl p-3 text-center space-y-1">
+        <div class="text-sm font-bold text-green-300">❓ Human defines "What?"</div>
+        <div class="text-[11px] text-gray-300 font-mono">
+          Criteria: $45 Budget Cap + Multi-Factor Fitness Formula | Seed Code: score_grocery_item()
+        </div>
+      </div>
+
+      <!-- Arrow -->
+      <div class="flex justify-between text-[11px] font-mono font-bold px-8">
+        <span class="text-blue-400">⬇️ Problem Definition ($45 Budget Cap + Seed Heuristic)</span>
+        <span class="text-green-400">⬆️ Improved Solution (+45.1% Fitness Lift)</span>
+      </div>
+
+      <!-- AlphaEvolve Box -->
+      <div class="bg-blue-950/40 border border-blue-500/40 rounded-xl p-4 space-y-3">
+        <div class="text-sm font-bold text-blue-300 text-center">🤖 AlphaEvolve figures out "How?"</div>
+
+        <div class="grid grid-cols-2 gap-3 text-[11px] font-mono">
+          <div class="p-2.5 bg-black/50 border border-blue-600/50 rounded-lg">
+            <div class="text-blue-300 font-bold">💻 Prompt Sampler</div>
+            <div class="text-gray-400 text-[10px]">Samples top parent heuristic context</div>
+          </div>
+          <div class="p-2.5 bg-black/50 border border-red-600/50 rounded-lg">
+            <div class="text-red-300 font-bold">🧠 LLMs Ensemble (Gemini)</div>
+            <div class="text-gray-400 text-[10px]">Generates AST code mutations & crossovers</div>
+          </div>
+          <div class="p-2.5 bg-black/50 border border-green-600/50 rounded-lg">
+            <div class="text-green-300 font-bold">🗄️ Program Database</div>
+            <div class="text-gray-400 text-[10px]">Stores program variants & fitness ranks</div>
+          </div>
+          <div class="p-2.5 bg-black/50 border border-amber-600/50 rounded-lg">
+            <div class="text-amber-300 font-bold">⚡ Evaluators Pool</div>
+            <div class="text-gray-400 text-[10px]">Runs cart test, checks $45 cap, scores fitness</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 2: Generational Fitness Curve Chart -->
+  <div class="slide-card p-6 space-y-4 shadow-2xl">
+    <div class="text-center space-y-1">
+      <h2 class="text-xl font-black text-white">Generational Fitness Growth: +45.1% Lift</h2>
+      <p class="text-xs text-gray-300">From initial naive baseline to evolved SOTA heuristic in 4 generations</p>
+    </div>
+
+    <!-- Chart -->
+    <div class="p-4 bg-black/50 rounded-xl border border-gray-800 space-y-2">
+      <svg class="w-full h-44" viewBox="0 0 600 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <line x1="40" y1="20" x2="40" y2="130" stroke="#4a5568" stroke-width="2"/>
+        <line x1="40" y1="130" x2="560" y2="130" stroke="#4a5568" stroke-width="2"/>
+        <line x1="40" y1="30" x2="560" y2="30" stroke="#2d3748" stroke-dasharray="4 4"/>
+        <line x1="40" y1="80" x2="560" y2="80" stroke="#2d3748" stroke-dasharray="4 4"/>
+
+        <text x="10" y="35" fill="#a0aec0" font-size="10">180</text>
+        <text x="10" y="85" fill="#a0aec0" font-size="10">150</text>
+        <text x="10" y="135" fill="#a0aec0" font-size="10">120</text>
+
+        <polyline points="70,125 180,26 300,45 420,70 530,25" fill="none" stroke="#22c55e" stroke-width="3.5" />
+
+        <circle cx="70" cy="125" r="5" fill="#a0aec0" />
+        <circle cx="180" cy="26" r="6" fill="#3b82f6" />
+        <circle cx="530" cy="25" r="7" fill="#22c55e" stroke="#ffffff" stroke-width="2" />
+
+        <text x="70" y="115" fill="#e2e8f0" font-size="11" font-weight="bold" text-anchor="middle">124.35 (Gen 0 Seed)</text>
+        <text x="180" y="18" fill="#60a5fa" font-size="11" font-weight="bold" text-anchor="middle">180.47 (Gen 1 SOTA)</text>
+        <text x="530" y="15" fill="#4ade80" font-size="11" font-weight="bold" text-anchor="middle">180.47 SOTA (+45.1%)</text>
+      </svg>
+    </div>
+  </div>
+
+  <!-- SLIDE 3: Discovered SOTA Code Card -->
+  <div class="slide-card p-6 space-y-4 shadow-2xl">
+    <div class="text-center space-y-1">
+      <h2 class="text-xl font-black text-white">The Evolved SOTA Heuristic Code</h2>
+      <p class="text-xs text-gray-300">Combining non-linear nutrient exponent math with category scarcity multipliers</p>
+    </div>
+
+    <pre class="bg-black/70 p-4 rounded-xl text-xs font-mono text-green-300 border border-green-800/40 overflow-x-auto">
+def score_grocery_item(
+    price: float,
+    nutrition_score: float,
+    category: str,
+    current_budget_left: float,
+    category_counts: dict[str, int],
+) -> float:
+  if price > current_budget_left:
+    return -1.0
+
+  # Priority multiplier for under-represented categories
+  count = category_counts.get(category, 0)
+  category_multiplier = 2.4 / (count + 1.0)
+
+  # Non-linear nutrition density weighting
+  efficiency = (nutrition_score**1.5) / max(price, 0.2)
+
+  return efficiency * category_multiplier
+</pre>
+  </div>
+
+</body>
+</html>

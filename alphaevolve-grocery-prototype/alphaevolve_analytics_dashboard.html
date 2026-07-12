@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AlphaEvolve Exact Grocery Implementation Topology</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    :root {
+      --bg-main: var(--vscode-editor-background, #1e1e1e);
+      --fg-main: var(--vscode-foreground, #d4d4d4);
+      --card-bg: var(--vscode-editorWidget-background, #252526);
+      --border-color: var(--vscode-widget-border, #454545);
+    }
+    body {
+      background-color: transparent;
+      color: var(--fg-main);
+      font-family: var(--vscode-font-family, system-ui, -apple-system, sans-serif);
+    }
+    .panel-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+    }
+    .tab-btn.active {
+      border-bottom: 2px solid #3b82f6;
+      color: #60a5fa;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body class="p-4 space-y-5">
+
+  <!-- Main Container -->
+  <div class="panel-card rounded-2xl p-5 shadow-xl space-y-6">
+
+    <!-- Header -->
+    <div class="border-b border-[var(--border-color)] pb-3">
+      <h1 class="text-xl font-extrabold text-blue-400 flex items-center gap-2">
+        🏛️ Exact Grocery Prototype Implementation Architecture
+      </h1>
+      <p class="text-xs text-gray-300 mt-1">
+        Showing the precise Python modules, function signatures, data structures, and evaluation formulas in your code.
+      </p>
+    </div>
+
+    <!-- Live Architecture Interactive Flow Chart -->
+    <div class="p-4 bg-black/50 border border-gray-800 rounded-xl space-y-4">
+      <div class="flex justify-between items-center text-xs font-bold text-green-400">
+        <span>🔄 Grocery Planner Execution Pipeline & Closed Loop</span>
+        <span class="font-mono text-gray-400 text-[11px]">Directory: //google3/</span>
+      </div>
+
+      <!-- Flow Grid matching code 1-to-1 -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
+
+        <!-- Stage 1: Program DB -->
+        <div class="p-3 bg-green-950/30 border border-green-700/60 rounded-xl space-y-2">
+          <div class="flex justify-between items-center text-green-300 font-bold text-[11px]">
+            <span>1. Program DB</span>
+            <span class="font-mono text-[9px] bg-green-900 px-1 rounded">population</span>
+          </div>
+          <div class="text-[10px] text-gray-300 space-y-1 font-mono bg-black/40 p-2 rounded">
+            <div><strong class="text-green-400">File:</strong> grocery_alpha_evolve_loop.py</div>
+            <div><strong class="text-green-400">Object:</strong> ProgramIndividual</div>
+            <div><strong class="text-green-400">Fields:</strong> code_str, fitness, eval_result</div>
+          </div>
+          <p class="text-[10px] text-gray-400">Retains candidate programs & historical fitness ranks.</p>
+        </div>
+
+        <!-- Stage 2: Prompt Sampler -->
+        <div class="p-3 bg-blue-950/30 border border-blue-700/60 rounded-xl space-y-2">
+          <div class="flex justify-between items-center text-blue-300 font-bold text-[11px]">
+            <span>2. Parent Sampler</span>
+            <span class="font-mono text-[9px] bg-blue-900 px-1 rounded">tournament</span>
+          </div>
+          <div class="text-[10px] text-gray-300 space-y-1 font-mono bg-black/40 p-2 rounded">
+            <div><strong class="text-blue-400">File:</strong> grocery_alpha_evolve_loop.py</div>
+            <div><strong class="text-blue-400">Logic:</strong> max(pop, key=fitness)</div>
+            <div><strong class="text-blue-400">Input:</strong> Parent Code + Insights</div>
+          </div>
+          <p class="text-[10px] text-gray-400">Extracts top-performing parent code as mutation inspiration.</p>
+        </div>
+
+        <!-- Stage 3: LLM Mutator -->
+        <div class="p-3 bg-purple-950/30 border border-purple-700/60 rounded-xl space-y-2">
+          <div class="flex justify-between items-center text-purple-300 font-bold text-[11px]">
+            <span>3. Code Mutator</span>
+            <span class="font-mono text-[9px] bg-purple-900 px-1 rounded">MUTATION_TEMPLATES</span>
+          </div>
+          <div class="text-[10px] text-gray-300 space-y-1 font-mono bg-black/40 p-2 rounded">
+            <div><strong class="text-purple-400">Target:</strong> score_grocery_item()</div>
+            <div><strong class="text-purple-400">Mutations:</strong> non-linear density, category urgency</div>
+          </div>
+          <p class="text-[10px] text-gray-400">Proposes new heuristic code for item scoring.</p>
+        </div>
+
+        <!-- Stage 4: Evaluator Pool -->
+        <div class="p-3 bg-amber-950/30 border border-amber-700/60 rounded-xl space-y-2">
+          <div class="flex justify-between items-center text-amber-300 font-bold text-[11px]">
+            <span>4. Evaluator Engine</span>
+            <span class="font-mono text-[9px] bg-amber-900 px-1 rounded">evaluate_code_string</span>
+          </div>
+          <div class="text-[10px] text-gray-300 space-y-1 font-mono bg-black/40 p-2 rounded">
+            <div><strong class="text-amber-400">File:</strong> grocery_evaluator.py</div>
+            <div><strong class="text-amber-400">Functions:</strong> assemble_cart(), calculate_fitness()</div>
+          </div>
+          <p class="text-[10px] text-gray-400">Runs cart simulation, tests $45 budget, returns fitness score.</p>
+        </div>
+
+      </div>
+
+      <!-- Bottom Loop Connection Banner -->
+      <div class="p-3 bg-black/60 border border-gray-800 rounded-lg flex items-center justify-between text-xs">
+        <div class="flex items-center gap-2 font-mono text-green-300 text-[11px]">
+          <span>⚡ Closed Feedback Loop:</span>
+          <span class="text-gray-300">evaluate_code_string() ➔ calculate_fitness() ➔ ProgramIndividual.fitness ➔ population.append()</span>
+        </div>
+        <span class="text-[10px] bg-green-950 border border-green-700 text-green-200 px-2 py-0.5 rounded">Run via run_prototype.py</span>
+      </div>
+    </div>
+
+    <!-- Detailed Code & Function Signatures Breakdown -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+      
+      <!-- Left: Data & Problem Definition -->
+      <div class="p-4 bg-black/40 border border-gray-800 rounded-xl space-y-3">
+        <h2 class="font-bold text-sm text-green-300 flex items-center gap-2 border-b border-gray-800 pb-2">
+          <span>📁 Problem & Evaluator Specification</span>
+        </h2>
+
+        <div class="space-y-2 font-mono text-[11px]">
+          <div>
+            <div class="text-gray-400 text-[10px] font-sans">1. Dataset Catalog & Scenario (grocery_dataset.py)</div>
+            <div class="text-green-300 bg-black/50 p-2 rounded mt-0.5 border border-gray-800">
+              GroceryItem(name, price, nutrition_score, category)<br>
+              DEFAULT_SCENARIO = ShoppingScenario(budget=45.0, min_diversity=1)
+            </div>
+          </div>
+
+          <div>
+            <div class="text-gray-400 text-[10px] font-sans">2. Fitness Calculation Formula (grocery_evaluator.py)</div>
+            <div class="text-amber-300 bg-black/50 p-2 rounded mt-0.5 border border-gray-800">
+              Fitness = Total_Nutrition + Category_Diversity_Bonus - Unspent_Penalty<br>
+              <span class="text-red-400">Hard Constraint:</span> If Total_Cost > $45.00 ➔ Fitness = 0.0
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Heuristic Function Signature & Loop -->
+      <div class="p-4 bg-black/40 border border-gray-800 rounded-xl space-y-3">
+        <h2 class="font-bold text-sm text-blue-300 flex items-center gap-2 border-b border-gray-800 pb-2">
+          <span>📁 Heuristic Signature & Evolution Engine</span>
+        </h2>
+
+        <div class="space-y-2 font-mono text-[11px]">
+          <div>
+            <div class="text-gray-400 text-[10px] font-sans">3. Mutated Target Function (grocery_seed_program.py)</div>
+            <div class="text-blue-300 bg-black/50 p-2 rounded mt-0.5 border border-gray-800">
+              def score_grocery_item(price, nutrition_score, category, current_budget_left, category_counts) -> float
+            </div>
+          </div>
+
+          <div>
+            <div class="text-gray-400 text-[10px] font-sans">4. Main Execution Controller (run_prototype.py)</div>
+            <div class="text-purple-300 bg-black/50 p-2 rounded mt-0.5 border border-gray-800">
+              unittest.TextTestRunner().run(grocery_evaluator_test)<br>
+              run_alpha_evolve_experiment(generations=4, population_size=3)
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</body>
+</html>

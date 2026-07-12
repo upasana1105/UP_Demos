@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AlphaEvolve & Usecase Visual Explanation</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    :root {
+      --bg-main: var(--vscode-editor-background, #1e1e1e);
+      --fg-main: var(--vscode-foreground, #d4d4d4);
+      --card-bg: var(--vscode-editorWidget-background, #252526);
+      --border-color: var(--vscode-widget-border, #454545);
+    }
+    body {
+      background-color: transparent;
+      color: var(--fg-main);
+      font-family: var(--vscode-font-family, system-ui, -apple-system, sans-serif);
+    }
+    .diagram-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+    }
+    .arrow-line {
+      position: relative;
+    }
+    .arrow-line::after {
+      content: '➔';
+      position: absolute;
+      right: -12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #3b82f6;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body class="p-4 space-y-6">
+
+  <!-- Main Container Card -->
+  <div class="diagram-card rounded-2xl p-5 shadow-lg space-y-6">
+    
+    <!-- Title & Subtitle -->
+    <div class="text-center border-b border-[var(--border-color)] pb-4">
+      <h1 class="text-xl font-extrabold text-blue-400 flex items-center justify-center gap-2">
+        🛒 The Grocery Shopping Usecase & 🧬 How AlphaEvolve Solves It
+      </h1>
+      <p class="text-xs text-gray-300 mt-1 max-w-2xl mx-auto">
+        Explaining how AlphaEvolve turns an everyday real-world decision problem into an autonomous algorithmic discovery engine.
+      </p>
+    </div>
+
+    <!-- Section 1: The Everyday Usecase -->
+    <div class="space-y-3">
+      <div class="flex items-center gap-2 font-bold text-sm text-amber-400">
+        <span class="px-2 py-0.5 rounded bg-amber-950/80 border border-amber-700">Part 1</span>
+        <span>The Problem: Weekly Grocery Shopping Optimization</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+        <!-- Input Constraint -->
+        <div class="p-3 bg-black/40 rounded-xl border border-gray-800 space-y-1.5">
+          <div class="font-bold text-gray-200 flex items-center gap-1.5">
+            <span>💵 Constraints & Inputs</span>
+          </div>
+          <ul class="text-gray-400 space-y-1 list-disc pl-4">
+            <li>Strict <strong class="text-amber-300">$45 Budget Limit</strong></li>
+            <li>30 Grocery Catalog items (Prices $1-$12)</li>
+            <li>6 Categories (Produce, Protein, Dairy...)</li>
+          </ul>
+        </div>
+
+        <!-- Human Dilemma -->
+        <div class="p-3 bg-black/40 rounded-xl border border-gray-800 space-y-1.5">
+          <div class="font-bold text-gray-200 flex items-center gap-1.5">
+            <span>🤔 The Multi-Goal Objective</span>
+          </div>
+          <ul class="text-gray-400 space-y-1 list-disc pl-4">
+            <li>Maximize Total Health & Nutrition</li>
+            <li>Ensure Balanced Variety across categories</li>
+            <li>Avoid leaving excess unspent budget</li>
+          </ul>
+        </div>
+
+        <!-- Why Human Heuristics Fail -->
+        <div class="p-3 bg-red-950/20 rounded-xl border border-red-800/40 space-y-1.5">
+          <div class="font-bold text-red-300 flex items-center gap-1.5">
+            <span>❌ Why Simple Human Rules Fail</span>
+          </div>
+          <p class="text-red-200/80 text-[11px]">
+            Human rules like <em>"Buy highest nutrition"</em> pick expensive items and run out of budget, or <em>"Buy cheapest"</em> buy junk snacks and miss essential protein/produce.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: What AlphaEvolve Does (Visual Flow Diagram) -->
+    <div class="space-y-3 pt-2">
+      <div class="flex items-center gap-2 font-bold text-sm text-blue-400">
+        <span class="px-2 py-0.5 rounded bg-blue-950/80 border border-blue-700">Part 2</span>
+        <span>How AlphaEvolve Discovers The Solution (The Engine Loop)</span>
+      </div>
+
+      <!-- Flow Chart -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
+        
+        <!-- Step A: Seed Program -->
+        <div class="p-3 rounded-xl border border-green-700/60 bg-green-950/20 space-y-1 relative">
+          <div class="text-xs font-bold text-green-400">1. Baseline Seed Code</div>
+          <p class="text-[11px] text-gray-300">
+            Human writes a simple initial Python rule function <code class="text-green-300">score_grocery_item()</code>.
+          </p>
+          <div class="mt-2 pt-2 border-t border-green-800/50 text-[10px] font-mono text-green-300">
+            Fitness: 124.35 pts
+          </div>
+        </div>
+
+        <!-- Step B: Evolutionary Mutation -->
+        <div class="p-3 rounded-xl border border-purple-700/60 bg-purple-950/20 space-y-1 relative">
+          <div class="text-xs font-bold text-purple-400">2. LLM Code Mutation</div>
+          <p class="text-[11px] text-gray-300">
+            AlphaEvolve proposes code edits: adding category scarcity multipliers, dynamic exponents, and budget pacing.
+          </p>
+          <div class="mt-2 pt-2 border-t border-purple-800/50 text-[10px] text-purple-300">
+            Proposes 100s of variants
+          </div>
+        </div>
+
+        <!-- Step C: Automated Evaluator -->
+        <div class="p-3 rounded-xl border border-amber-700/60 bg-amber-950/20 space-y-1 relative">
+          <div class="text-xs font-bold text-amber-400">3. Cart Evaluator</div>
+          <p class="text-[11px] text-gray-300">
+            Executes generated code in cart simulation, enforces $45 budget cap, and calculates exact score.
+          </p>
+          <div class="mt-2 pt-2 border-t border-amber-800/50 text-[10px] text-amber-300">
+            Fitness feedback loop
+          </div>
+        </div>
+
+        <!-- Step D: SOTA Discovery -->
+        <div class="p-3 rounded-xl border border-blue-600 bg-blue-950/40 space-y-1 shadow-md shadow-blue-900/30">
+          <div class="text-xs font-bold text-blue-300 flex items-center justify-between">
+            <span>4. SOTA Discovery</span>
+            <span class="text-[9px] bg-blue-600 text-white px-1.5 py-0.5 rounded">+41.7% Lift</span>
+          </div>
+          <p class="text-[11px] text-gray-200">
+            Keeps winning heuristics in Database; outputs superior algorithm that humans wouldn't manually construct.
+          </p>
+          <div class="mt-2 pt-2 border-t border-blue-800/50 text-[10px] font-mono text-blue-200 font-bold">
+            Fitness: 176.17 pts
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Summary Comparison Banner -->
+    <div class="p-3 bg-black/50 border border-gray-800 rounded-xl flex items-center justify-between text-xs">
+      <div class="flex items-center gap-3">
+        <div class="p-2 bg-blue-950 rounded-lg text-blue-400 font-bold text-base">🔑</div>
+        <div>
+          <div class="font-bold text-gray-200">Key takeaway of AlphaEvolve:</div>
+          <div class="text-gray-400 text-[11px]">
+            Instead of humans spending weeks tweaking heuristic code by hand, AlphaEvolve <strong>combines LLM code writing with continuous fitness feedback</strong> to discover mathematically optimal programs automatically.
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>
