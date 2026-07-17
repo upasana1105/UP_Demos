@@ -80,3 +80,10 @@ This repository includes a video-ready interactive demonstration (`demo_rca_app.
 ```bash
 python3 inkling-review/demo_rca_app.py
 ```
+
+### **How to Open the Web Dashboard Frontend**:
+
+```bash
+# Open directly in Chrome / default browser on your Mac:
+open inkling-review/web/index.html
+```

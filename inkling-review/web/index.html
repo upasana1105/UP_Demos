@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inkling 975B MoE - Multimodal RCA Engine</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f8fafc; }
+        .mono { font-family: 'Fira Code', monospace; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .glow-cyan { box-shadow: 0 0 20px rgba(6, 182, 212, 0.25); }
+        .glow-purple { box-shadow: 0 0 20px rgba(168, 85, 247, 0.25); }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col p-6">
+
+    <!-- Header -->
+    <header class="glass rounded-2xl p-6 mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 glow-cyan">
+        <div>
+            <div class="flex items-center gap-3">
+                <span class="bg-cyan-500/20 text-cyan-400 text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wider border border-cyan-500/30">Thinking Machines Inkling</span>
+                <span class="bg-purple-500/20 text-purple-400 text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wider border border-purple-500/30">1M Context Window</span>
+            </div>
+            <h1 class="text-3xl font-extrabold mt-2 bg-gradient-to-r from-cyan-400 via-teal-300 to-purple-400 bg-clip-text text-transparent">
+                Automated Multimodal SRE Incident RCA Engine
+            </h1>
+            <p class="text-slate-400 text-sm mt-1">975B Total Params • 41B Active • 256 Fine-Grained MoE Experts • Native HMLP Vision & 80-Mel Audio</p>
+        </div>
+        <button id="run-btn" onclick="startMultimodalRCA()" class="bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white font-bold px-8 py-3.5 rounded-xl shadow-lg transition-all transform hover:scale-105 active:scale-95 flex items-center gap-3 text-base">
+            <i class="fa-solid fa-bolt text-lg"></i>
+            <span>Run Inkling RCA Correlation</span>
+        </button>
+    </header>
+
+    <!-- Main Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1">
+
+        <!-- Left Column: Inputs (Vision, Audio, Logs) -->
+        <div class="lg:col-span-5 flex flex-col gap-6">
+
+            <!-- Input 1: Vision Dashboard -->
+            <div class="glass rounded-2xl p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-sm font-semibold text-cyan-400 flex items-center gap-2">
+                        <i class="fa-solid fa-image"></i> Modality 1: Grafana Metrics Screenshot (Vision)
+                    </span>
+                    <span class="text-xs text-slate-400 mono">HMLP Vision Encoder</span>
+                </div>
+                <div class="relative rounded-xl overflow-hidden border border-slate-700">
+                    <img src="../images/grafana_outage_spike.jpg" alt="Grafana Outage Dashboard" class="w-full h-48 object-cover">
+                    <div class="absolute bottom-2 left-2 bg-slate-900/90 text-xs px-2.5 py-1 rounded text-red-400 font-mono flex items-center gap-1">
+                        <i class="fa-solid fa-circle-exclamation text-red-500 animate-pulse"></i> Latency Spike Detected @ 15:45 UTC
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input 2: Log Stream (Text 150k Tokens) -->
+            <div class="glass rounded-2xl p-5 flex-1 flex flex-col">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-sm font-semibold text-purple-400 flex items-center gap-2">
+                        <i class="fa-solid fa-file-code"></i> Modality 2: Kubernetes Log Dump (Text)
+                    </span>
+                    <span class="text-xs text-emerald-400 mono">150,001 / 1,048,576 Tokens</span>
+                </div>
+                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 mono text-xs text-slate-300 h-36 overflow-y-auto space-y-1">
+                    <div class="text-slate-500">[15:44:59 UTC] auth-service INFO Pool size: 20 active connections</div>
+                    <div class="text-yellow-400">[15:45:02 UTC] WARN High queue wait time detected (latency > 1.2s)</div>
+                    <div class="text-red-400 font-bold">[15:45:10 UTC] ERROR DBConnectionError: Timeout acquiring pool (max_size=20 reached)</div>
+                    <div class="text-red-500 font-bold">[15:45:15 UTC] FATAL auth-service-pod-89f OOMKilled queue buffer overfill</div>
+                    <div class="text-slate-500">[15:45:20 UTC] k8s-scheduler Restarting pod auth-service-pod-89f (attempt 1/15)</div>
+                </div>
+            </div>
+
+            <!-- Input 3: Audio Huddle -->
+            <div class="glass rounded-2xl p-5">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-semibold text-teal-400 flex items-center gap-2">
+                        <i class="fa-solid fa-microphone"></i> Modality 3: SRE Slack Audio Huddle
+                    </span>
+                    <span class="text-xs text-teal-400 mono">80-Mel Spectrum (`dmel`)</span>
+                </div>
+                <div class="bg-slate-950/80 p-3.5 rounded-xl border border-slate-800 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-teal-500/20 text-teal-400 flex items-center justify-center">
+                            <i class="fa-solid fa-play text-xs"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs font-semibold text-slate-200">On-Call Huddle Recording</div>
+                            <div class="text-[10px] text-slate-400">"We updated connection pool config at 15:45 UTC..."</div>
+                        </div>
+                    </div>
+                    <span class="text-xs mono text-slate-500">00:45s</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Column: Live Output & RCA Report -->
+        <div class="lg:col-span-7 glass rounded-2xl p-6 flex flex-col glow-purple">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
+                <span class="text-lg font-bold text-slate-100 flex items-center gap-2">
+                    <i class="fa-solid fa-brain text-purple-400"></i> Inkling Multimodal Correlation Engine
+                </span>
+                <span id="status-badge" class="bg-slate-800 text-slate-400 text-xs px-3 py-1 rounded-full font-mono">
+                    Ready to run
+                </span>
+            </div>
+
+            <!-- Streaming Output Area -->
+            <div id="output-box" class="flex-1 bg-slate-950 p-6 rounded-xl border border-slate-800 overflow-y-auto text-slate-200 space-y-4 mono text-sm leading-relaxed">
+                <div class="text-slate-500 italic text-center py-12">
+                    Click "Run Inkling RCA Correlation" to stream live multimodal post-mortem analysis across 150k context tokens...
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function startMultimodalRCA() {
+            const btn = document.getElementById('run-btn');
+            const status = document.getElementById('status-badge');
+            const box = document.getElementById('output-box');
+
+            btn.disabled = true;
+            btn.classList.add('opacity-50');
+            status.className = "bg-cyan-500/20 text-cyan-400 text-xs px-3 py-1 rounded-full font-mono animate-pulse";
+            status.innerText = "Ingesting 150k Tokens + Vision + Audio...";
+
+            box.innerHTML = `
+                <div class="text-cyan-400 font-bold mb-2">[INKLING 975B MoE ENGINE INITIALIZED]</div>
+                <div class="text-slate-400">[1/3] Parsing Grafana screenshot via HMLP Vision Encoder... OK</div>
+                <div class="text-slate-400">[2/3] Processing 150,001 token k8s cluster log sequence... OK</div>
+                <div class="text-slate-400">[3/3] Decoding 80-mel audio spectrum huddle signal... OK</div>
+                <div class="text-purple-400 font-bold mt-4 mb-2">[CROSS-MODAL ROUTING VIA 256 MOE EXPERTS]</div>
+                <div id="typed-text" class="text-slate-100 space-y-3"></div>
+            `;
+
+            setTimeout(() => {
+                status.innerText = "Correlating 256 Expert Sub-Networks...";
+                const textContainer = document.getElementById('typed-text');
+                
+                const reportContent = `
+<h2 class="text-xl font-bold text-red-400 border-b border-red-500/30 pb-2">🚨 INCIDENT POST-MORTEM REPORT: SYSTEM LATENCY & RESOURCE SPIKE</h2>
+
+<div class="bg-slate-900 p-3 rounded-lg border border-slate-800 text-xs">
+<strong class="text-slate-300">Executive Summary:</strong> At 15:45 UTC, latency spiked to 2.8s with 480 req/sec HTTP 500 errors. Inkling correlated the visual Grafana metric anomaly with DB connection pool timeouts in logs and the configuration change mentioned in the audio huddle.
+</div>
+
+<h3 class="text-base font-bold text-cyan-300 mt-4">1. Multimodal Evidence Breakdown</h3>
+<ul class="list-disc pl-5 space-y-1 text-slate-300 text-xs">
+    <li><strong>Grafana Vision:</strong> Latency spiked to 2.8s at 15:45 UTC; CPU reached 98%, memory hit 62.4GB triggering pod restarts.</li>
+    <li><strong>Cluster Logs (150k Token Depth):</strong> <span class="text-red-400 font-mono">DBConnectionError: Timeout acquiring pool (max_size=20 reached)</span></li>
+    <li><strong>Slack Audio Huddle:</strong> SRE on-call confirmed deploying a DB pool config update at 15:45 UTC.</li>
+</ul>
+
+<h3 class="text-base font-bold text-emerald-400 mt-4">2. Actionable Remediation Plan</h3>
+<div class="space-y-1.5 text-xs">
+    <div class="text-emerald-300">✅ <strong>Immediate Fix:</strong> Revert DB_POOL_SIZE from 20 back to 200 in Production Helm values.</div>
+    <div class="text-slate-300">✅ <strong>Short-Term:</strong> Implement circuit-breaker pattern in auth-service for DB pool exhaustion.</div>
+    <div class="text-slate-300">✅ <strong>Long-Term:</strong> Enforce Canary rollout checks for database configuration changes.</div>
+</div>
+
+<div class="text-xs text-slate-500 mt-6 pt-2 border-t border-slate-800 flex justify-between">
+    <span>Processed in 3.12s</span>
+    <span>Inkling 975B MoE (41B Active Params)</span>
+</div>
+                `;
+
+                textContainer.innerHTML = reportContent;
+                status.className = "bg-emerald-500/20 text-emerald-400 text-xs px-3 py-1 rounded-full font-mono";
+                status.innerText = "RCA Correlation Complete";
+                btn.disabled = false;
+                btn.classList.remove('opacity-50');
+            }, 1800);
+        }
+    </script>
+</body>
+</html>
