@@ -63,3 +63,20 @@ A thorough engineering review requires looking past the benchmark charts. Here i
 Thinking Machines' **Inkling** is an impressive technical statement demonstrating how open-weights MoE models can scale to 975B parameters (41B active). 
 
 However, unless you have dedicated multi-node GPU clusters (e.g. 8x H100 80GB nodes) and custom engine serving pipelines, the operational overhead will be prohibitive for smaller engineering teams. For high-throughput enterprise voice and document agent systems, it is a game-changer; for lightweight self-hosters, it is an infrastructure beast.
+
+---
+
+## 📹 Interactive Video Demo: Automated Multimodal RCA Engine
+
+![Grafana Outage Dashboard](images/grafana_outage_spike.jpg)
+
+This repository includes a video-ready interactive demonstration (`demo_rca_app.py`) that showcases **Inkling's 1M token context window** processing:
+1. **Vision**: Grafana Monitoring Dashboard screenshot (`images/grafana_outage_spike.jpg`) detecting latency & CPU spikes.
+2. **Text**: ~150,000 token Kubernetes log dump (`incident_k8s_logs.txt`) uncovering DB pool exhaustion.
+3. **Audio**: SRE audio huddle signal (`sre_audio_huddle.wav`) via 80-mel spectrum tokenization.
+
+### **How to Run the Demo for Screen Recording**:
+
+```bash
+python3 inkling-review/demo_rca_app.py
+```
