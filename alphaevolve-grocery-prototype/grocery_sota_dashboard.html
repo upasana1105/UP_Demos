@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AlphaEvolve Grocery SOTA Analytics Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #0b0f19 0%, #111827 50%, #030712 100%);
+      --card-bg: rgba(17, 24, 39, 0.75);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --accent-blue: #38bdf8;
+      --accent-purple: #a855f7;
+      --accent-green: #34d399;
+      --accent-gold: #fbbf24;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 24px;
+      line-height: 1.5;
+    }
+    .dashboard-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    header {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+      backdrop-filter: blur(12px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .header-title h1 {
+      font-size: 26px;
+      font-weight: 800;
+      background: linear-gradient(90deg, #38bdf8, #a855f7, #34d399);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .header-title p { font-size: 14px; color: var(--text-muted); margin-top: 4px; }
+    .badge {
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: var(--accent-blue);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+    .kpi-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 20px;
+      backdrop-filter: blur(8px);
+    }
+    .kpi-card .label { font-size: 13px; color: var(--text-muted); font-weight: 600; }
+    .kpi-card .val { font-size: 32px; font-weight: 800; margin-top: 6px; color: #fff; }
+    .kpi-card .sub { font-size: 12px; color: var(--accent-green); margin-top: 4px; }
+
+    .grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 1024px) { .grid-2col { grid-template-columns: 1fr; } }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .card-header h2 { font-size: 18px; font-weight: 700; color: #fff; }
+
+    /* MAP-Elites Heatmap Matrix */
+    .map-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      aspect-ratio: 1;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+    .grid-cell {
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: #fff;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      position: relative;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    .grid-cell:hover { transform: scale(1.05); z-index: 10; border-color: var(--accent-blue); }
+    .grid-cell.empty { background: rgba(255,255,255,0.03); color: var(--text-muted); }
+
+    /* Code Diff Comparison */
+    .code-diff-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 768px) { .code-diff-container { grid-template-columns: 1fr; } }
+    .code-box {
+      background: #0d1117;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 16px;
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+      color: #e6edf3;
+      white-space: pre-wrap;
+      overflow-x: auto;
+      max-height: 320px;
+    }
+    .code-box.sota { border-color: rgba(52, 211, 153, 0.4); background: #061a14; }
+    .code-title { font-size: 13px; font-weight: 700; margin-bottom: 8px; color: var(--accent-blue); }
+    .code-box.sota .code-title { color: var(--accent-green); }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <header>
+      <div class="header-title">
+        <h1>🧬 AlphaEvolve SOTA Analytics Dashboard</h1>
+        <p>Enterprise Multi-Objective Evolutionary Algorithm & MAP-Elites Behavioral Archive Analysis</p>
+      </div>
+      <div class="badge">Live Production SOTA</div>
+    </header>
+
+    <!-- KPI Summary Row -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="label">SOTA Aggregate Score</div>
+        <div class="val" style="color: var(--accent-green);">87.4 / 100</div>
+        <div class="sub">Top scenario: Single Student (Budget & Speed)</div>
+      </div>
+      <div class="kpi-card">
+        <div class="label">2D MAP-Elites Archive Coverage</div>
+        <div class="val" style="color: var(--accent-blue);">12%</div>
+        <div class="sub">3 / 25 Niches Explored</div>
+      </div>
+      <div class="kpi-card">
+        <div class="label">Nutrient Alignment (F1)</div>
+        <div class="val">100.0</div>
+        <div class="sub">Macro & Micro Target Match</div>
+      </div>
+      <div class="kpi-card">
+        <div class="label">Financial Efficiency (F3)</div>
+        <div class="val" style="color: var(--accent-gold);">99.0</div>
+        <div class="sub">Budget Utilization Rate</div>
+      </div>
+    </div>
+
+    <!-- Charts Row 1: Pareto Frontier & MAP-Elites Heatmap -->
+    <div class="grid-2col">
+      <div class="card">
+        <div class="card-header">
+          <h2>🎯 2D Non-Dominated Pareto Frontier</h2>
+          <span style="font-size: 12px; color: var(--text-muted);">Nutrition Alignment (F1) vs Cost Efficiency (F3)</span>
+        </div>
+        <canvas id="paretoChart" height="280"></canvas>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2>🗺️ 5x5 MAP-Elites Behavioral Archive Grid</h2>
+          <span style="font-size: 12px; color: var(--text-muted);">Price Pacing vs Diversity & Nutrition Ratio</span>
+        </div>
+        <div class="map-grid" id="mapGrid"></div>
+      </div>
+    </div>
+
+    <!-- Charts Row 2: Scenario Trajectories & Code Diff -->
+    <div class="grid-2col">
+      <div class="card">
+        <div class="card-header">
+          <h2>📈 Multi-Scenario Evolutionary Convergence</h2>
+          <span style="font-size: 12px; color: var(--text-muted);">Fitness Trajectory Across 15 Generations</span>
+        </div>
+        <canvas id="trajectoryChart" height="280"></canvas>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2>💡 Seed Baseline vs Evolved SOTA Program</h2>
+          <span style="font-size: 12px; color: var(--accent-green);">Inside # EVOLVE-BLOCK</span>
+        </div>
+        <div class="code-diff-container">
+          <div>
+            <div class="code-title">Original Seed Code (Baseline)</div>
+            <div class="code-box">remaining_budget = scenario_constraints['budget'] - cart_state.get('total_cost', 0.0)
+  if item['price'] > remaining_budget:
+    return -1.0
+
+  cat_count = cart_state.get('category_counts', {}).get(item['category'], 0)
+  protein_eff = item.get('protein_g', 0.0) / max(item['price'], 0.1)
+  category_penalty = 1.0 / (cat_count + 1)
+  return protein_eff * category_penalty</div>
+          </div>
+          <div>
+            <div class="code-title">AlphaEvolve Discovered SOTA</div>
+            <div class="code-box sota">remaining = scenario_constraints['budget'] - cart_state.get('total_cost', 0.0)
+  if item['price'] > remaining:
+    return -1.0
+
+  protein_eff = (item.get('protein_g', 0.0) * 2.93) / max(item['price'], 0.32)
+  micros = (item.get('iron_mg', 0.0) * 0.18 + item.get('calcium_mg', 0.0) * 0.0088 + item.get('vitamin_d_mcg', 0.0) * 2.39) / max(item['price'], 0.32)
+
+  if not item.get('is_premium', False):
+    protein_eff *= 0.74
+
+  cat_cnt = cart_state.get('category_counts', dict()).get(item['category'], 0)
+  penalty = 1.0 / ((cat_cnt ** 1.87) + 1.0)
+  return (protein_eff + micros) * penalty</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Data passed from Python AlphaEvolve Orchestrator
+    const paretoPoints = [{"scenario": "Single Student (Budget & Speed)", "f1_nutrition": 100.0, "f2_diversity": 90.7, "f3_cost_eff": 98.96, "f4_spoilage": 60.0, "agg_score": 87.41, "strategy": "macro_focused", "items_count": 12, "items_list": ["Red Lentils Dry 16oz ($1.89)", "Wild Sardines Canned 3pk ($4.99)", "Protein Shake Vanilla 4pk ($8.99)", "Salmon Quinoa Meal Kit ($8.99)", "Chickpeas Dry 16oz ($1.99)"]}, {"scenario": "Single Student (Budget & Speed)", "f1_nutrition": 93.33, "f2_diversity": 94.1, "f3_cost_eff": 99.7, "f4_spoilage": 60.0, "agg_score": 86.78, "strategy": "spoilage_minimization", "items_count": 15, "items_list": ["Navy Beans Canned 15oz ($1.19)", "Wild Sardines Canned 3pk ($4.99)", "Cottage Cheese 4% 16oz ($2.99)", "Organic Chili with Beans 15oz ($2.99)", "Garlic Bulb 3pk ($1.69)"]}, {"scenario": "Single Student (Budget & Speed)", "f1_nutrition": 100.0, "f2_diversity": 86.36, "f3_cost_eff": 99.98, "f4_spoilage": 60.0, "agg_score": 86.59, "strategy": "macro_focused", "items_count": 11, "items_list": ["Red Lentils Dry 16oz ($1.89)", "Protein Shake Vanilla 4pk ($8.99)", "Beef Barbacoa Bowl Frozen ($6.49)", "Wild Sardines Canned 3pk ($4.99)", "Chickpeas Dry 16oz ($1.99)"]}, {"scenario": "Athlete Bulk (High Macro & Micro)", "f1_nutrition": 100.0, "f2_diversity": 88.98, "f3_cost_eff": 70.63, "f4_spoilage": 60.0, "agg_score": 79.9, "strategy": "macro_focused", "items_count": 15, "items_list": ["Red Lentils Dry 16oz ($1.89)", "Protein Shake Vanilla 4pk ($8.99)", "Salmon Quinoa Meal Kit ($8.99)", "Wild Sardines Canned 3pk ($4.99)", "Parmesan Shredded 5oz ($4.49)"]}, {"scenario": "Athlete Bulk (High Macro & Micro)", "f1_nutrition": 97.96, "f2_diversity": 94.1, "f3_cost_eff": 51.21, "f4_spoilage": 60.0, "agg_score": 75.82, "strategy": "macro_focused", "items_count": 15, "items_list": ["Red Lentils Dry 16oz ($1.89)", "Wild Sardines Canned 3pk ($4.99)", "Protein Shake Vanilla 4pk ($8.99)", "Beef Barbacoa Bowl Frozen ($6.49)", "Chickpeas Dry 16oz ($1.99)"]}, {"scenario": "Athlete Bulk (High Macro & Micro)", "f1_nutrition": 99.04, "f2_diversity": 90.38, "f3_cost_eff": 51.79, "f4_spoilage": 60.0, "agg_score": 75.3, "strategy": "macro_focused", "items_count": 15, "items_list": ["Red Lentils Dry 16oz ($1.89)", "Wild Sardines Canned 3pk ($4.99)", "Fresh Mint Herb ($1.99)", "Protein Shake Vanilla 4pk ($8.99)", "Beef Barbacoa Bowl Frozen ($6.49)"]}, {"scenario": "Family of 4 (Restricted: GF, Vegan, Low Sodium)", "f1_nutrition": 77.77, "f2_diversity": 88.98, "f3_cost_eff": 24.34, "f4_spoilage": 51.7, "agg_score": 60.7, "strategy": "macro_focused", "items_count": 15, "items_list": ["Red Lentils Dry 16oz ($1.89)", "Fresh Mint Herb ($1.99)", "Amaranth Grain Organic 16oz ($4.19)", "Chickpeas Dry 16oz ($1.99)", "Oat Protein Smoothie 11oz ($3.99)"]}, {"scenario": "Family of 4 (Restricted: GF, Vegan, Low Sodium)", "f1_nutrition": 74.95, "f2_diversity": 88.98, "f3_cost_eff": 18.66, "f4_spoilage": 60.0, "agg_score": 60.65, "strategy": "spoilage_minimization", "items_count": 15, "items_list": ["Red Lentils Dry 16oz ($1.89)", "Garlic Bulb 3pk ($1.69)", "Chickpeas Dry 16oz ($1.99)", "Oat Protein Smoothie 11oz ($3.99)", "Edamame Dry Roasted 8oz ($3.49)"]}];
+    const gridData = {"grid_size": 5, "coverage": 12.0, "total_elites": 3, "cells": {"3_4": {"row": 3, "col": 4, "descriptor": [1.0, 0.667], "fitness_vector": [93.33, 94.1, 99.7, 60.0], "aggregate_score": 86.78, "code": "\"\"\"Baseline Evolving Program for AlphaEvolve.\n\nContains official EVOLVE-BLOCK tags for LLM mutation.\n\"\"\"\n\ndef score_grocery_item(\n    item: dict,\n    cart_state: dict,\n    scenario_constraints: dict,\n) -> float:\n  \"\"\"Heuristic scoring function evolved by AlphaEvolve.\"\"\"\n  # EVOLVE-BLOCK START\n  remaining = scenario_constraints['budget'] - cart_state.get('total_cost', 0.0)\n  if item['price'] > remaining:\n    return -1.0\n\n  shelf_life = item.get('shelf_life_days', 7)\n  if shelf_life < scenario_constraints.get('min_shelf_life_days', 3):\n    return -1.0\n\n  prep_time = item.get('prep_time_mins', 0)\n  max_prep = scenario_constraints.get('max_prep_time_mins', 30)\n  prep_penalty = 1.0 if prep_time <= max_prep else 0.3\n\n  sodium = item.get('sodium_mg', 0.0)\n  sodium_penalty = 1.0 if sodium <= 651.7 else 0.4\n\n  val = (item.get('protein_g', 0.0) * 3.46 + item.get('calcium_mg', 0.0) * 0.0123) / max(item['price'], 0.12)\n  cat_cnt = cart_state.get('category_counts', dict()).get(item['category'], 0)\n  return (val * prep_penalty * sodium_penalty) / ((cat_cnt ** 1.91) + 1.0)\n  # EVOLVE-BLOCK END\n", "item_count": 15, "total_cost": 49.85}, "3_2": {"row": 3, "col": 2, "descriptor": [0.545, 0.63], "fitness_vector": [100.0, 86.36, 99.98, 60.0], "aggregate_score": 86.59, "code": "\"\"\"Baseline Evolving Program for AlphaEvolve.\n\nContains official EVOLVE-BLOCK tags for LLM mutation.\n\"\"\"\n\ndef score_grocery_item(\n    item: dict,\n    cart_state: dict,\n    scenario_constraints: dict,\n) -> float:\n  \"\"\"Heuristic scoring function evolved by AlphaEvolve.\"\"\"\n  # EVOLVE-BLOCK START\n  remaining = scenario_constraints['budget'] - cart_state.get('total_cost', 0.0)\n  if item['price'] > remaining:\n    return -1.0\n\n  protein_eff = (item.get('protein_g', 0.0) * 3.18) / max(item['price'], 0.26)\n  micros = (item.get('iron_mg', 0.0) * 0.39 + item.get('calcium_mg', 0.0) * 0.017 + item.get('vitamin_d_mcg', 0.0) * 2.17) / max(item['price'], 0.26)\n\n  if not item.get('is_premium', False):\n    protein_eff *= 0.54\n\n  cat_cnt = cart_state.get('category_counts', dict()).get(item['category'], 0)\n  penalty = 1.0 / ((cat_cnt ** 2.25) + 1.0)\n  return (protein_eff + micros) * penalty\n  # EVOLVE-BLOCK END\n", "item_count": 11, "total_cost": 49.99}, "3_3": {"row": 3, "col": 3, "descriptor": [0.75, 0.662], "fitness_vector": [100.0, 90.7, 98.96, 60.0], "aggregate_score": 87.41, "code": "\"\"\"Baseline Evolving Program for AlphaEvolve.\n\nContains official EVOLVE-BLOCK tags for LLM mutation.\n\"\"\"\n\ndef score_grocery_item(\n    item: dict,\n    cart_state: dict,\n    scenario_constraints: dict,\n) -> float:\n  \"\"\"Heuristic scoring function evolved by AlphaEvolve.\"\"\"\n  # EVOLVE-BLOCK START\n  remaining = scenario_constraints['budget'] - cart_state.get('total_cost', 0.0)\n  if item['price'] > remaining:\n    return -1.0\n\n  protein_eff = (item.get('protein_g', 0.0) * 2.93) / max(item['price'], 0.32)\n  micros = (item.get('iron_mg', 0.0) * 0.18 + item.get('calcium_mg', 0.0) * 0.0088 + item.get('vitamin_d_mcg', 0.0) * 2.39) / max(item['price'], 0.32)\n\n  if not item.get('is_premium', False):\n    protein_eff *= 0.74\n\n  cat_cnt = cart_state.get('category_counts', dict()).get(item['category'], 0)\n  penalty = 1.0 / ((cat_cnt ** 1.87) + 1.0)\n  return (protein_eff + micros) * penalty\n  # EVOLVE-BLOCK END\n", "item_count": 12, "total_cost": 49.48}}};
+    const trajectoryData = [{"generation": 1, "coverage": 4.0, "best_f1_nutrition": 92.76, "best_f2_diversity": 94.1, "best_f3_cost_eff": 99.1, "best_f4_spoilage": 60.0, "best_agg_score": 86.49}, {"generation": 2, "coverage": 4.0, "best_f1_nutrition": 92.76, "best_f2_diversity": 94.1, "best_f3_cost_eff": 99.1, "best_f4_spoilage": 60.0, "best_agg_score": 86.49}, {"generation": 3, "coverage": 4.0, "best_f1_nutrition": 92.76, "best_f2_diversity": 94.1, "best_f3_cost_eff": 99.1, "best_f4_spoilage": 60.0, "best_agg_score": 86.49}, {"generation": 4, "coverage": 4.0, "best_f1_nutrition": 92.76, "best_f2_diversity": 94.1, "best_f3_cost_eff": 99.1, "best_f4_spoilage": 60.0, "best_agg_score": 86.49}, {"generation": 5, "coverage": 4.0, "best_f1_nutrition": 93.33, "best_f2_diversity": 94.1, "best_f3_cost_eff": 99.7, "best_f4_spoilage": 60.0, "best_agg_score": 86.78}, {"generation": 6, "coverage": 4.0, "best_f1_nutrition": 93.33, "best_f2_diversity": 94.1, "best_f3_cost_eff": 99.7, "best_f4_spoilage": 60.0, "best_agg_score": 86.78}, {"generation": 7, "coverage": 8.0, "best_f1_nutrition": 93.33, "best_f2_diversity": 94.1, "best_f3_cost_eff": 99.7, "best_f4_spoilage": 60.0, "best_agg_score": 86.78}, {"generation": 8, "coverage": 12.0, "best_f1_nutrition": 93.33, "best_f2_diversity": 94.1, "best_f3_cost_eff": 99.7, "best_f4_spoilage": 60.0, "best_agg_score": 86.78}, {"generation": 9, "coverage": 12.0, "best_f1_nutrition": 93.33, "best_f2_diversity": 94.1, "best_f3_cost_eff": 99.7, "best_f4_spoilage": 60.0, "best_agg_score": 86.78}, {"generation": 10, "coverage": 12.0, "best_f1_nutrition": 93.33, "best_f2_diversity": 94.1, "best_f3_cost_eff": 99.7, "best_f4_spoilage": 60.0, "best_agg_score": 86.78}, {"generation": 11, "coverage": 12.0, "best_f1_nutrition": 100.0, "best_f2_diversity": 90.7, "best_f3_cost_eff": 98.96, "best_f4_spoilage": 60.0, "best_agg_score": 87.41}, {"generation": 12, "coverage": 12.0, "best_f1_nutrition": 100.0, "best_f2_diversity": 90.7, "best_f3_cost_eff": 98.96, "best_f4_spoilage": 60.0, "best_agg_score": 87.41}, {"generation": 13, "coverage": 12.0, "best_f1_nutrition": 100.0, "best_f2_diversity": 90.7, "best_f3_cost_eff": 98.96, "best_f4_spoilage": 60.0, "best_agg_score": 87.41}, {"generation": 14, "coverage": 12.0, "best_f1_nutrition": 100.0, "best_f2_diversity": 90.7, "best_f3_cost_eff": 98.96, "best_f4_spoilage": 60.0, "best_agg_score": 87.41}, {"generation": 15, "coverage": 12.0, "best_f1_nutrition": 100.0, "best_f2_diversity": 90.7, "best_f3_cost_eff": 98.96, "best_f4_spoilage": 60.0, "best_agg_score": 87.41}];
+
+    // Render Pareto Scatter Chart
+    const ctxPareto = document.getElementById('paretoChart').getContext('2d');
+    new Chart(ctxPareto, {
+      type: 'scatter',
+      data: {
+        datasets: [{
+          label: 'Non-Dominated SOTA Candidates',
+          data: paretoPoints.map(p => ({ x: p.f3_cost_eff, y: p.f1_nutrition, info: p })),
+          backgroundColor: '#38bdf8',
+          borderColor: '#34d399',
+          borderWidth: 2,
+          pointRadius: 7,
+          pointHoverRadius: 10
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: (ctx) => `Score: ${ctx.raw.info.agg_score} | Scenario: ${ctx.raw.info.scenario}`
+            }
+          }
+        },
+        scales: {
+          x: { title: { display: true, text: 'Financial Efficiency F3 [0-100]', color: '#9ca3af' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+          y: { title: { display: true, text: 'Nutrient Alignment F1 [0-100]', color: '#9ca3af' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+        }
+      }
+    });
+
+    // Render MAP-Elites 5x5 Heatmap Matrix
+    const mapGridContainer = document.getElementById('mapGrid');
+    for (let r = 4; r >= 0; r--) {
+      for (let c = 0; c < 5; c++) {
+        const key = `${r}_${c}`;
+        const cell = gridData.cells[key];
+        const div = document.createElement('div');
+        div.className = 'grid-cell ' + (cell ? '' : 'empty');
+
+        if (cell) {
+          const score = cell.aggregate_score;
+          const hue = (score / 100) * 120; // 0 (red) to 120 (green)
+          div.style.background = `hsla(${hue}, 70%, 40%, 0.65)`;
+          div.innerHTML = `<span>${score.toFixed(0)}</span><span style="font-size:9px;opacity:0.8;">Niche [${r},${c}]</span>`;
+          div.title = `Niche [${r},${c}] | Agg Score: ${score} | Cost: $${cell.total_cost.toFixed(2)}`;
+        } else {
+          div.innerHTML = `<span style="font-size:9px;color:#4b5563;">[${r},${c}]</span>`;
+        }
+        mapGridContainer.appendChild(div);
+      }
+    }
+
+    // Render Evolutionary Convergence Trajectory Line Chart
+    const ctxTraj = document.getElementById('trajectoryChart').getContext('2d');
+    new Chart(ctxTraj, {
+      type: 'line',
+      data: {
+        labels: trajectoryData.map(t => 'Gen ' + t.generation),
+        datasets: [
+          { label: 'SOTA Agg Score', data: trajectoryData.map(t => t.best_agg_score), borderColor: '#34d399', backgroundColor: 'rgba(52, 211, 153, 0.1)', fill: true, tension: 0.3 },
+          { label: 'Nutrient Alignment (F1)', data: trajectoryData.map(t => t.best_f1_nutrition), borderColor: '#38bdf8', borderDash: [4, 4], tension: 0.3 },
+          { label: 'Cost Efficiency (F3)', data: trajectoryData.map(t => t.best_f3_cost_eff), borderColor: '#fbbf24', borderDash: [2, 2], tension: 0.3 }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { labels: { color: '#f3f4f6' } } },
+        scales: {
+          x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#9ca3af' } },
+          y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#9ca3af' }, min: 0, max: 100 }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
