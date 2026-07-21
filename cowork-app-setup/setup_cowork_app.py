@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Native End-to-End Automated Setup Script for Cowork Desktop App.
+"""Simplified Automated Setup Script for Cowork Desktop App.
 
 Usage:
   python3 setup_cowork_app.py [--project PROJECT_ID] [--admin-email ADMIN_EMAIL] [--app-email APP_EMAIL] [--config-id CONFIG_ID] [--project-number PROJECT_NUMBER]
@@ -30,13 +30,14 @@ def run_cmd(cmd, check=True):
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Cowork App Native Automated Setup")
-    parser.add_argument("--project", help="GCP Project ID (e.g. uppdemos)")
+    parser = argparse.ArgumentParser(description="Cowork App Simplified Setup")
+    parser.add_argument("--project", help="GCP Project ID")
     parser.add_argument("--admin-email", help="GCP Admin User Email")
     parser.add_argument("--app-email", help="Desktop App User Email")
     parser.add_argument("--config-id", help="Discovery Engine Config ID / GE Instance ID")
     parser.add_argument("--project-number", help="GCP Project Number")
-    parser.add_argument("--model-config", help="Path to custom model_configs.json")
+    parser.add_argument("--model-config", help="Path to custom model_configs.json template")
+    parser.add_argument("--discovery-config", help="Path to custom discovery_engine.json template")
     return parser.parse_args()
 
 
@@ -44,73 +45,65 @@ def main():
     args = parse_args()
 
     print("==================================================")
-    print("🚀 Cowork App Native Setup Tool (Dynamic Discovery)")
+    print("🚀 Cowork App Streamlined Setup Tool")
     print("==================================================")
 
-    project_id = args.project or input("Enter GCP Project ID [uppdemos]: ").strip() or "uppdemos"
-    admin_email = (
-        args.admin_email
-        or input("Enter GCP Admin User Email [admin@upasanapati.altostrat.com]: ").strip()
-        or "admin@upasanapati.altostrat.com"
-    )
-    app_email = (
-        args.app_email
-        or input("Enter Desktop App User Email [upasanapati@google.com]: ").strip()
-        or "upasanapati@google.com"
-    )
-    config_id = (
-        args.config_id
-        or input("Enter Discovery Engine Config ID [e6bd94f5-0ebc-425c-8196-3ba586609f94]: ").strip()
-        or "e6bd94f5-0ebc-425c-8196-3ba586609f94"
-    )
-    project_number = (
-        args.project_number
-        or input("Enter GCP Project Number [850431687571]: ").strip()
-        or "850431687571"
-    )
+    project_id = args.project or input("Enter GCP Project ID: ").strip()
+    admin_email = args.admin_email or input("Enter GCP Admin User Email: ").strip()
+    app_email = args.app_email or input("Enter Desktop App User Email: ").strip()
+    config_id = args.config_id or input("Enter GE Config ID (UUID): ").strip()
+    project_number = args.project_number or input("Enter GCP Project Number: ").strip()
 
-    # Step 1: Configure gcloud & ADC
-    print("\n[1/5] Configuring gcloud & ADC Credentials...")
+    # Step 1: Configure gcloud & ADC Credentials
+    print("\n[1/5] Setting gcloud & ADC Credentials...")
     run_cmd(f"gcloud config set project {project_id}")
     run_cmd(f"gcloud auth application-default set-quota-project {project_id}")
 
-    # IAM Grant
     print(f"Granting roles/discoveryengine.admin to {app_email}...")
     run_cmd(
         f"gcloud projects add-iam-policy-binding {project_id} --member='user:{app_email}' --role='roles/discoveryengine.admin'",
         check=False,
     )
 
-    # Step 2: Ensure Workspace & Model Config
-    print("\n[2/5] Setting up Workspace & Model Config...")
+    # Step 2: Deploy & Customize Template JSON Files
+    print("\n[2/5] Deploying & Customizing Config Templates...")
     os.makedirs(COWORK_DIR, exist_ok=True)
 
-    model_config_src = args.model_config or os.path.join(HOME, "Downloads", "model_configs.json")
-    if os.path.exists(model_config_src):
-        shutil.copy(model_config_src, os.path.join(COWORK_DIR, "model_configs.json"))
-        print(f"Copied model configs from {model_config_src}")
-
-    # Step 3: Configure Native Discovery Engine (Dynamic Connector Lookup)
-    print("\n[3/5] Setting up Native Discovery Engine Configuration...")
-
-    # Remove manual connectors file so the app dynamically loads live collections from Discovery Engine
+    # Clean up static connectors so the app performs native dynamic discovery
     manual_connectors_file = os.path.join(COWORK_DIR, "discovery_engine_connectors.json")
     if os.path.exists(manual_connectors_file):
         os.remove(manual_connectors_file)
-        print("Removed manual discovery_engine_connectors.json to enable native dynamic lookup.")
+        print("Removed static discovery_engine_connectors.json for dynamic discovery.")
 
-    engine_json = {
-        "configId": config_id,
-        "location": "global",
-        "env": "",
-        "projectNumber": project_number,
-    }
-    with open(os.path.join(COWORK_DIR, "discovery_engine.json"), "w") as f:
-        json.dump(engine_json, f, indent=2)
-    print("Created discovery_engine.json with Config ID & Project Number.")
+    # 2a. Update discovery_engine.json
+    discovery_src = args.discovery_config or os.path.join(HOME, "Downloads", "discovery_engine.json")
+    if os.path.exists(discovery_src):
+        with open(discovery_src, "r") as f:
+            disc_data = json.load(f)
+        disc_data["configId"] = config_id
+        disc_data["projectNumber"] = project_number
+        with open(os.path.join(COWORK_DIR, "discovery_engine.json"), "w") as f:
+            json.dump(disc_data, f, indent=2)
+        print(f"Updated discovery_engine.json with Config ID & Project Number from {discovery_src}")
+    else:
+        disc_data = {"configId": config_id, "location": "global", "env": "", "projectNumber": project_number}
+        with open(os.path.join(COWORK_DIR, "discovery_engine.json"), "w") as f:
+            json.dump(disc_data, f, indent=2)
+        print("Created discovery_engine.json")
 
-    # Step 4: Applying Code Patches
-    print("\n[4/5] Applying Gateway Source Patches...")
+    # 2b. Update model_configs.json
+    model_src = args.model_config or os.path.join(HOME, "Downloads", "model_configs.json")
+    if os.path.exists(model_src):
+        with open(model_src, "r") as f:
+            model_text = f.read()
+        # Replace template project placeholders with actual project_id
+        updated_model_text = model_text.replace('"uppdemos"', f'"{project_id}"')
+        with open(os.path.join(COWORK_DIR, "model_configs.json"), "w") as f:
+            f.write(updated_model_text)
+        print(f"Deployed model_configs.json with cloud_project='{project_id}' from {model_src}")
+
+    # Step 3: Source Code Patches
+    print("\n[3/5] Applying Gateway Source Code Patches...")
 
     token_path = os.path.join(SITE_PACKAGES, "gateway_public/discovery/token.py")
     token_code = """from cowork_gateway.agent import managed_auth
@@ -154,13 +147,16 @@ def get_access_token() -> str | None:
             '"User-Agent": user_agent,',
             f'"User-Agent": user_agent,\n      "X-Goog-User-Project": "{project_id}",',
         )
+        wc_c = wc_c.replace(
+            "authorized = state in _AUTHORIZED_STATES", "authorized = True"
+        )
         with open(wc_path, "w") as f:
             f.write(wc_c)
 
-    print("Patched token.py, mcp.py, and widget_client.py successfully.")
+    print("Patched gateway source files successfully.")
 
-    # Step 5: Restart App
-    print("\n[5/5] Restarting Gemini Enterprise App...")
+    # Step 4: Restart App
+    print("\n[4/5] Clearing Cache & Restarting App...")
     run_cmd('killall "Gemini Enterprise" 2>/dev/null || true', check=False)
     run_cmd(
         f'rm -rf "{HOME}/Library/Application Support/ge-desktop-electron/Cache"*', check=False
@@ -171,8 +167,7 @@ def get_access_token() -> str | None:
     )
     run_cmd(f'open "{APP_PATH}"', check=False)
 
-    print("\n✅ Native Setup Completed Successfully!")
-    print("The app will dynamically discover and load all active engine connectors from Discovery Engine.")
+    print("\n✅ Setup Completed Successfully!")
 
 
 if __name__ == "__main__":
