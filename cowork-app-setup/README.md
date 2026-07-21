@@ -1,47 +1,76 @@
-# 🚀 Gemini Enterprise (GoGo) Desktop App Setup Guide
+# 💻 Gemini Enterprise (GoGo) Cowork App End-to-End Setup & Testing Guide
 
-Setting up **Gemini Enterprise (GoGo)** with native 3P enterprise connectors (Jira, Salesforce, GitHub, Slack, Outlook, Teams, OneDrive, SharePoint, ServiceNow, BigQuery) requires only 3 simple steps:
-
----
-
-## 📋 Required Inputs
-
-Gather these 2 parameters from your GCP project:
-
-1. **Config ID (`configId`)**: Open [Gemini Enterprise Web App](https://vertexaisearch.cloud.google.com). Look at your browser address bar: `https://vertexaisearch.cloud.google.com/home/cid/<CONFIG_ID>`. The UUID string following `/cid/` is your Config ID.
-2. **Project Number (`projectNumber`)**: Found in GCP Console Dashboard → **Project info** card (or run `gcloud projects describe <PROJECT_ID> --format="value(projectNumber)"`).
+This guide provides a comprehensive, end-to-end walkthrough for installing, configuring, and verifying the **Gemini Enterprise (GoGo) Desktop App** and enabling native 3P enterprise connectors (Jira, Salesforce, GitHub, Slack, Outlook, Teams, OneDrive, SharePoint, ServiceNow, BigQuery) and Google Workspace MCP tools.
 
 ---
 
-## 🛠 Setup Steps
+## 📋 1. Required Information & Where to Find It
 
-### 1. Update `discovery_engine.json`
-Open `/Users/upasanapati/Downloads/discovery_engine.json` and set your `configId` and `projectNumber`:
+Gather the following parameters before starting:
 
-```json
-{
-  "configId": "<YOUR_CONFIG_ID>",
-  "location": "global",
-  "env": "",
-  "projectNumber": "<YOUR_PROJECT_NUMBER>"
-}
+| Information | Parameter | Where to Find |
+| :--- | :--- | :--- |
+| **GCP Project ID** | `<PROJECT_ID>` | **GCP Console**: Top navbar dropdown.<br>**Terminal**: `gcloud config get-value project` |
+| **GCP Project Number** | `<PROJECT_NUMBER>` | **GCP Console**: Home Dashboard → **Project info** card.<br>**Terminal**: `gcloud projects describe <PROJECT_ID> --format="value(projectNumber)"` |
+| **GE Instance Config ID** | `<CONFIG_ID>` | **Web App**: Open [Gemini Enterprise Web App](https://vertexaisearch.cloud.google.com). Look at URL: `https://vertexaisearch.cloud.google.com/home/cid/<CONFIG_ID>`. The UUID following `/cid/` is your Config ID.<br>**GCP Console**: Vertex AI Search & Conversation → Engines → Engine Details → **Copy Config Link**. |
+| **GCP Admin Email** | `<ADMIN_EMAIL>` | Account owning project resources & 3P OAuth consents (`gcloud auth list`). |
+| **Desktop App Email** | `<APP_EMAIL>` | Account signed into the Electron Desktop App UI (bottom-left corner of app window). |
+
+---
+
+## 🚀 2. Fast Setup (Using Automated Tool)
+
+Run the interactive setup script, which prompts for inputs and automates steps 3 through 6:
+
+```bash
+python3 setup_cowork_app.py
 ```
 
 ---
 
-### 2. Copy Config & Remove Static Connectors
-Run the following terminal command to deploy `discovery_engine.json` and remove static connector overrides:
+## 🛠 3. Manual Step-by-Step E2E Setup
+
+### Step 1: Install Desktop App
+1. Extract your GoGo release archive (e.g. `gogo_20260720_213014.zip`).
+2. Run `install.sh`:
+   ```bash
+   cd ~/Downloads/gogo_release_folder
+   ./install.sh --skip-verify
+   ```
+
+### Step 2: Configure GCP Credentials & IAM Permissions
+```bash
+# Set active project and ADC quota project
+gcloud config set project <PROJECT_ID>
+gcloud auth login <ADMIN_EMAIL>
+gcloud auth application-default login
+gcloud auth application-default set-quota-project <PROJECT_ID>
+
+# Grant Discovery Engine Admin role to the desktop app user
+gcloud projects add-iam-policy-binding <PROJECT_ID> \
+  --member="user:<APP_EMAIL>" \
+  --role="roles/discoveryengine.admin"
+```
+
+### Step 3: Deploy Model Configurations
+Deploy `model_configs.json` to `~/cowork_workspace/.cowork/model_configs.json` and ensure `"cloud_project"` points to `<PROJECT_ID>`:
 
 ```bash
-cp /Users/upasanapati/Downloads/discovery_engine.json ~/cowork_workspace/.cowork/discovery_engine.json
+cp ~/Downloads/model_configs.json ~/cowork_workspace/.cowork/model_configs.json
+```
+
+### Step 4: Configure Native Discovery Engine (Dynamic Lookup)
+Update `/Users/upasanapati/Downloads/discovery_engine.json` with your `configId` and `projectNumber`, deploy to `.cowork`, and remove static connector overrides:
+
+```bash
+# 1. Copy template and update configId / projectNumber
+cp ~/Downloads/discovery_engine.json ~/cowork_workspace/.cowork/discovery_engine.json
+
+# 2. Remove static connectors file to enable dynamic lookup
 rm -f ~/cowork_workspace/.cowork/discovery_engine_connectors.json
 ```
 
----
-
-### 3. Restart Gemini Enterprise App
-Close and restart the desktop app to enable native dynamic connector discovery:
-
+### Step 5: Launch App
 ```bash
 killall "Gemini Enterprise" 2>/dev/null || true
 rm -rf "$HOME/Library/Application Support/ge-desktop-electron/Cache"*
@@ -51,4 +80,26 @@ open "/Applications/Gemini Enterprise.app"
 
 ---
 
-At startup, Gemini Enterprise will automatically call `lookupWidgetConfig` for your `configId` and dynamically populate all active enterprise connectors and tools natively through the UI!
+## 🧪 4. End-to-End Verification & Testing
+
+### Test 1: Desktop App UI Login
+- Launch **Gemini Enterprise.app**.
+- Verify that your `<APP_EMAIL>` is signed in at the bottom-left corner.
+
+### Test 2: Dynamic 3P Connector Tool Verification
+- In the left sidebar, click **Connected apps** / **Customize**.
+- Verify that **GEMINI ENTERPRISE** dynamically discovers and lists your 3P enterprise connectors (Jira, Salesforce, GitHub, Slack, Outlook, Teams, OneDrive, SharePoint, ServiceNow, BigQuery) with active tool counts.
+
+### Test 3: LLM Chat Inference
+- Open a new chat session in the app.
+- Send a prompt: *"Explain how Gemini 2.5 Flash works on Vertex AI."*
+- Confirm that response stream returns successfully using your Vertex AI quota on `<PROJECT_ID>`.
+
+### Test 4: Enterprise Tool & Search Queries
+- Test Federated Search in Chat:
+  - *"Search Salesforce for recent accounts and leads."*
+  - *"Find Jira tickets assigned to me."*
+  - *"Check my Slack channels for recent project updates."*
+- Test Workspace Actions in Chat:
+  - *"List my Google Calendar events for today."*
+  - *"Search my Gmail inbox for recent messages."*
