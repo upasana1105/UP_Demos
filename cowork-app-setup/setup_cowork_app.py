@@ -3,6 +3,7 @@
 
 Automates the complete E2E installation, configuration, credential setup,
 and dynamic 3P connector discovery for Gemini Enterprise (GoGo).
+No hardcoded project IDs, project numbers, config IDs, or user emails.
 """
 
 import json
@@ -17,7 +18,17 @@ COWORK_DIR = os.path.join(HOME, "cowork_workspace", ".cowork")
 ADC_PATH = os.path.join(HOME, ".config", "gcloud", "application_default_credentials.json")
 
 
+def get_cmd_output(cmd):
+    """Executes a command silently and returns stripped stdout if successful."""
+    try:
+        res = subprocess.run(cmd, shell=True, text=True, capture_output=True)
+        return res.stdout.strip() if res.returncode == 0 else ""
+    except Exception:
+        return ""
+
+
 def run_cmd(cmd, check=False):
+    """Executes a shell command with non-fatal warning tolerance."""
     print(f"👉 Executing: {cmd}")
     res = subprocess.run(cmd, shell=True, text=True, capture_output=True)
     if res.returncode != 0:
@@ -31,9 +42,56 @@ def run_cmd(cmd, check=False):
 
 
 def prompt_input(label, default=""):
+    """Prompts user for input with optional dynamic default."""
     prompt_str = f"Enter {label}" + (f" [{default}]: " if default else ": ")
     val = input(prompt_str).strip()
     return val if val else default
+
+
+def discover_dynamic_defaults(download_dir):
+    """Dynamically detects configuration defaults from the caller's active environment."""
+    # 1. Detect Project ID
+    proj_id = os.environ.get("GOOGLE_CLOUD_PROJECT", "") or get_cmd_output("gcloud config get-value project 2>/dev/null")
+    if not proj_id and os.path.exists(ADC_PATH):
+        try:
+            with open(ADC_PATH) as f:
+                proj_id = json.load(f).get("quota_project_id", "")
+        except Exception:
+            pass
+
+    # 2. Detect Project Number
+    proj_num = ""
+    if proj_id:
+        proj_num = get_cmd_output(f"gcloud projects describe {proj_id} --format='value(projectNumber)' 2>/dev/null")
+
+    # 3. Detect Discovery Engine Config ID & Project Number fallback from local JSON configs
+    config_id = ""
+    candidate_paths = [
+        os.path.join(COWORK_DIR, "discovery_engine.json"),
+        os.path.join(download_dir, "discovery_engine.json"),
+    ]
+    for p in candidate_paths:
+        if os.path.exists(p):
+            try:
+                with open(p) as f:
+                    data = json.load(f)
+                    if not config_id:
+                        config_id = data.get("configId", "")
+                    if not proj_num:
+                        proj_num = str(data.get("projectNumber", ""))
+            except Exception:
+                pass
+
+    # 4. Detect Active Accounts
+    active_account = get_cmd_output("gcloud config get-value account 2>/dev/null")
+
+    return {
+        "project_id": proj_id,
+        "project_number": proj_num,
+        "config_id": config_id,
+        "admin_email": active_account,
+        "app_email": active_account,
+    }
 
 
 def main():
@@ -41,23 +99,18 @@ def main():
     print("🚀 Gemini Enterprise (GoGo) End-to-End Setup Tool")
     print("==================================================")
 
-    # Defaults for quick setup
-    default_project_id = "uppdemos"
-    default_project_number = "850431687571"
-    default_config_id = "e6bd94f5-0ebc-425c-8196-3ba586609f94"
-    default_admin_email = "admin@upasanapati.altostrat.com"
-    default_app_email = "upasanapati@google.com"
+    default_download_dir = os.path.join(HOME, "Downloads")
+    download_dir = prompt_input("Path to Downloads folder", default_download_dir)
 
-    # Gather required user inputs
-    project_id = prompt_input("GCP Project ID", default_project_id)
-    project_number = prompt_input("GCP Project Number", default_project_number)
-    config_id = prompt_input("Discovery Engine Config ID (GE Instance UUID)", default_config_id)
-    admin_email = prompt_input("GCP Admin Email (owning project resources)", default_admin_email)
-    app_email = prompt_input("Desktop App User Email (signed into desktop UI)", default_app_email)
+    # Dynamically detect environment defaults
+    defaults = discover_dynamic_defaults(download_dir)
 
-    download_dir = prompt_input(
-        "Path to Downloads folder", os.path.join(HOME, "Downloads")
-    )
+    # Gather user inputs (using dynamic defaults when available)
+    project_id = prompt_input("GCP Project ID", defaults["project_id"])
+    project_number = prompt_input("GCP Project Number", defaults["project_number"])
+    config_id = prompt_input("Discovery Engine Config ID (GE Instance UUID)", defaults["config_id"])
+    admin_email = prompt_input("GCP Admin Email (owning project resources)", defaults["admin_email"])
+    app_email = prompt_input("Desktop App User Email (signed into desktop UI)", defaults["app_email"])
 
     print("\n--------------------------------------------------")
     print("📋 Configuration Summary:")
@@ -75,29 +128,30 @@ def main():
 
     # Step 1: Configure gcloud & ADC Credentials
     print("\n[1/5] Setting gcloud & ADC Credentials...")
-    run_cmd(f"gcloud config set project {project_id}", check=False)
-    run_cmd(f"gcloud auth application-default set-quota-project {project_id}", check=False)
+    if project_id:
+        run_cmd(f"gcloud config set project {project_id}", check=False)
+        run_cmd(f"gcloud auth application-default set-quota-project {project_id}", check=False)
 
-    # Direct ADC fallback injection to ensure quota project is always set
-    if os.path.exists(ADC_PATH):
-        try:
-            with open(ADC_PATH, "r") as f:
-                adc_json = json.load(f)
-            adc_json["quota_project_id"] = project_id
-            with open(ADC_PATH, "w") as f:
-                json.dump(adc_json, f, indent=2)
-            print(f"✅ Updated quota_project_id in ADC credentials ({ADC_PATH})")
-        except Exception as e:
-            print(f"⚠️ Notice: Could not direct update ADC file: {e}")
+        # Direct ADC fallback injection to ensure quota project is always configured
+        if os.path.exists(ADC_PATH):
+            try:
+                with open(ADC_PATH, "r") as f:
+                    adc_json = json.load(f)
+                adc_json["quota_project_id"] = project_id
+                with open(ADC_PATH, "w") as f:
+                    json.dump(adc_json, f, indent=2)
+                print(f"✅ Configured quota_project_id in ADC credentials ({ADC_PATH})")
+            except Exception as e:
+                print(f"⚠️ Notice: Could not direct-update ADC file: {e}")
 
-    if app_email:
+    if project_id and app_email:
         print(f"Granting roles/discoveryengine.admin to {app_email}...")
         run_cmd(
             f"gcloud projects add-iam-policy-binding {project_id} --member='user:{app_email}' --role='roles/discoveryengine.admin'",
             check=False,
         )
 
-    # Step 2: Ensure .cowork Directory & Deploy model_configs.json
+    # Step 2: Ensure .cowork Directory & Deploy model_configs.json dynamically
     print("\n[2/5] Deploying Model Configurations...")
     os.makedirs(COWORK_DIR, exist_ok=True)
 
@@ -110,19 +164,19 @@ def main():
     elif os.path.exists(target_model_file):
         source_to_use = target_model_file
 
-    if source_to_use:
+    if source_to_use and project_id:
         try:
             with open(source_to_use, "r") as f:
                 model_data = json.load(f)
 
-            # Update cloud_project across all models
+            # Dynamically update cloud_project across all configured models
             for model_item in model_data.get("models", []):
                 if "cloud_project" in model_item:
                     model_item["cloud_project"] = project_id
 
-            # Update default_cloud_project across catalog providers
+            # Dynamically update default_cloud_project across catalog providers
             for provider in model_data.get("catalog", {}).get("providers", []):
-                if "default_cloud_project" in provider and provider["default_cloud_project"]:
+                if "default_cloud_project" in provider and provider["default_cloud_project"] is not None:
                     provider["default_cloud_project"] = project_id
 
             with open(target_model_file, "w") as f:
@@ -131,7 +185,8 @@ def main():
         except Exception as e:
             print(f"⚠️ Error parsing model_configs.json: {e}")
     else:
-        print(f"⚠️ Warning: model_configs.json not found in Downloads or {COWORK_DIR}.")
+        if not os.path.exists(target_model_file):
+            print(f"⚠️ Warning: model_configs.json not found in {download_dir} or {COWORK_DIR}.")
 
     # Step 3: Deploy discovery_engine.json & Remove Static Connectors
     print("\n[3/5] Setting up Native Discovery Engine Configuration...")
@@ -176,7 +231,10 @@ def main():
     print("🎉 Setup Completed Successfully!")
     print("==================================================")
     print("🧪 How to Verify & Test Your Setup:")
-    print(f"  1. Sign into the app UI with: {app_email}")
+    if app_email:
+        print(f"  1. Sign into the app UI with: {app_email}")
+    else:
+        print("  1. Sign into the app UI with your account.")
     print("  2. Go to Connected Apps / Customize in the app side menu.")
     print("  3. Verify that 3P connectors (Jira, Salesforce, GitHub, Slack, ServiceNow, BigQuery) display active toolsets.")
     print("  4. Send a test prompt in Chat:")
