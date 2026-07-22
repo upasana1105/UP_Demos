@@ -44,8 +44,12 @@ def run_cmd(cmd, check=False):
 def prompt_input(label, default=""):
     """Prompts user for input with optional dynamic default."""
     prompt_str = f"Enter {label}" + (f" [{default}]: " if default else ": ")
-    val = input(prompt_str).strip()
-    return val if val else default
+    try:
+        val = input(prompt_str).strip()
+        return val if val else default
+    except (EOFError, KeyboardInterrupt):
+        print(default)
+        return default
 
 
 def discover_dynamic_defaults(download_dir):
@@ -121,7 +125,11 @@ def main():
     print(f"  • App Email: {app_email}")
     print("--------------------------------------------------\n")
 
-    confirm = input("Proceed with setup? (Y/n): ").strip().lower()
+    try:
+        confirm = input("Proceed with setup? (Y/n): ").strip().lower()
+    except (EOFError, KeyboardInterrupt):
+        confirm = "y"
+
     if confirm and confirm not in ["y", "yes"]:
         print("Setup aborted.")
         sys.exit(0)
