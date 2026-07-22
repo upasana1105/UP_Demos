@@ -6,6 +6,7 @@ and dynamic 3P connector discovery for Gemini Enterprise (GoGo).
 No hardcoded project IDs, project numbers, config IDs, or user emails.
 """
 
+import glob
 import json
 import os
 import shutil
@@ -52,6 +53,30 @@ def prompt_input(label, default=""):
         return default
 
 
+def find_candidate_file(filename, download_dir):
+    """Finds the newest matching candidate file in Downloads or release bundles."""
+    candidates = []
+    direct = os.path.join(download_dir, filename)
+    if os.path.exists(direct):
+        candidates.append(direct)
+
+    for p in glob.glob(os.path.join(download_dir, "gogo_*", "helpers", filename)):
+        candidates.append(p)
+    for p in glob.glob(os.path.join(download_dir, "gogo_*", filename)):
+        candidates.append(p)
+
+    cowork_direct = os.path.join(COWORK_DIR, filename)
+    if os.path.exists(cowork_direct):
+        candidates.append(cowork_direct)
+
+    candidates = list(dict.fromkeys(candidates))
+    if not candidates:
+        return None
+    # Sort newest modified file first
+    candidates.sort(key=lambda p: os.path.getmtime(p), reverse=True)
+    return candidates[0]
+
+
 def discover_dynamic_defaults(download_dir):
     """Dynamically detects configuration defaults from the caller's active environment."""
     # 1. Detect Project ID
@@ -70,21 +95,16 @@ def discover_dynamic_defaults(download_dir):
 
     # 3. Detect Discovery Engine Config ID & Project Number fallback from local JSON configs
     config_id = ""
-    candidate_paths = [
-        os.path.join(COWORK_DIR, "discovery_engine.json"),
-        os.path.join(download_dir, "discovery_engine.json"),
-    ]
-    for p in candidate_paths:
-        if os.path.exists(p):
-            try:
-                with open(p) as f:
-                    data = json.load(f)
-                    if not config_id:
-                        config_id = data.get("configId", "")
-                    if not proj_num:
-                        proj_num = str(data.get("projectNumber", ""))
-            except Exception:
-                pass
+    discovery_candidate = find_candidate_file("discovery_engine.json", download_dir)
+    if discovery_candidate and os.path.exists(discovery_candidate):
+        try:
+            with open(discovery_candidate) as f:
+                data = json.load(f)
+                config_id = data.get("configId", "")
+                if not proj_num:
+                    proj_num = str(data.get("projectNumber", ""))
+        except Exception:
+            pass
 
     # 4. Detect Active Accounts
     active_account = get_cmd_output("gcloud config get-value account 2>/dev/null")
@@ -163,16 +183,10 @@ def main():
     print("\n[2/5] Deploying Model Configurations...")
     os.makedirs(COWORK_DIR, exist_ok=True)
 
-    model_src = os.path.join(download_dir, "model_configs.json")
+    source_to_use = find_candidate_file("model_configs.json", download_dir)
     target_model_file = os.path.join(COWORK_DIR, "model_configs.json")
 
-    source_to_use = None
-    if os.path.exists(model_src):
-        source_to_use = model_src
-    elif os.path.exists(target_model_file):
-        source_to_use = target_model_file
-
-    if source_to_use and project_id:
+    if source_to_use and os.path.exists(source_to_use) and project_id:
         try:
             with open(source_to_use, "r") as f:
                 model_data = json.load(f)
@@ -189,7 +203,7 @@ def main():
 
             with open(target_model_file, "w") as f:
                 json.dump(model_data, f, indent=2)
-            print(f"✅ Deployed and configured model_configs.json (cloud_project: {project_id})")
+            print(f"✅ Deployed and configured model_configs.json from {source_to_use} (cloud_project: {project_id})")
         except Exception as e:
             print(f"⚠️ Error parsing model_configs.json: {e}")
     else:
