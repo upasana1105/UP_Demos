@@ -217,14 +217,15 @@ def main():
     # Step 4: Clear App Cache & Local Storage
     print("\n[4/5] Clearing App Cache & Local Storage...")
     run_cmd('killall "Gemini Enterprise" 2>/dev/null || true', check=False)
-    run_cmd(
-        f'rm -rf "{HOME}/Library/Application Support/ge-desktop-electron/Cache"*',
-        check=False,
-    )
-    run_cmd(
-        f'rm -rf "{HOME}/Library/Application Support/ge-desktop-electron/Local Storage"',
-        check=False,
-    )
+    app_data_dir = os.path.join(HOME, "Library", "Application Support", "ge-desktop-electron")
+    if os.path.exists(app_data_dir):
+        for cache_folder in ["Cache", "Code Cache", "Local Storage", "Session Storage", "GPUCache"]:
+            target_cache = os.path.join(app_data_dir, cache_folder)
+            if os.path.exists(target_cache):
+                try:
+                    shutil.rmtree(target_cache, ignore_errors=True)
+                except Exception:
+                    pass
     print("✅ App cache and local storage cleared.")
 
     # Step 5: Launch App & Verification Guidance
