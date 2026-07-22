@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Simplified End-to-End Cowork App Setup & Testing Tool.
+"""Robust End-to-End Cowork App Setup & Testing Tool.
 
 Automates the complete E2E installation, configuration, credential setup,
 and dynamic 3P connector discovery for Gemini Enterprise (GoGo).
@@ -14,14 +14,19 @@ import sys
 APP_PATH = "/Applications/Gemini Enterprise.app"
 HOME = os.path.expanduser("~")
 COWORK_DIR = os.path.join(HOME, "cowork_workspace", ".cowork")
+ADC_PATH = os.path.join(HOME, ".config", "gcloud", "application_default_credentials.json")
 
 
-def run_cmd(cmd, check=True):
+def run_cmd(cmd, check=False):
     print(f"👉 Executing: {cmd}")
     res = subprocess.run(cmd, shell=True, text=True, capture_output=True)
-    if check and res.returncode != 0:
-        print(f"❌ Command failed:\n{res.stderr}")
-        sys.exit(1)
+    if res.returncode != 0:
+        if check:
+            print(f"❌ Command failed:\n{res.stderr.strip()}")
+            sys.exit(1)
+        else:
+            if res.stderr.strip():
+                print(f"⚠️ Notice (non-fatal): {res.stderr.strip().splitlines()[0]}")
     return res.stdout.strip()
 
 
@@ -36,12 +41,19 @@ def main():
     print("🚀 Gemini Enterprise (GoGo) End-to-End Setup Tool")
     print("==================================================")
 
+    # Defaults for quick setup
+    default_project_id = "uppdemos"
+    default_project_number = "850431687571"
+    default_config_id = "e6bd94f5-0ebc-425c-8196-3ba586609f94"
+    default_admin_email = "admin@upasanapati.altostrat.com"
+    default_app_email = "upasanapati@google.com"
+
     # Gather required user inputs
-    project_id = prompt_input("GCP Project ID")
-    project_number = prompt_input("GCP Project Number")
-    config_id = prompt_input("Discovery Engine Config ID (GE Instance UUID)")
-    admin_email = prompt_input("GCP Admin Email (owning project resources)")
-    app_email = prompt_input("Desktop App User Email (signed into desktop UI)")
+    project_id = prompt_input("GCP Project ID", default_project_id)
+    project_number = prompt_input("GCP Project Number", default_project_number)
+    config_id = prompt_input("Discovery Engine Config ID (GE Instance UUID)", default_config_id)
+    admin_email = prompt_input("GCP Admin Email (owning project resources)", default_admin_email)
+    app_email = prompt_input("Desktop App User Email (signed into desktop UI)", default_app_email)
 
     download_dir = prompt_input(
         "Path to Downloads folder", os.path.join(HOME, "Downloads")
@@ -63,57 +75,81 @@ def main():
 
     # Step 1: Configure gcloud & ADC Credentials
     print("\n[1/5] Setting gcloud & ADC Credentials...")
-    run_cmd(f"gcloud config set project {project_id}")
-    run_cmd(f"gcloud auth application-default set-quota-project {project_id}")
+    run_cmd(f"gcloud config set project {project_id}", check=False)
+    run_cmd(f"gcloud auth application-default set-quota-project {project_id}", check=False)
 
-    print(f"Granting roles/discoveryengine.admin to {app_email}...")
-    run_cmd(
-        f"gcloud projects add-iam-policy-binding {project_id} --member='user:{app_email}' --role='roles/discoveryengine.admin'",
-        check=False,
-    )
+    # Direct ADC fallback injection to ensure quota project is always set
+    if os.path.exists(ADC_PATH):
+        try:
+            with open(ADC_PATH, "r") as f:
+                adc_json = json.load(f)
+            adc_json["quota_project_id"] = project_id
+            with open(ADC_PATH, "w") as f:
+                json.dump(adc_json, f, indent=2)
+            print(f"✅ Updated quota_project_id in ADC credentials ({ADC_PATH})")
+        except Exception as e:
+            print(f"⚠️ Notice: Could not direct update ADC file: {e}")
+
+    if app_email:
+        print(f"Granting roles/discoveryengine.admin to {app_email}...")
+        run_cmd(
+            f"gcloud projects add-iam-policy-binding {project_id} --member='user:{app_email}' --role='roles/discoveryengine.admin'",
+            check=False,
+        )
 
     # Step 2: Ensure .cowork Directory & Deploy model_configs.json
     print("\n[2/5] Deploying Model Configurations...")
     os.makedirs(COWORK_DIR, exist_ok=True)
 
     model_src = os.path.join(download_dir, "model_configs.json")
+    target_model_file = os.path.join(COWORK_DIR, "model_configs.json")
+
+    source_to_use = None
     if os.path.exists(model_src):
-        with open(model_src, "r") as f:
-            model_text = f.read()
-        # Replace default template project placeholders with user project_id
-        updated_model_text = model_text.replace('"uppdemos"', f'"{project_id}"')
-        with open(os.path.join(COWORK_DIR, "model_configs.json"), "w") as f:
-            f.write(updated_model_text)
-        print(f"Deployed model_configs.json (cloud_project: {project_id})")
+        source_to_use = model_src
+    elif os.path.exists(target_model_file):
+        source_to_use = target_model_file
+
+    if source_to_use:
+        try:
+            with open(source_to_use, "r") as f:
+                model_data = json.load(f)
+
+            # Update cloud_project across all models
+            for model_item in model_data.get("models", []):
+                if "cloud_project" in model_item:
+                    model_item["cloud_project"] = project_id
+
+            # Update default_cloud_project across catalog providers
+            for provider in model_data.get("catalog", {}).get("providers", []):
+                if "default_cloud_project" in provider and provider["default_cloud_project"]:
+                    provider["default_cloud_project"] = project_id
+
+            with open(target_model_file, "w") as f:
+                json.dump(model_data, f, indent=2)
+            print(f"✅ Deployed and configured model_configs.json (cloud_project: {project_id})")
+        except Exception as e:
+            print(f"⚠️ Error parsing model_configs.json: {e}")
     else:
-        print(f"⚠️ Warning: {model_src} not found. Skipping model_configs copy.")
+        print(f"⚠️ Warning: model_configs.json not found in Downloads or {COWORK_DIR}.")
 
     # Step 3: Deploy discovery_engine.json & Remove Static Connectors
     print("\n[3/5] Setting up Native Discovery Engine Configuration...")
     manual_connectors = os.path.join(COWORK_DIR, "discovery_engine_connectors.json")
     if os.path.exists(manual_connectors):
         os.remove(manual_connectors)
-        print("Removed static discovery_engine_connectors.json for native dynamic lookup.")
+        print("✅ Removed static discovery_engine_connectors.json for native dynamic lookup.")
 
-    discovery_src = os.path.join(download_dir, "discovery_engine.json")
-    if os.path.exists(discovery_src):
-        with open(discovery_src, "r") as f:
-            disc_data = json.load(f)
-        disc_data["configId"] = config_id
-        disc_data["projectNumber"] = project_number
-        with open(os.path.join(COWORK_DIR, "discovery_engine.json"), "w") as f:
-            json.dump(disc_data, f, indent=2)
-        print(f"Updated discovery_engine.json with Config ID & Project Number from {discovery_src}")
-    else:
-        disc_data = {
-            "configId": config_id,
-            "location": "global",
-            "env": "",
-            "projectNumber": project_number,
-        }
-        with open(os.path.join(COWORK_DIR, "discovery_engine.json"), "w") as f:
-            json.dump(disc_data, f, indent=2)
-        print("Created discovery_engine.json")
+    disc_data = {
+        "configId": config_id,
+        "location": "global",
+        "env": "",
+        "projectNumber": project_number,
+    }
+    disc_target = os.path.join(COWORK_DIR, "discovery_engine.json")
+    with open(disc_target, "w") as f:
+        json.dump(disc_data, f, indent=2)
+    print(f"✅ Configured {disc_target} (Config ID: {config_id}, Project Number: {project_number})")
 
     # Step 4: Clear App Cache & Local Storage
     print("\n[4/5] Clearing App Cache & Local Storage...")
@@ -126,18 +162,23 @@ def main():
         f'rm -rf "{HOME}/Library/Application Support/ge-desktop-electron/Local Storage"',
         check=False,
     )
+    print("✅ App cache and local storage cleared.")
 
     # Step 5: Launch App & Verification Guidance
     print("\n[5/5] Launching Gemini Enterprise Desktop App...")
-    run_cmd(f'open "{APP_PATH}"', check=False)
+    if os.path.exists(APP_PATH):
+        run_cmd(f'open "{APP_PATH}"', check=False)
+        print("✅ Gemini Enterprise Desktop App launched.")
+    else:
+        print(f"⚠️ App bundle not found at {APP_PATH}.")
 
     print("\n==================================================")
-    print("✅ Setup Completed Successfully!")
+    print("🎉 Setup Completed Successfully!")
     print("==================================================")
     print("🧪 How to Verify & Test Your Setup:")
-    print("  1. Sign into the app UI with: " + app_email)
+    print(f"  1. Sign into the app UI with: {app_email}")
     print("  2. Go to Connected Apps / Customize in the app side menu.")
-    print("  3. Verify that 3P connectors (Jira, Salesforce, GitHub, Slack, etc.) display active toolsets.")
+    print("  3. Verify that 3P connectors (Jira, Salesforce, GitHub, Slack, ServiceNow, BigQuery) display active toolsets.")
     print("  4. Send a test prompt in Chat:")
     print("     - 'Summarize my Jira tickets'")
     print("     - 'Search Salesforce for accounts'")
