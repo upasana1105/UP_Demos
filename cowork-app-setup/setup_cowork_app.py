@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Robust End-to-End Cowork App Setup & Testing Tool.
+"""End-to-End Cowork App Setup & Testing Tool.
 
 Automates the complete E2E installation, configuration, credential setup,
 and dynamic 3P connector discovery for Gemini Enterprise (GoGo).
-No hardcoded project IDs, project numbers, config IDs, or user emails.
+No hardcoded personal project IDs, project numbers, config IDs, or user emails.
 """
 
 import glob
@@ -54,7 +54,7 @@ def prompt_input(label, default=""):
 
 
 def find_candidate_file(filename, download_dir):
-    """Finds the newest matching candidate file in Downloads or release bundles."""
+    """Finds matching candidate file in Downloads or release bundles."""
     candidates = []
     direct = os.path.join(download_dir, filename)
     if os.path.exists(direct):
@@ -65,21 +65,15 @@ def find_candidate_file(filename, download_dir):
     for p in glob.glob(os.path.join(download_dir, "gogo_*", filename)):
         candidates.append(p)
 
-    cowork_direct = os.path.join(COWORK_DIR, filename)
-    if os.path.exists(cowork_direct):
-        candidates.append(cowork_direct)
-
     candidates = list(dict.fromkeys(candidates))
     if not candidates:
         return None
-    # Sort newest modified file first
     candidates.sort(key=lambda p: os.path.getmtime(p), reverse=True)
     return candidates[0]
 
 
-def discover_dynamic_defaults(download_dir):
-    """Dynamically detects configuration defaults from the caller's active environment."""
-    # 1. Detect Project ID
+def discover_active_gcloud_defaults():
+    """Detects active gcloud defaults from caller's current environment if available."""
     proj_id = os.environ.get("GOOGLE_CLOUD_PROJECT", "") or get_cmd_output("gcloud config get-value project 2>/dev/null")
     if not proj_id and os.path.exists(ADC_PATH):
         try:
@@ -88,31 +82,17 @@ def discover_dynamic_defaults(download_dir):
         except Exception:
             pass
 
-    # 2. Detect Project Number
     proj_num = ""
-    if proj_id:
+    if proj_id and not proj_id.startswith("("):
         proj_num = get_cmd_output(f"gcloud projects describe {proj_id} --format='value(projectNumber)' 2>/dev/null")
 
-    # 3. Detect Discovery Engine Config ID & Project Number fallback from local JSON configs
-    config_id = ""
-    discovery_candidate = find_candidate_file("discovery_engine.json", download_dir)
-    if discovery_candidate and os.path.exists(discovery_candidate):
-        try:
-            with open(discovery_candidate) as f:
-                data = json.load(f)
-                config_id = data.get("configId", "")
-                if not proj_num:
-                    proj_num = str(data.get("projectNumber", ""))
-        except Exception:
-            pass
-
-    # 4. Detect Active Accounts
     active_account = get_cmd_output("gcloud config get-value account 2>/dev/null")
+    if active_account.startswith("("):
+        active_account = ""
 
     return {
-        "project_id": proj_id,
-        "project_number": proj_num,
-        "config_id": config_id,
+        "project_id": proj_id if not proj_id.startswith("(") else "",
+        "project_number": proj_num if not proj_num.startswith("(") else "",
         "admin_email": active_account,
         "app_email": active_account,
     }
@@ -126,15 +106,15 @@ def main():
     default_download_dir = os.path.join(HOME, "Downloads")
     download_dir = prompt_input("Path to Downloads folder", default_download_dir)
 
-    # Dynamically detect environment defaults
-    defaults = discover_dynamic_defaults(download_dir)
+    # Detect caller's active gcloud context (if configured)
+    gcloud_defaults = discover_active_gcloud_defaults()
 
-    # Gather user inputs (using dynamic defaults when available)
-    project_id = prompt_input("GCP Project ID", defaults["project_id"])
-    project_number = prompt_input("GCP Project Number", defaults["project_number"])
-    config_id = prompt_input("Discovery Engine Config ID (GE Instance UUID)", defaults["config_id"])
-    admin_email = prompt_input("GCP Admin Email (owning project resources)", defaults["admin_email"])
-    app_email = prompt_input("Desktop App User Email (signed into desktop UI)", defaults["app_email"])
+    # Gather user inputs (no hardcoded personal defaults)
+    project_id = prompt_input("GCP Project ID", gcloud_defaults["project_id"])
+    project_number = prompt_input("GCP Project Number", gcloud_defaults["project_number"])
+    config_id = prompt_input("Discovery Engine Config ID (GE Instance UUID)")
+    admin_email = prompt_input("GCP Admin Email (owning project resources)", gcloud_defaults["admin_email"])
+    app_email = prompt_input("Desktop App User Email (signed into desktop UI)", gcloud_defaults["app_email"])
 
     print("\n--------------------------------------------------")
     print("📋 Configuration Summary:")
@@ -208,7 +188,7 @@ def main():
             print(f"⚠️ Error parsing model_configs.json: {e}")
     else:
         if not os.path.exists(target_model_file):
-            print(f"⚠️ Warning: model_configs.json not found in {download_dir} or {COWORK_DIR}.")
+            print(f"⚠️ Notice: model_configs.json not found in {download_dir} or {COWORK_DIR}.")
 
     # Step 3: Deploy discovery_engine.json & Remove Static Connectors
     print("\n[3/5] Setting up Native Discovery Engine Configuration...")
