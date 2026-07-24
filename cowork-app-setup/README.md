@@ -52,15 +52,33 @@ gcloud projects add-iam-policy-binding <PROJECT_ID> \
   --role="roles/discoveryengine.admin"
 ```
 
-### Step 3: Deploy Model Configurations
-Deploy `model_configs.json` to `~/cowork_workspace/.cowork/model_configs.json` and ensure `"cloud_project"` points to `<PROJECT_ID>`:
+### Step 3: Deploy & Update Model Configurations (`model_configs.json`)
+
+> **Note:** If using the automated installer (`python3 setup_cowork_app.py`), **Step 3 is handled automatically** — the installer prompts for your Project ID and updates the JSON file.
+
+If configuring manually, update `model_configs.json` to replace `"cloud_project"` and `"default_cloud_project"` with your `<PROJECT_ID>` before deploying to `~/cowork_workspace/.cowork/`:
 
 ```bash
+# 1. Copy model_configs.json to .cowork workspace
 cp ~/Downloads/model_configs.json ~/cowork_workspace/.cowork/model_configs.json
+
+# 2. Update cloud_project and default_cloud_project to your GCP Project ID
+python3 -c "
+import json
+p = '/Users/upasanapati/cowork_workspace/.cowork/model_configs.json'
+with open(p, 'r') as f:
+    d = json.load(f)
+for m in d.get('models', []):
+    m['cloud_project'] = '<PROJECT_ID>'
+if 'catalog' in d and 'providers' in d['catalog']:
+    d['catalog']['providers']['default_cloud_project'] = '<PROJECT_ID>'
+with open(p, 'w') as f:
+    json.dump(d, f, indent=2)
+"
 ```
 
 ### Step 4: Configure Native Discovery Engine (Dynamic Lookup)
-Update `/Users/upasanapati/Downloads/discovery_engine.json` with your `configId` and `projectNumber`, deploy to `.cowork`, and remove static connector overrides:
+Update `discovery_engine.json` with your `configId` and `projectNumber`, deploy to `.cowork`, and remove static connector overrides:
 
 ```bash
 # 1. Copy template and update configId / projectNumber
