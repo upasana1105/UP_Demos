@@ -18,11 +18,16 @@ Gather the following parameters before starting:
 
 ---
 
-## 🚀 2. Fast Setup (Using Automated Tool)
+## 🚀 2. Fast Setup (First-Time User Quickstart)
 
-Run the interactive setup script, which prompts for inputs and automates steps 3 through 6:
+If you are setting this up for the first time, clone/navigate to the setup directory and run the interactive setup tool:
 
 ```bash
+# 1. Clone the repository (or navigate to the setup folder)
+git clone https://github.com/upasana1105/UP_Demos.git
+cd UP_Demos/cowork-app-setup
+
+# 2. Run the automated setup tool
 python3 setup_cowork_app.py
 ```
 
