@@ -138,6 +138,9 @@ def main():
 
     # Step 1: Configure gcloud & ADC Credentials
     print("\n[1/6] Setting gcloud & ADC Credentials...")
+    if admin_email:
+        run_cmd(f"gcloud config set account {admin_email}", check=False)
+
     if project_id:
         run_cmd(f"gcloud config set project {project_id}", check=False)
         run_cmd(f"gcloud auth application-default set-quota-project {project_id}", check=False)
