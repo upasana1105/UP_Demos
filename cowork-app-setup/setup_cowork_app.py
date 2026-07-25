@@ -246,12 +246,9 @@ def get_access_token() -> str | None:
       return creds.token
   except Exception:
     pass
-  token = managed_auth._read_token_file()
-  if token:
-    return token
   try:
     return managed_auth.get_access_token()
-  except managed_auth.Error:
+  except Exception:
     return None
 """
                 with open(token_path, "w") as f:
