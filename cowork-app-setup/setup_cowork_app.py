@@ -14,7 +14,9 @@ import sys
 
 APP_PATH = "/Applications/Gemini Enterprise.app"
 HOME = os.path.expanduser("~")
-COWORK_DIR = os.path.join(HOME, "cowork_workspace", ".cowork")
+GE_SPARK_DIR = os.path.join(HOME, "ge_spark_workspace", ".cowork")
+LEGACY_COWORK_DIR = os.path.join(HOME, "cowork_workspace", ".cowork")
+COWORK_DIR = GE_SPARK_DIR if os.path.exists(GE_SPARK_DIR) else LEGACY_COWORK_DIR
 ADC_PATH = os.path.join(HOME, ".config", "gcloud", "application_default_credentials.json")
 
 
