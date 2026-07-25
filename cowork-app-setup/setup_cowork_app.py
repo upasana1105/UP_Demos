@@ -13,9 +13,6 @@ import subprocess
 import sys
 
 APP_PATH = "/Applications/Gemini Enterprise.app"
-SITE_PACKAGES = os.path.join(
-    APP_PATH, "Contents/Resources/python/lib/python3.12/site-packages/cowork_gateway"
-)
 HOME = os.path.expanduser("~")
 COWORK_DIR = os.path.join(HOME, "cowork_workspace", ".cowork")
 ADC_PATH = os.path.join(HOME, ".config", "gcloud", "application_default_credentials.json")
@@ -72,6 +69,20 @@ def find_candidate_file(filename, download_dir):
         return None
     candidates.sort(key=lambda p: os.path.getmtime(p), reverse=True)
     return candidates[0]
+
+
+def find_site_packages():
+    """Dynamically locates cowork_gateway inside Gemini Enterprise.app across Python versions."""
+    pattern = os.path.join(
+        APP_PATH, "Contents", "Resources", "python", "lib", "python3.*", "site-packages", "cowork_gateway"
+    )
+    matches = glob.glob(pattern)
+    if matches:
+        return matches[0]
+    for root, dirs, files in os.walk(APP_PATH):
+        if root.endswith("cowork_gateway"):
+            return root
+    return ""
 
 
 def discover_active_gcloud_defaults():
@@ -215,10 +226,12 @@ def main():
 
     # Step 4: Apply Gateway Source Code Patches
     print("\n[4/6] Applying Gateway Source Code Patches...")
-    if os.path.exists(SITE_PACKAGES):
+    site_packages_dir = find_site_packages()
+
+    if site_packages_dir and os.path.exists(site_packages_dir):
         try:
             # 1. Update token.py to prefer ADC credentials for Discovery Engine API calls
-            token_path = os.path.join(SITE_PACKAGES, "gateway_public/discovery/token.py")
+            token_path = os.path.join(site_packages_dir, "gateway_public", "discovery", "token.py")
             if os.path.exists(token_path):
                 token_code = """from cowork_gateway.agent import managed_auth
 
@@ -241,10 +254,10 @@ def get_access_token() -> str | None:
 """
                 with open(token_path, "w") as f:
                     f.write(token_code)
-                print("✅ Patched discovery/token.py to use ADC credentials for Discovery Engine API.")
+                print(f"✅ Patched {token_path} to use ADC credentials for Discovery Engine API.")
 
             # 2. Inject X-Goog-User-Project header into mcp.py & widget_client.py
-            mcp_path = os.path.join(SITE_PACKAGES, "gateway_public/discovery/mcp.py")
+            mcp_path = os.path.join(site_packages_dir, "gateway_public", "discovery", "mcp.py")
             if os.path.exists(mcp_path) and project_id:
                 with open(mcp_path, "r") as f:
                     mcp_c = f.read()
@@ -257,7 +270,7 @@ def get_access_token() -> str | None:
                         f.write(mcp_c)
                     print(f"✅ Patched discovery/mcp.py with X-Goog-User-Project: {project_id}")
 
-            wc_path = os.path.join(SITE_PACKAGES, "gateway_public/discovery/widget_client.py")
+            wc_path = os.path.join(site_packages_dir, "gateway_public", "discovery", "widget_client.py")
             if os.path.exists(wc_path) and project_id:
                 with open(wc_path, "r") as f:
                     wc_c = f.read()
@@ -276,7 +289,7 @@ def get_access_token() -> str | None:
         except Exception as e:
             print(f"⚠️ Notice while applying patches: {e}")
     else:
-        print(f"⚠️ Notice: Gateway site-packages path ({SITE_PACKAGES}) not found. Skipping gateway patches.")
+        print(f"⚠️ Notice: Gateway site-packages path ({site_packages_dir}) not found. Skipping gateway patches.")
 
     # Step 5: Clear App Cache & Local Storage
     print("\n[5/6] Clearing App Cache & Local Storage...")
