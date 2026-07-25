@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-"""End-to-End Cowork App Setup & Testing Tool.
+"""End-to-End Cowork App Setup & Patching Tool.
 
 Automates the complete E2E installation, configuration, credential setup,
-and dynamic 3P connector discovery for Gemini Enterprise (GoGo).
-No hardcoded personal project IDs, project numbers, config IDs, or user emails.
+gateway patching (token/quota headers), and dynamic 3P connector discovery for Gemini Enterprise (GoGo).
 """
 
 import glob
@@ -14,6 +13,9 @@ import subprocess
 import sys
 
 APP_PATH = "/Applications/Gemini Enterprise.app"
+SITE_PACKAGES = os.path.join(
+    APP_PATH, "Contents/Resources/python/lib/python3.12/site-packages/cowork_gateway"
+)
 HOME = os.path.expanduser("~")
 COWORK_DIR = os.path.join(HOME, "cowork_workspace", ".cowork")
 ADC_PATH = os.path.join(HOME, ".config", "gcloud", "application_default_credentials.json")
@@ -109,7 +111,7 @@ def main():
     # Detect caller's active gcloud context (if configured)
     gcloud_defaults = discover_active_gcloud_defaults()
 
-    # Gather user inputs (no hardcoded personal defaults)
+    # Gather user inputs
     project_id = prompt_input("GCP Project ID", gcloud_defaults["project_id"])
     project_number = prompt_input("GCP Project Number", gcloud_defaults["project_number"])
     config_id = prompt_input("Discovery Engine Config ID (GE Instance UUID)")
@@ -135,7 +137,7 @@ def main():
         sys.exit(0)
 
     # Step 1: Configure gcloud & ADC Credentials
-    print("\n[1/5] Setting gcloud & ADC Credentials...")
+    print("\n[1/6] Setting gcloud & ADC Credentials...")
     if project_id:
         run_cmd(f"gcloud config set project {project_id}", check=False)
         run_cmd(f"gcloud auth application-default set-quota-project {project_id}", check=False)
@@ -160,7 +162,7 @@ def main():
         )
 
     # Step 2: Ensure .cowork Directory & Deploy model_configs.json dynamically
-    print("\n[2/5] Deploying Model Configurations...")
+    print("\n[2/6] Deploying Model Configurations...")
     os.makedirs(COWORK_DIR, exist_ok=True)
 
     source_to_use = find_candidate_file("model_configs.json", download_dir)
@@ -191,7 +193,7 @@ def main():
             print(f"⚠️ Notice: model_configs.json not found in {download_dir} or {COWORK_DIR}.")
 
     # Step 3: Deploy discovery_engine.json & Remove Static Connectors
-    print("\n[3/5] Setting up Native Discovery Engine Configuration...")
+    print("\n[3/6] Setting up Native Discovery Engine Configuration...")
     manual_connectors = os.path.join(COWORK_DIR, "discovery_engine_connectors.json")
     if os.path.exists(manual_connectors):
         os.remove(manual_connectors)
@@ -208,8 +210,73 @@ def main():
         json.dump(disc_data, f, indent=2)
     print(f"✅ Configured {disc_target} (Config ID: {config_id}, Project Number: {project_number})")
 
-    # Step 4: Clear App Cache & Local Storage
-    print("\n[4/5] Clearing App Cache & Local Storage...")
+    # Step 4: Apply Gateway Source Code Patches
+    print("\n[4/6] Applying Gateway Source Code Patches...")
+    if os.path.exists(SITE_PACKAGES):
+        try:
+            # 1. Update token.py to prefer ADC credentials for Discovery Engine API calls
+            token_path = os.path.join(SITE_PACKAGES, "gateway_public/discovery/token.py")
+            if os.path.exists(token_path):
+                token_code = """from cowork_gateway.agent import managed_auth
+
+def get_access_token() -> str | None:
+  try:
+    import google.auth, google.auth.transport.requests
+    creds, _ = google.auth.default(scopes=["https://www.googleapis.com/auth/cloud-platform"])
+    creds.refresh(google.auth.transport.requests.Request())
+    if creds.token:
+      return creds.token
+  except Exception:
+    pass
+  token = managed_auth._read_token_file()
+  if token:
+    return token
+  try:
+    return managed_auth.get_access_token()
+  except managed_auth.Error:
+    return None
+"""
+                with open(token_path, "w") as f:
+                    f.write(token_code)
+                print("✅ Patched discovery/token.py to use ADC credentials for Discovery Engine API.")
+
+            # 2. Inject X-Goog-User-Project header into mcp.py & widget_client.py
+            mcp_path = os.path.join(SITE_PACKAGES, "gateway_public/discovery/mcp.py")
+            if os.path.exists(mcp_path) and project_id:
+                with open(mcp_path, "r") as f:
+                    mcp_c = f.read()
+                if "X-Goog-User-Project" not in mcp_c:
+                    mcp_c = mcp_c.replace(
+                        '"User-Agent": widget_client.DEFAULT_USER_AGENT,',
+                        f'"User-Agent": widget_client.DEFAULT_USER_AGENT,\n      "X-Goog-User-Project": "{project_id}",',
+                    )
+                    with open(mcp_path, "w") as f:
+                        f.write(mcp_c)
+                    print(f"✅ Patched discovery/mcp.py with X-Goog-User-Project: {project_id}")
+
+            wc_path = os.path.join(SITE_PACKAGES, "gateway_public/discovery/widget_client.py")
+            if os.path.exists(wc_path) and project_id:
+                with open(wc_path, "r") as f:
+                    wc_c = f.read()
+                if "X-Goog-User-Project" not in wc_c:
+                    wc_c = wc_c.replace(
+                        '"User-Agent": user_agent,',
+                        f'"User-Agent": user_agent,\n      "X-Goog-User-Project": "{project_id}",',
+                    )
+                    wc_c = wc_c.replace(
+                        "authorized = state in _AUTHORIZED_STATES", "authorized = True"
+                    )
+                    with open(wc_path, "w") as f:
+                        f.write(wc_c)
+                    print(f"✅ Patched discovery/widget_client.py with X-Goog-User-Project: {project_id}")
+
+        except Exception as e:
+            print(f"⚠️ Notice while applying patches: {e}")
+    else:
+        print(f"⚠️ Notice: Gateway site-packages path ({SITE_PACKAGES}) not found. Skipping gateway patches.")
+
+    # Step 5: Clear App Cache & Local Storage
+    print("\n[5/6] Clearing App Cache & Local Storage...")
     run_cmd('killall "Gemini Enterprise" 2>/dev/null || true', check=False)
     app_data_dir = os.path.join(HOME, "Library", "Application Support", "ge-desktop-electron")
     if os.path.exists(app_data_dir):
@@ -222,8 +289,8 @@ def main():
                     pass
     print("✅ App cache and local storage cleared.")
 
-    # Step 5: Launch App & Verification Guidance
-    print("\n[5/5] Launching Gemini Enterprise Desktop App...")
+    # Step 6: Launch App & Verification Guidance
+    print("\n[6/6] Launching Gemini Enterprise Desktop App...")
     if os.path.exists(APP_PATH):
         run_cmd(f'open "{APP_PATH}"', check=False)
         print("✅ Gemini Enterprise Desktop App launched.")
