@@ -22,4 +22,4 @@ jobs:
 
       - name: Run CodeMender + Gemma 4 Security Guard
         run: |
-          python3 codemender_gemma4_pipeline.py .
+          python3 codemender_gemma4_security_guard/codemender_gemma4_pipeline.py .
