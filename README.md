@@ -2,7 +2,7 @@
 
 Welcome to **UP_Demos**, a collection of Advanced AI Agents and Enterprise Demonstration Projects built to showcase the power of Google Cloud AI, Vertex AI Agent Engine, and the Gemini ecosystem.
 
-## 🌟 Flagship Capstone Project
+## 🌟 Capstone Project
 
 * **[🛡️ Enterprise IT Helpdesk AI Assistant (Gemini Agent Platform)](it-helpdesk-assistant/README.md)**: A complete, production-grade autonomous agent on the **Gemini Enterprise Agent Platform** featuring **Pure Dynamic MCP Discovery** (via GCP Agent Registry API), **Google Model Armor** security guardrails, **Zero-Trust Agent Identity Auth Manager** (3-Legged OAuth 2.0 with PKCE & Token Vaulting), **FastMCP on Cloud Run**, and **Vertex AI Agent Memory Bank**.
 
