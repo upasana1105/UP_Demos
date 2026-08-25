@@ -19,38 +19,53 @@ When an LLM agent is given autonomous authority to assess damages, execute dynam
 ### ❌ Before: Vulnerable Agent Architecture
 
 ```mermaid
-flowchart LR
-    User([Claim Request]) -->|Unscreened Input| Agent["Claims Agent<br/><b>(Google ADK)</b>"]
-    Agent <-->|Host Privileges| Tool["Host Tools<br/><b>(Can Leak Secrets)</b>"]
-    Agent -->|Unsigned SQL| DB[("Database<br/><b>(Vulnerable to Edits)</b>")]
+graph TD
+    User([Claimant / Intake Request]) --> Agent["Google ADK Claims Agent"]
+    Agent <-->|Unsandboxed Execution| HostTools["Host Process Tools<br/><i>(Can Access Secrets & Network)</i>"]
+    Agent -->|Unsigned SQL Writes| DB[("Unprotected Database<br/><i>(Vulnerable to Silent Modification)</i>")]
 
     classDef vuln fill:#fce8e6,stroke:#c5221f,stroke-width:1.5px,color:#a50e0e;
-    class Agent,Tool,DB vuln;
+    class Agent,HostTools,DB vuln;
 ```
 
 ---
 
-### 🛡️ After: Simple, Linear Zero-Trust Agent Pipeline
+### 🛡️ After: 3-Pillars Zero-Trust Agent Architecture
 
 ```mermaid
-flowchart LR
-    User([Claim Request]) --> SG["1. Semantic Gateway<br/><b>Prompt Firewall</b>"]
-    SG -->|Verified Input| Agent["2. Claims Agent<br/><b>Google ADK</b>"]
-    Agent <-->|0 Network Egress| SB["3. Isolated Sandbox<br/><b>gVisor / Cloud Run</b>"]
-    Agent --> PG["4. Policy Guard<br/><b>$2,500 Max Cap</b>"]
-    PG --> Signer["5. Crypto Signer<br/><b>HMAC / KMS</b>"]
-    Signer --> DB[("6. Signed Ledger<br/><b>Tamper-Evident DB</b>")]
+graph TD
+    User([Claimant / Intake Request]) --> SG
 
-    classDef secure fill:#e8f0fe,stroke:#1a73e8,stroke-width:1.5px,color:#174ea6;
-    classDef data fill:#e6f4ea,stroke:#137333,stroke-width:1.5px,color:#0d652d;
-    class SG,Agent,SB,PG,Signer secure;
-    class DB data;
+    subgraph "Pillar 3: Semantic Gateway & Policy Guard"
+        SG["Inbound Prompt Firewall<br/><i>(Screens Jailbreaks & Overrides)</i>"]
+        PG["Decision Policy Guard<br/><i>(Enforces $2,500 Limit & Severity Rules)</i>"]
+    end
+
+    subgraph "Agent Core"
+        Agent["Google ADK Claims Agent<br/><i>(Gemini 2.5 / LLM)</i>"]
+    end
+
+    subgraph "Pillar 2: Managed Sandbox (Cloud Run / gVisor)"
+        SB["Isolated Tool Execution<br/><i>(AST Security Scan • Zero Network Egress)</i>"]
+    end
+
+    subgraph "Pillar 1: Cryptographic Identity & Ledger Guard"
+        Signer["Crypto Signer (HMAC-SHA256 / Cloud KMS)<br/><i>(Monotonic Nonces & Merkle Chaining)</i>"]
+        Ledger[("Tamper-Evident Audit Ledger<br/><i>(Mathematical DB Tamper Detection)</i>")]
+    end
+
+    %% Data Flow
+    SG -->|Sanitized Prompt| Agent
+    Agent <-->|Execute Dynamic Tools| SB
+    Agent -->|Recommendation| PG
+    PG -->|Enforced Decision| Signer
+    Signer -->|Signed Record| Ledger
 ```
 
-**How the Zero-Trust Pipeline Works in 3 Clear Stages:**
-1. **Inbound Defense (Steps 1–2)**: The *Semantic Gateway* inspects prompts for jailbreaks and directive overrides before they ever reach the ADK Agent.
-2. **Execution Isolation (Step 3)**: Dynamic calculation tools run inside a *gVisor/Cloud Run Sandbox* with AST static inspection and zero network egress.
-3. **Cryptographic Provenance (Steps 4–6)**: The *Policy Guard* enforces a hard $2,500 auto-approval cap, and the *Crypto Signer* signs every decision into an immutable, tamper-evident ledger.
+**How the 3 Zero-Trust Pillars Work Together:**
+- **Pillar 3 (Semantic Gateway)**: Guards both entry (Prompt Firewall intercepts adversarial jailbreaks) and exit (Policy Guard enforces deterministic spend limits).
+- **Pillar 2 (Managed Sandbox)**: Isolates dynamic tool scripts inside gVisor/Cloud Run containers with AST static security scans and zero network egress.
+- **Pillar 1 (Cryptographic Identity)**: Binds every agent decision with HMAC-SHA256/KMS signatures and monotonic nonces into an immutable, tamper-evident Merkle ledger.
 
 ---
 
