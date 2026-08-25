@@ -19,50 +19,38 @@ When an LLM agent is given autonomous authority to assess damages, execute dynam
 ### ❌ Before: Vulnerable Agent Architecture
 
 ```mermaid
-graph TD
-    User([User / Claim Input]) -->|Raw Unscreened Text| Agent[Google ADK Agent]
-    Agent -->|Direct Unsandboxed Call| Tool[Host Process Tool Execution]
-    Tool -->|Can Access Host os.environ & Outbound Network| Ext([External Egress / Host Env])
-    Agent -->|Unsigned DB Write| DB[(Production Database: claims.db)]
-```
+flowchart LR
+    User([Claim Request]) -->|Unscreened Input| Agent["Claims Agent<br/><b>(Google ADK)</b>"]
+    Agent <-->|Host Privileges| Tool["Host Tools<br/><b>(Can Leak Secrets)</b>"]
+    Agent -->|Unsigned SQL| DB[("Database<br/><b>(Vulnerable to Edits)</b>")]
 
-* **Vulnerabilities**:
-  - Prompt injection attacks reach the model with zero screening.
-  - Calculation tools run in the host process with access to filesystem, environment secrets, and outbound network sockets.
-  - Database writes have no cryptographic provenance or integrity chain.
+    classDef vuln fill:#fce8e6,stroke:#c5221f,stroke-width:1.5px,color:#a50e0e;
+    class Agent,Tool,DB vuln;
+```
 
 ---
 
-### 🛡️ After: 3-Pillar Zero-Trust Agent Architecture
+### 🛡️ After: Simple, Linear Zero-Trust Agent Pipeline
 
 ```mermaid
-graph TD
-    User([User / Claim Input]) --> SG[Pillar 3: Semantic Gateway & Prompt Firewall]
-    
-    subgraph "Pillar 3: Semantic Gateway"
-        SG -->|Screen Injections & Jailbreaks| Inspection{Safe Input?}
-        Inspection -->|Adversarial Threat Detected| Block[Quarantine / Drop Request]
-        Inspection -->|Legitimate Description| Agent[Google ADK Claims Agent]
-    end
+flowchart LR
+    User([Claim Request]) --> SG["1. Semantic Gateway<br/><b>Prompt Firewall</b>"]
+    SG -->|Verified Input| Agent["2. Claims Agent<br/><b>Google ADK</b>"]
+    Agent <-->|0 Network Egress| SB["3. Isolated Sandbox<br/><b>gVisor / Cloud Run</b>"]
+    Agent --> PG["4. Policy Guard<br/><b>$2,500 Max Cap</b>"]
+    PG --> Signer["5. Crypto Signer<br/><b>HMAC / KMS</b>"]
+    Signer --> DB[("6. Signed Ledger<br/><b>Tamper-Evident DB</b>")]
 
-    subgraph "Pillar 2: Managed Sandbox (gVisor / Cloud Run)"
-        Agent -->|Tool Invocation| SB[Managed Sandbox Engine]
-        SB -->|AST Static Security Scan| AST{Safe AST?}
-        AST -->|Forbidden Import os / subprocess| Terminate[Block Tool Execution]
-        AST -->|Pure Calculation| Exec[Execute with 0 Network Egress]
-        Exec --> Agent
-    end
-
-    subgraph "Pillar 1: Cryptographic Identity & Tamper-Evident Ledger"
-        Agent -->|Decision & Estimate Payload| PG[Deterministic Policy Guard]
-        PG -->|Financial Cap < $2,500| Signer[Crypto Guard: HMAC-SHA256 & Cloud KMS]
-        Signer -->|Monotonic Nonce + Hash Chain| Ledger[(Immutable Audit Ledger)]
-        Signer --> DB[(Production Database: Claims & Estimates)]
-    end
-
-    Auditor[Real-Time Integrity Auditor] -.->|Continuous Mathematical Audit| DB
-    Auditor -.->|Verify Merkle Hash Chain| Ledger
+    classDef secure fill:#e8f0fe,stroke:#1a73e8,stroke-width:1.5px,color:#174ea6;
+    classDef data fill:#e6f4ea,stroke:#137333,stroke-width:1.5px,color:#0d652d;
+    class SG,Agent,SB,PG,Signer secure;
+    class DB data;
 ```
+
+**How the Zero-Trust Pipeline Works in 3 Clear Stages:**
+1. **Inbound Defense (Steps 1–2)**: The *Semantic Gateway* inspects prompts for jailbreaks and directive overrides before they ever reach the ADK Agent.
+2. **Execution Isolation (Step 3)**: Dynamic calculation tools run inside a *gVisor/Cloud Run Sandbox* with AST static inspection and zero network egress.
+3. **Cryptographic Provenance (Steps 4–6)**: The *Policy Guard* enforces a hard $2,500 auto-approval cap, and the *Crypto Signer* signs every decision into an immutable, tamper-evident ledger.
 
 ---
 
