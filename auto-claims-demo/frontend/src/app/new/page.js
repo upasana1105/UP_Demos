@@ -120,8 +120,13 @@ export default function NewClaim() {
       });
 
       if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.error || 'Failed to submit claim');
+        const errData = await res.json().catch(() => ({}));
+        const detail = errData.detail;
+        if (detail && typeof detail === 'object') {
+          const reason = detail.reasoning || detail.message || (detail.violations && detail.violations.join(', ')) || JSON.stringify(detail);
+          throw new Error(`Security Firewall Policy: ${reason}`);
+        }
+        throw new Error(errData.detail || errData.error || 'Failed to submit claim');
       }
 
       const claim = await res.json();

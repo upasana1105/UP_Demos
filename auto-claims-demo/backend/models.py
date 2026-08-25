@@ -97,3 +97,18 @@ class Estimate(Base):
     source = Column(String)
 
     claim = relationship("Claim", back_populates="estimates")
+
+class AuditLedgerEntry(Base):
+    __tablename__ = "audit_ledger"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    claim_id = Column(Integer, ForeignKey("claims.id", ondelete="CASCADE"), nullable=True)
+    nonce = Column(Integer, unique=True, index=True, nullable=False)
+    agent_id = Column(String, default="ProcessorAgent")
+    timestamp = Column(String, nullable=False)
+    payload_hash = Column(String, nullable=False)
+    signature = Column(String, nullable=False)
+    prev_hash = Column(String, nullable=False)
+    chain_hash = Column(String, nullable=False)
+    payload = Column(String, nullable=False)  # JSON string
+    status = Column(String, default="VERIFIED_AUTHENTIC")

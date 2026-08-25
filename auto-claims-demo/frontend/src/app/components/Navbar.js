@@ -15,7 +15,7 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Shield, LogOut, Car, User } from 'lucide-react';
+import { Shield, LogOut, Car, User, Lock, Activity } from 'lucide-react';
 import Link from 'next/link';
 
 export default function Navbar() {
@@ -36,12 +36,30 @@ export default function Navbar() {
   return (
     <nav className="w-full bg-zinc-900/40 backdrop-blur-xl border-b border-zinc-800/80 px-6 py-4 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <Link href="/dashboard" className="flex items-center gap-2.5 text-white hover:opacity-90">
-          <div className="w-9 h-9 bg-indigo-600/10 border border-indigo-500/20 rounded-xl flex items-center justify-center text-indigo-400">
-            <Shield size={18} />
+        <div className="flex items-center gap-6">
+          <Link href="/dashboard" className="flex items-center gap-2.5 text-white hover:opacity-90">
+            <div className="w-9 h-9 bg-indigo-600/10 border border-indigo-500/20 rounded-xl flex items-center justify-center text-indigo-400">
+              <Shield size={18} />
+            </div>
+            <span className="font-bold tracking-tight text-base">Auto Claims</span>
+          </Link>
+
+          <div className="hidden md:flex items-center gap-1 bg-zinc-900/60 p-1 rounded-xl border border-zinc-800">
+            <Link
+              href="/dashboard"
+              className="px-3 py-1.5 rounded-lg text-xs font-medium text-zinc-300 hover:text-white hover:bg-zinc-800/60 transition-all"
+            >
+              Claims
+            </Link>
+            <Link
+              href="/security"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 transition-all"
+            >
+              <Lock size={12} />
+              <span>Zero-Trust Console</span>
+            </Link>
           </div>
-          <span className="font-bold tracking-tight text-base">Auto Claims</span>
-        </Link>
+        </div>
         
         <div className="flex items-center gap-6">
           <div className="hidden sm:flex flex-col text-right">
