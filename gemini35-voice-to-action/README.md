@@ -16,6 +16,8 @@ An end-to-end multimodal studio combining **Gemini 3.5 Transcribe**, **Gemini 3.
 
 ## 🏗️ Architecture Pipeline
 
+![Voice Canvas Studio Architecture](static/images/architecture_diagram.png)
+
 ```mermaid
 flowchart TD
     subgraph Browser ["Client: 16:9 Glassmorphic Canvas Studio"]
