@@ -22,11 +22,11 @@ Classifies spoken intent in flight into function calls: `draw_picture(prompt)`, 
 3. Conversational Visual Sculpting (Gemini 3.1 Flash Image):
 Generates a 16:9 widescreen baseline. When you ask for changes ("add a wooden bridge over the river", "make the sky dusk"), it passes the active canvas pixels + delta instructions to edit in-place without wiping out composition or subject identity.
 
-4. Temporal Motion + Synchronized Sound (Gemini Omni Flash):
+4. Temporal Motion + Synchronized Sound (Gemini Omni 1.1 Flash):
 Say "Animate this with the sound of rushing water" (or in Hindi: "Ab iska video bana do with sound"). 
-`gemini-omni-flash-preview` takes the canvas frame and synthesizes not just 720p 24fps motion, but an accompanying 48 kHz stereo ambient soundscape in a single multimodal pass. 
+`gemini-omni-1.1-flash-preview` takes the canvas frame and synthesizes not just 720p 24fps motion, but an accompanying 48 kHz stereo ambient soundscape in a single multimodal pass. 
 
-The biggest surprise for me was the audio track. Omni doesn’t just guess motion vectors; it synthesizes natural environmental acoustics (waterfalls, wind physics, thunder) matching the visual tempo.
+The biggest surprise for me was the audio track. Omni 1.1 Flash doesn’t just guess motion vectors; it synthesizes natural environmental acoustics (waterfalls, wind physics, thunder) matching the visual tempo.
 
 Everything runs on Google Cloud Vertex AI using standard Application Default Credentials (ADC) — no consumer API keys or hacky workarounds.
 
@@ -35,10 +35,10 @@ Code, architecture diagram, and full video are open-source on GitHub:
 
 Curious how you see native audio-video generation reshaping interactive creative directing?
 
-#Gemini #GoogleCloud #VertexAI #MultimodalAI #GenerativeAI #MachineLearning #ComputerVision #VoiceAI #OpenSource
+#Gemini #GoogleCloud #VertexAI #Omni11Flash #MultimodalAI #GenerativeAI #MachineLearning #ComputerVision #VoiceAI #OpenSource
 
 ---
 
 ### Video / Visual to Attach to Post:
-* Attach `static/videos/omni_anim_boosted.mp4` (or the 3-second animated GIF preview `static/videos/omni_preview_compact.gif`).
-* In the caption, remind viewers to unmute the video to hear the native ambient audio synthesized by Omni Flash!
+* Attach `static/videos/omni_anim_boosted.mp4` (or the architecture diagram image `static/images/architecture_diagram.png`).
+* In the caption, remind viewers to unmute the video to hear the native ambient audio synthesized by Gemini Omni 1.1 Flash!

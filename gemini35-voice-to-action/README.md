@@ -2,7 +2,7 @@
 
 ### End-to-End Multimodal Creative Pipeline: Acoustic Voice ➡️ Conversational Editing ➡️ Temporal Video with Native Audio
 
-An end-to-end multimodal studio combining **Gemini 3.5 Transcribe**, **Gemini 3.7 Flash**, **Gemini 3.1 Flash Image**, and **Gemini Omni Flash** into a seamless, voice-driven creative canvas. Speak in English, Hindi, or code-switched Hinglish to sculpt images, iteratively edit them conversationally, and animate them into high-definition videos with synchronized ambient soundscapes.
+An end-to-end multimodal studio combining **Gemini 3.5 Transcribe**, **Gemini 3.7 Flash**, **Gemini 3.1 Flash Image**, and **Gemini Omni 1.1 Flash** into a seamless, voice-driven creative canvas. Speak in English, Hindi, or code-switched Hinglish to sculpt images, iteratively edit them conversationally, and animate them into high-definition videos with synchronized ambient soundscapes.
 
 ---
 
@@ -39,7 +39,7 @@ flowchart TD
     end
 
     subgraph Step4 ["4. Temporal Video & Native Sound Synthesis"]
-        GOmni["✨ Gemini Omni Flash\n(gemini-omni-flash-preview on Vertex AI Global)\n• Interactions API via ADC\n• Image-to-Video temporal motion\n• Native 48 kHz stereo ambient audio"]
+        GOmni["✨ Gemini Omni 1.1 Flash\n(gemini-omni-1.1-flash-preview on Vertex AI Global)\n• Interactions API via ADC\n• Image-to-Video temporal motion\n• Native 48 kHz stereo ambient audio"]
         FFmpeg["🔊 Audio Normalizer (FFmpeg)\n• Broadcast loudness mastering (-13 LUFS)\n• Crisp ambient soundscapes"]
     end
 
@@ -66,9 +66,9 @@ flowchart TD
 * Retains characters, camera angles, and composition while selectively applying edits (e.g. *"Now add a samurai helmet"*, *"Change the lighting to sunset dusk"*).
 * Built-in **Before / After Split-Screen** toggle to inspect edits against the original baseline.
 
-### 3. Temporal Video & Native Audio Generation via Gemini Omni Flash
-* Generates **1280x720 24fps** temporal video powered by `gemini-omni-flash-preview` on Vertex AI (`location="global"`).
-* **Native Audio Synthesis**: Unlike traditional video-only models, Omni synthesizes synchronized 48 kHz stereo ambient audio (flowing water, wind rustling, sci-fi hums).
+### 3. Temporal Video & Native Audio via Gemini Omni 1.1 Flash
+* Generates **1280x720 24fps** temporal video powered by `gemini-omni-1.1-flash-preview` on Vertex AI (`location="global"`).
+* **Native Audio Synthesis**: Unlike traditional video-only models, Omni 1.1 Flash synthesizes synchronized 48 kHz stereo ambient audio (flowing water, wind rustling, sci-fi hums).
 * Automated **FFmpeg +8dB Normalization** delivers loud, broadcast-quality sound in the browser.
 
 ### 4. 100% Google Cloud ADC (No API Keys Required)
