@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.env
+.DS_Store
+
+# Keep reference samples, ignore large temporary batches
+static/images/art_*.png
+static/audio/*.wav
+static/videos/omni_raw_*.mp4
+static/videos/omni_preview_*.mp4
+static/videos/omni_anim_1*.mp4
+static/videos/hq_test.mp4
+static/videos/omni_preview.gif
