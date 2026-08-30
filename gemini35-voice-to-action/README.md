@@ -26,12 +26,12 @@ flowchart TD
         Player["🎬 Video Player\n(Unmuted Audio & Sound Controls)"]
     end
 
-    subgraph Step1 ["1. Multilingual Acoustic Ingestion"]
-        GTranscribe["🗣️ Gemini 3.5 Transcribe\n(gemini-3.5-transcribe-preview)\n• Low-latency streaming ASR\n• Native Hindi (Devanagari) & English"]
+    subgraph Step1 ["1. Real-Time Multilingual Transcription"]
+        GTranscribe["🗣️ Gemini 3.5 Transcribe\n(gemini-3.5-transcribe-preview)\n• Low-latency streaming acoustic ASR\n• Real-time multilingual speech recognition"]
     end
 
-    subgraph Step2 ["2. Intent Routing & Structured Tool Calling"]
-        GFlash["🧠 Gemini 3.7 Flash\n(gemini-3.7-flash)\n• Function Calling\n• Semantic classification:\n  - draw_picture(prompt)\n  - edit_current_image(delta_prompt)\n  - animate_artwork(motion_prompt)"]
+    subgraph Step2 ["2. Tool Calling / Function Calling with 3.7 Flash"]
+        GFlash["🧠 Gemini 3.7 Flash\n(gemini-3.7-flash)\n• In-flight tool & function calling:\n  - draw_picture(prompt)\n  - edit_current_image(delta_prompt)\n  - animate_artwork(motion_prompt)"]
     end
 
     subgraph Step3 ["3. Iterative Visual Sculpting"]
@@ -57,9 +57,9 @@ flowchart TD
 
 ## 🌟 Key Capabilities
 
-### 1. Multilingual Voice Recognition (English + Hindi)
+### 1. Real-Time Multilingual Transcription
 * **Zero text bottleneck**: Voice streams directly to `gemini-3.5-transcribe-preview`.
-* Full native support for **Devanagari Hindi** (`फूलदान में सुंदर फूल रख दो`), English, and mixed Hinglish (`Is waterfall ko animate karo with sound`).
+* Low-latency acoustic ASR with real-time multilingual transcription.
 
 ### 2. Conversational Iterative Editing (No Re-drawing From Scratch)
 * Uses `gemini-3.1-flash-image` with multi-image in-context prompts.
