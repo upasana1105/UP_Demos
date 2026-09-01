@@ -27,7 +27,7 @@ function cn(...inputs) {
   return twMerge(clsx(inputs));
 }
 
-const API_BASE = window.location.hostname === "localhost" ? "http://localhost:8002" : "";
+const API_BASE = "";
 
 const Dashboard = () => {
   const [file, setFile] = useState(null);
@@ -36,6 +36,7 @@ const Dashboard = () => {
   const [glossaryPath, setGlossaryPath] = useState('');
   const [targetLang, setTargetLang] = useState('de');
   const [glossaryId, setGlossaryId] = useState('');
+  const [customizedAttribution, setCustomizedAttribution] = useState('NO_ATTRIBUTION');
   const [status, setStatus] = useState('idle'); // idle, processing, complete, error
   const [logs, setLogs] = useState([]);
   const [result, setResult] = useState(null);
@@ -96,6 +97,7 @@ const Dashboard = () => {
     formData.append('target_language', targetLang);
     if (glossaryId) formData.append('glossary_id', glossaryId);
     if (glossaryPath) formData.append('custom_glossary_path', glossaryPath);
+    if (customizedAttribution) formData.append('customized_attribution', customizedAttribution);
 
     try {
       const response = await axios.post(`${API_BASE}/api/translate`, formData);
@@ -146,6 +148,19 @@ const Dashboard = () => {
               <option value="fr" className="text-slate-800">French (IFRS)</option>
               <option value="es" className="text-slate-800">Spanish (IASB)</option>
               <option value="en" className="text-slate-800">English (Global)</option>
+            </select>
+
+            {/* Attribution / Watermark Option */}
+            <select
+              value={customizedAttribution}
+              onChange={(e) => setCustomizedAttribution(e.target.value)}
+              className="bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-[11px] font-bold uppercase tracking-widest focus:outline-none focus:ring-1 focus:ring-white text-white shadow-inner"
+              title="Attribution Watermark Configuration"
+            >
+              <option value="NO_ATTRIBUTION" className="text-slate-800">Watermark: None (NO_ATTRIBUTION)</option>
+              <option value="Machine Translated by Google" className="text-slate-800">Watermark: Google Default</option>
+              <option value="Machine Translated by Google Cloud" className="text-slate-800">Watermark: Google Cloud</option>
+              <option value="Machine translated by Google - only for internal use" className="text-slate-800">Watermark: Internal Use Only</option>
             </select>
 
             {/* Glossary */}

@@ -49,7 +49,8 @@ async def translate_document(
     file: UploadFile = File(...),
     target_language: str = Form(...),
     glossary_id: str = Form(None),
-    custom_glossary_path: str = Form(None)
+    custom_glossary_path: str = Form(None),
+    customized_attribution: str = Form("NO_ATTRIBUTION")
 ):
     try:
         # 1. Save uploaded file
@@ -64,6 +65,9 @@ async def translate_document(
             f"even if your internal checks suggest it contains no selectable text. The tool has a "
             f"specialized fallback pipeline to handle scanned or vector-heavy documents."
         )
+
+        if customized_attribution:
+            user_message += f"\n\nCRITICAL INSTRUCTION: Set 'customized_attribution' equal to '{customized_attribution}'."
 
         # Automatically register user's custom CSV glossary to GCP if provided
         if custom_glossary_path:

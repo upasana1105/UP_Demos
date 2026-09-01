@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Load NVM
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
 echo "Starting Financial Document Translator (VENV Mode)..."
 
 # 1. Check for Python
@@ -44,4 +48,4 @@ cd frontend
 if [ ! -d "node_modules" ]; then
     npm install
 fi
-npm run dev -- --port 5175
+npm run dev -- --port 5175 --host 0.0.0.0

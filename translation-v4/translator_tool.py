@@ -13,6 +13,7 @@ async def adaptive_translate_tool(
     target_language_code: str, 
     source_language_code: Optional[str] = "en-US",
     glossary_id: Optional[str] = None,
+    customized_attribution: Optional[str] = "NO_ATTRIBUTION",
     tool_context: ToolContext = None
 ) -> dict:
     """Translates a document while preserving layout using Google Cloud Translation API Advanced.
@@ -22,6 +23,7 @@ async def adaptive_translate_tool(
         target_language_code: The BCP-47 language code to translate into (e.g., 'es', 'fr').
         source_language_code: The BCP-47 language code of the source document.
         glossary_id: Optional ID of the glossary to use for consistent terminology.
+        customized_attribution: Attribution watermark setting. Defaults to "NO_ATTRIBUTION" to remove watermark.
         tool_context: The ADK ToolContext for accessing state and project info.
     """
     project_id = os.getenv("GOOGLE_CLOUD_PROJECT", "uppdemos")
@@ -144,6 +146,9 @@ async def adaptive_translate_tool(
         "source_language_code": source_language_code,
         "document_input_config": document_input_config,
     }
+
+    if customized_attribution:
+        request["customized_attribution"] = customized_attribution
 
     if glossary_id:
         glossary_config = {
