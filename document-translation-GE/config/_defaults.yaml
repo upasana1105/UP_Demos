@@ -1,0 +1,38 @@
+# =============================================================================
+# KPMG Agents - Default Configuration
+# =============================================================================
+# These defaults are inherited by all agent configs unless overridden.
+# Agent-specific configs in this directory override these values.
+
+agent:
+  model: "gemini-2.5-flash"
+  a2ui:
+    version: "0.8"
+    catalog_url: "https://a2ui.org/specification/v0_8/standard_catalog_definition.json"
+    extension_uri: "https://a2ui.org/a2a-extension/a2ui/v0.8"
+
+deploy:
+  region: "us-central1"
+  max_instances: 1
+  api_version: "v1beta1"
+  agent_framework: "google-adk"
+
+  # Shared pip requirements for all agents on Agent Engine
+  base_requirements:
+    - "google-cloud-aiplatform[agent_engines,adk]"
+    - "google-genai>=1.27.0"
+    - "python-dotenv>=1.1.0"
+    - "uvicorn"
+    - "a2a-sdk[http-server]>=0.3.4,<1.0.0"
+    - "cloudpickle>=3.1.2"
+    - "pydantic"
+    - "jsonschema>=4.0.0"
+    - "a2ui-agent-sdk>=0.1.2"
+    - "starlette"
+    - "sse-starlette"
+
+  # Default input/output modes for A2A agent card
+  default_input_modes:
+    - "text/plain"
+  default_output_modes:
+    - "text/plain"
