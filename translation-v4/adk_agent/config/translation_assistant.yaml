@@ -45,7 +45,7 @@ deploy:
   extra_packages:
     - "agents"
 
-  agent_authorization_id: "kpmg-agent-auth"
+  agent_authorization_id: "kpmg-translation-auth-v1"
 
   env_vars:
     NUM_WORKERS: "1"
