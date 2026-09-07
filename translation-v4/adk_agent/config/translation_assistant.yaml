@@ -1,0 +1,54 @@
+# =============================================================================
+# KPMG Financial Document Translation Assistant Configuration
+# =============================================================================
+
+agent:
+  name: "KPMGTranslationAssistant"
+  display_name: "KPMG Financial Document Translator"
+  description: >
+    Translates financial documents (PDF, DOCX, PPTX) preserving layout,
+    enforcing glossaries, removing Google watermarks via NO_ATTRIBUTION,
+    and rendering quality audits and side-by-side document views directly
+    in Gemini Enterprise using A2UI WebFrameSrcdoc iframes.
+
+  model: "gemini-2.5-flash"
+  tools: []
+
+  a2ui:
+    version: "0.8"
+    extension_uri: "https://a2ui.org/a2a-extension/a2ui/v0.8"
+    catalog_url: "https://a2ui.org/specification/v0_8/standard_catalog_definition.json"
+
+deploy:
+  region: "us-central1"
+  max_instances: 1
+  api_version: "v1beta1"
+  agent_framework: "google-adk"
+
+  skills:
+    - id: "kpmg-financial-translation"
+      name: "Financial Document Translation & Watermark Suppression"
+      description: "Translates financial PDF documents preserving formatting, suppressing watermarks via NO_ATTRIBUTION, performing semantic quality audits, and displaying interactive side-by-side dashboards."
+      tags: ["translation", "kpmg", "financial", "attribution", "audit", "iframe"]
+      examples:
+        - "Translate sample_doc.pdf to Spanish using NO_ATTRIBUTION"
+        - "Translate this document to Spanish and remove the watermark"
+        - "Translate financial document and show quality audit in iframe"
+
+  extra_requirements:
+    - "google-cloud-translate>=3.18.0"
+    - "google-cloud-storage>=2.14.0"
+    - "PyMuPDF>=1.24.0"
+    - "python-docx>=1.1.0"
+    - "python-pptx>=0.6.23"
+
+  extra_packages:
+    - "agents"
+
+  agent_authorization_id: "kpmg-agent-auth"
+
+  env_vars:
+    NUM_WORKERS: "1"
+    PROJECT_ID: "uppdemos"
+    LOCATION: "us-central1"
+    STORAGE_BUCKET: "gs://uppdemos-agent-staging"

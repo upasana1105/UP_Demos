@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="connect-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline';">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KPMG Translation Assistant</title>
+  <style>
+    * { box-sizing: border-box; margin:0; padding:0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { background: #f8fafc; color: #0f172a; padding: 12px; font-size: 13px; }
+    .header { background: #002b7a; color: white; padding: 16px 20px; border-radius: 12px 12px 0 0; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .logo-badge { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); border-radius: 6px; padding: 4px 10px; font-weight: 900; letter-spacing: 1px; font-size: 14px; }
+    .title { font-size: 14px; font-weight: 400; color: #e2e8f0; }
+    .header-right { display: flex; gap: 8px; align-items: center; }
+    .badge { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; padding: 4px 10px; border-radius: 6px; }
+    .badge-green { background: #10b981; color: white; }
+    .badge-blue { background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); }
+    
+    .nav-tabs { display: flex; background: #ffffff; border-bottom: 2px solid #e2e8f0; padding: 0 16px; }
+    .tab-btn { padding: 12px 18px; border: none; background: transparent; cursor: pointer; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s; }
+    .tab-btn.active { color: #002b7a; border-bottom: 2px solid #002b7a; }
+    
+    .content-card { background: #ffffff; border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 12px 12px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+    
+    .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+    .kpi-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; text-align: center; position: relative; overflow: hidden; }
+    .kpi-card .bar { position: absolute; bottom: 0; left: 0; height: 3px; background: #002b7a; }
+    .kpi-label { font-size: 10px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 4px; }
+    .kpi-value { font-size: 24px; font-weight: 900; color: #002b7a; }
+    
+    .exec-summary { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 14px; margin-bottom: 16px; }
+    .exec-summary h4 { font-size: 11px; font-weight: 800; text-transform: uppercase; color: #1e40af; margin-bottom: 4px; }
+    .exec-summary p { font-size: 12px; color: #1e3a8a; line-height: 1.5; font-style: italic; }
+    
+    .side-by-side { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .doc-col { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; }
+    .doc-col h4 { font-size: 11px; font-weight: 800; text-transform: uppercase; margin-bottom: 10px; display:flex; justify-content:space-between; }
+    .doc-text { font-size: 12px; line-height: 1.6; color: #334155; white-space: pre-wrap; max-height: 480px; overflow-y: auto; background:#ffffff; padding: 12px; border-radius: 6px; border:1px solid #e2e8f0; }
+    
+    .btn { display: inline-flex; align-items: center; gap: 6px; background: #002b7a; color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 11px; cursor: pointer; text-transform: uppercase; text-decoration: none; }
+    .btn:hover { background: #001f5c; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-left">
+      <div class="logo-badge">KPMG</div>
+      <div class="title">Document Translation Assistant</div>
+    </div>
+    <div class="header-right">
+      <span class="badge badge-blue">Target: ES</span>
+      <span class="badge badge-green">Watermark: None (NO_ATTRIBUTION)</span>
+    </div>
+  </div>
+
+  <div class="nav-tabs">
+    <button class="tab-btn active" id="btn-audit" onclick="switchTab('audit')">Quality Audit (30%)</button>
+    <button class="tab-btn" id="btn-viewer" onclick="switchTab('viewer')">Document Viewer (Side-by-Side)</button>
+  </div>
+
+  <div class="content-card">
+    <!-- Audit Tab -->
+    <div id="tab-audit">
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">Overall Score</div>
+          <div class="kpi-value">30%</div>
+          <div class="bar" style="width:30%; background:#002b7a;"></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Accuracy</div>
+          <div class="kpi-value">35%</div>
+          <div class="bar" style="width:35%; background:#10b981;"></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Fluency</div>
+          <div class="kpi-value">20%</div>
+          <div class="bar" style="width:20%; background:#f59e0b;"></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Tone & Scale</div>
+          <div class="kpi-value">80%</div>
+          <div class="bar" style="width:80%; background:#6366f1;"></div>
+        </div>
+      </div>
+
+      <div class="exec-summary">
+        <h4>Auditor's Executive Summary</h4>
+        <p>"The translated document suffers from critical structural and data integrity issues, rendering it largely unusable for financial analysis. While individual financial terms are mostly translated correctly and numerical values (within specific data points) are accurate, the overall layout is severely disorganized, and crucial balance sheet figures are incorrectly assigned to categories. This compromises the accuracy of the financial data presentation and the document&#x27;s professional usability."</p>
+      </div>
+
+      <h4 style="font-size:11px; font-weight:800; text-transform:uppercase; color:#475569; margin-bottom:10px;">Audit Findings & Scale Verifications</h4>
+      <div>
+        
+            <div style="background:#ffffff; border:1px solid #e2e8f0; border-left:4px solid #e11d48; border-radius:8px; padding:12px; margin-bottom:10px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span style="font-weight:700; font-size:12px; color:#1e293b;">Data Integrity Error: Balance Sheet Numerical Values Scrambled</span>
+                <span style="background:#ffe4e6; color:#e11d48; font-size:10px; font-weight:800; padding:2px 8px; border-radius:4px; text-transform:uppercase;">High Impact</span>
+              </div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:8px; font-size:11px;">
+                <div style="background:#f8fafc; padding:8px; border-radius:6px;">
+                  <span style="display:block; font-size:9px; font-weight:700; color:#64748b; text-transform:uppercase;">Original</span>
+                  <span style="color:#334155;">Category
+Total Assets       $3,100.0
+Total Liabilities  $1,450.0
+Shareholder Equity $1,650.0</span>
+                </div>
+                <div style="background:#eff6ff; padding:8px; border-radius:6px;">
+                  <span style="display:block; font-size:9px; font-weight:700; color:#002b7a; text-transform:uppercase;">Translated</span>
+                  <span style="color:#002b7a; font-weight:600;">Pasivos totales           $3,100.0
+Activos totales           $1,450.0
+Patrimonio neto de los accionistas $1,650.0</span>
+                </div>
+              </div>
+              <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:8px; border-radius:6px; font-size:11px; color:#15803d;">
+                <strong>Recommendation:</strong> Correctly assign the numerical values to their respective balance sheet categories. &#x27;Pasivos totales&#x27; (Total Liabilities) should be $1,450.0, and &#x27;Activos totales&#x27; (Total Assets) should be $3,100.0. Ensure categories are listed in the standard order (Assets, Liabilities, Equity) and correctly associated with their corresponding amounts.
+              </div>
+            </div>
+            
+            <div style="background:#ffffff; border:1px solid #e2e8f0; border-left:4px solid #e11d48; border-radius:8px; padding:12px; margin-bottom:10px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span style="font-weight:700; font-size:12px; color:#1e293b;">Major Structural and Formatting Disorganization</span>
+                <span style="background:#ffe4e6; color:#e11d48; font-size:10px; font-weight:800; padding:2px 8px; border-radius:4px; text-transform:uppercase;">High Impact</span>
+              </div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:8px; font-size:11px;">
+                <div style="background:#f8fafc; padding:8px; border-radius:6px;">
+                  <span style="display:block; font-size:9px; font-weight:700; color:#64748b; text-transform:uppercase;">Original</span>
+                  <span style="color:#334155;">The entire structured document, including numbered sections, clear headings, and tabular data presentation for Income Statement Highlights and Balance Sheet Summary.</span>
+                </div>
+                <div style="background:#eff6ff; padding:8px; border-radius:6px;">
+                  <span style="display:block; font-size:9px; font-weight:700; color:#002b7a; text-transform:uppercase;">Translated</span>
+                  <span style="color:#002b7a; font-weight:600;">The entire translated text is jumbled. Sections are out of order, content within sections (like the Balance Sheet items and the Income Statement table) is completely disorganized, and the original table formats are lost, making the data unreadable.</span>
+                </div>
+              </div>
+              <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:8px; border-radius:6px; font-size:11px; color:#15803d;">
+                <strong>Recommendation:</strong> Reconstruct the translated document to mirror the original&#x27;s logical flow, section numbering, headings, and tabular formats. Maintain the integrity of data presentation to ensure readability and usability of the financial information.
+              </div>
+            </div>
+            
+            <div style="background:#ffffff; border:1px solid #e2e8f0; border-left:4px solid #e11d48; border-radius:8px; padding:12px; margin-bottom:10px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span style="font-weight:700; font-size:12px; color:#1e293b;">Missing Table Structure for Income Statement</span>
+                <span style="background:#ffe4e6; color:#e11d48; font-size:10px; font-weight:800; padding:2px 8px; border-radius:4px; text-transform:uppercase;">High Impact</span>
+              </div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:8px; font-size:11px;">
+                <div style="background:#f8fafc; padding:8px; border-radius:6px;">
+                  <span style="display:block; font-size:9px; font-weight:700; color:#64748b; text-transform:uppercase;">Original</span>
+                  <span style="color:#334155;">Metric	Q1 2023 (USD)	Q1 2024 (USD)	YoY Growth
+Total Revenue	$1,200,000	$1,450,000	20.8%
+Net Income	$300,000	$380,000	26.7%
+EBITDA	$450,000	$520,000	15.5%
+Operating Margin	25%	26.2%	+120 bps</span>
+                </div>
+                <div style="background:#eff6ff; padding:8px; border-radius:6px;">
+                  <span style="display:block; font-size:9px; font-weight:700; color:#002b7a; text-transform:uppercase;">Translated</span>
+                  <span style="color:#002b7a; font-weight:600;">Lngresos netos
+Margen operativo
+Primer trimestre de 2024 (USD)
+26,7%
++120 bps
+$1.450.000
+Métrico
+25%
+Ingresos totales
+Crecimiento interanual
+Primer trimestre de 2023 (USD)
+15,5%
+EBITDA
+26,2%
+$300,000
+$380,000
+$1.200.000
+20,8%
+$520,000
+$450,000</span>
+                </div>
+              </div>
+              <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:8px; border-radius:6px; font-size:11px; color:#15803d;">
+                <strong>Recommendation:</strong> Re-establish the table structure for the &#x27;Aspectos destacados del estado de resultados&#x27; (Income Statement Highlights). Ensure all metrics, time periods, and numerical values are correctly aligned in their respective rows and columns, replicating the original table format for clarity and comprehension.
+              </div>
+            </div>
+            
+      </div>
+    </div>
+
+    <!-- Viewer Tab -->
+    <div id="tab-viewer" style="display:none;">
+      <div style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-size:12px; color:#64748b; font-weight:600;">File: <strong>sample_doc.pdf</strong></span>
+        
+      </div>
+      <div class="side-by-side">
+        <div class="doc-col">
+          <h4>
+            <span>Source Document (English)</span>
+            <span style="color:#64748b; font-weight:normal;">Original</span>
+          </h4>
+          <div class="doc-text">Technical Document Translation Test
+1. Fiscal Year 2025 Executive Summary
+This consolidated financial report provides an overview of the company&#x27;s financial health for the 2025 Fiscal
+Year. It highlights our Consolidated Revenue and operational efficiencies.
+2. Income Statement Highlights
+The following table summarizes the key performance indicators, including EBITDA and Gross Profit Margin.
+These metrics are critical for evaluating our operational profitability.
+Metric
+Q1 2023 (USD)
+Q1 2024 (USD)
+YoY Growth
+Total Revenue
+$1,200,000
+$1,450,000
+20.8%
+Net Income
+$300,000
+$380,000
+26.7%
+EBITDA
+$450,000
+$520,000
+15.5%
+Operating Margin
+25%
+26.2%
++120 bps
+3. Balance Sheet Summary
+Our Balance Sheet remains strong with a healthy liquidity ratio and robust asset coverage.
+Category
+Amount (in Millions USD)
+Total Assets
+ $3,100.0
+Total Liabilities
+$1,450.0
+Shareholder Equity
+$1,650.0
+Internal Use Only - Confidential Financial Data.
+</div>
+        </div>
+        <div class="doc-col">
+          <h4>
+            <span>Translated Document (ES)</span>
+            <span style="color:#10b981; font-weight:bold;">NO_ATTRIBUTION</span>
+          </h4>
+          <div class="doc-text">Uso  interno  únicamente  ­  Datos  financieros  confidenciales.
+Pasivos  totales
+$3,100.0
+Patrimonio  neto  de  los  accionistas
+$1,650.0
+Importe  (en  millones  de  USD)
+Categoría
+Activos  totales
+$1,450.0
+Año.  Destaca  nuestros  ingresos  consolidados  y  la  eficiencia  operativa.
+Este  informe  financiero  consolidado  ofrece  una  visión  general  de  la  salud  financiera  de  la  empresa  para  el  ejercicio  fiscal  2025.
+La  siguiente  tabla  resume  los  indicadores  clave  de  rendimiento,  incluidos  el  EBITDA  y  el  margen  de  beneficio  bruto.
+Nuestro  balance  general  se  mantiene  sólido,  con  un  índice  de  liquidez  saludable  y  una  sólida  cobertura  de  activos.
+Estas  métricas  son  fundamentales  para  evaluar  nuestra  rentabilidad  operativa.
+1.  Resumen  ejecutivo  del  año  fiscal  2025
+3.  Resumen  del  balance  general
+2.  Aspectos  destacados  del  estado  de  resultados
+Prueba  de  traducción  de  documentos  técnicos
+Lngresos  netos
+Margen  operativo
+Primer  trimestre  de  2024  (USD)
+26,7%
++120  bps
+$1.450.000
+Métrico
+25%
+Ingresos  totales
+Crecimiento  interanual
+Primer  trimestre  de  2023  (USD)
+15,5%
+EBITDA
+26,2%
+$300,000
+$380,000
+$1.200.000
+20,8%
+$520,000
+$450,000
+</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function switchTab(tabId) {
+      document.getElementById('tab-audit').style.display = tabId === 'audit' ? 'block' : 'none';
+      document.getElementById('tab-viewer').style.display = tabId === 'viewer' ? 'block' : 'none';
+      document.getElementById('btn-audit').className = tabId === 'audit' ? 'tab-btn active' : 'tab-btn';
+      document.getElementById('btn-viewer').className = tabId === 'viewer' ? 'tab-btn active' : 'tab-btn';
+    }
+  </script>
+</body>
+</html>
