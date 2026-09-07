@@ -16,11 +16,12 @@
 KPMG Translation Assistant — Translation & Quality Audit Tools.
 """
 
+import base64
 import json
 import logging
 import os
 import uuid
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 import fitz  # PyMuPDF
 from google.cloud import storage, translate_v3 as translate
@@ -101,6 +102,22 @@ def _extract_document_text(content_bytes: bytes, filename: str) -> str:
     except Exception as e:
         logger.warning(f"PDF extraction error: {e}")
         return ""
+
+def _render_pdf_pages_to_base64(pdf_bytes: bytes, max_pages: int = 8, dpi: int = 150) -> List[str]:
+    """Renders PDF pages to high-resolution base64 PNG data URLs for visual display in A2UI WebFrameSrcdoc."""
+    images = []
+    try:
+        doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+        for page_num in range(min(len(doc), max_pages)):
+            page = doc[page_num]
+            pix = page.get_pixmap(dpi=dpi)
+            png_bytes = pix.tobytes("png")
+            b64_str = base64.b64encode(png_bytes).decode("utf-8")
+            images.append(f"data:image/png;base64,{b64_str}")
+        doc.close()
+    except Exception as e:
+        logger.warning(f"Failed to render PDF pages to images: {e}")
+    return images
 
 async def translate_and_audit_document(
     file_path: Optional[str] = "sample_doc.pdf",
@@ -303,6 +320,11 @@ Return strict JSON only matching this schema:
     except Exception as e:
         logger.warning(f"Automated audit fallback applied: {e}")
 
+    # Render visual PDF pages to high-resolution base64 PNGs for A2UI iframe
+    source_pages_b64 = _render_pdf_pages_to_base64(content, dpi=150)
+    translated_pages_b64 = _render_pdf_pages_to_base64(translated_bytes, dpi=150)
+    translated_pdf_b64 = f"data:application/pdf;base64,{base64.b64encode(translated_bytes).decode('utf-8')}"
+
     # 5. Populate cache for A2UI programmatic iframe injection
     result_data = {
         "render_id": str(uuid.uuid4()),
@@ -314,6 +336,9 @@ Return strict JSON only matching this schema:
         "audit_report": audit_report,
         "source_text_sample": source_text[:2000],
         "translated_text_sample": translated_text[:2000],
+        "source_pages_b64": source_pages_b64,
+        "translated_pages_b64": translated_pages_b64,
+        "translated_pdf_b64": translated_pdf_b64,
     }
 
     _LAST_TRANSLATION_DATA.clear()
