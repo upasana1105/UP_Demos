@@ -103,17 +103,17 @@ def _extract_document_text(content_bytes: bytes, filename: str) -> str:
         logger.warning(f"PDF extraction error: {e}")
         return ""
 
-def _render_pdf_pages_to_base64(pdf_bytes: bytes, max_pages: int = 8, dpi: int = 150) -> List[str]:
-    """Renders PDF pages to high-resolution base64 PNG data URLs for visual display in A2UI WebFrameSrcdoc."""
+def _render_pdf_pages_to_base64(pdf_bytes: bytes, max_pages: int = 6, dpi: int = 95, jpg_quality: int = 72) -> List[str]:
+    """Renders PDF pages to lightweight, crisp base64 JPEG data URLs to keep A2UI payload under 700 KB."""
     images = []
     try:
         doc = fitz.open(stream=pdf_bytes, filetype="pdf")
         for page_num in range(min(len(doc), max_pages)):
             page = doc[page_num]
             pix = page.get_pixmap(dpi=dpi)
-            png_bytes = pix.tobytes("png")
-            b64_str = base64.b64encode(png_bytes).decode("utf-8")
-            images.append(f"data:image/png;base64,{b64_str}")
+            jpg_bytes = pix.tobytes("jpeg", jpg_quality=jpg_quality)
+            b64_str = base64.b64encode(jpg_bytes).decode("utf-8")
+            images.append(f"data:image/jpeg;base64,{b64_str}")
         doc.close()
     except Exception as e:
         logger.warning(f"Failed to render PDF pages to images: {e}")
@@ -273,7 +273,7 @@ async def translate_and_audit_document(
     }
 
     try:
-        genai_client = GenAIClient(project=project_id, location=location)
+        genai_client = GenAIClient(vertexai=True, project=project_id, location=location)
         audit_prompt = f"""You are a KPMG Financial Translation Auditor. 
 Audit this document translation for numerical scale accuracy (e.g. Millions vs. Billions, Billions vs. Milliarden) and GAAP/IFRS financial terminology.
 
@@ -320,10 +320,14 @@ Return strict JSON only matching this schema:
     except Exception as e:
         logger.warning(f"Automated audit fallback applied: {e}")
 
-    # Render visual PDF pages to high-resolution base64 PNGs for A2UI iframe
-    source_pages_b64 = _render_pdf_pages_to_base64(content, dpi=150)
-    translated_pages_b64 = _render_pdf_pages_to_base64(translated_bytes, dpi=150)
-    translated_pdf_b64 = f"data:application/pdf;base64,{base64.b64encode(translated_bytes).decode('utf-8')}"
+    # Render visual PDF pages to lightweight base64 JPEGs for A2UI iframe
+    source_pages_b64 = _render_pdf_pages_to_base64(content, dpi=95, jpg_quality=72)
+    translated_pages_b64 = _render_pdf_pages_to_base64(translated_bytes, dpi=95, jpg_quality=72)
+    # Only embed raw PDF base64 if small enough (<120 KB), otherwise rely on GCS link
+    if len(translated_bytes) < 120 * 1024:
+        translated_pdf_b64 = f"data:application/pdf;base64,{base64.b64encode(translated_bytes).decode('utf-8')}"
+    else:
+        translated_pdf_b64 = ""
 
     # 5. Populate cache for A2UI programmatic iframe injection
     result_data = {
