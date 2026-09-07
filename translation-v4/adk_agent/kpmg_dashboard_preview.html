@@ -55,7 +55,7 @@
   </div>
 
   <div class="nav-tabs">
-    <button class="tab-btn active" id="btn-audit" onclick="switchTab('audit')">Quality Audit (30%)</button>
+    <button class="tab-btn active" id="btn-audit" onclick="switchTab('audit')">Quality Audit (3%)</button>
     <button class="tab-btn" id="btn-viewer" onclick="switchTab('viewer')">Document Viewer (Side-by-Side)</button>
   </div>
 
@@ -65,29 +65,29 @@
       <div class="kpi-grid">
         <div class="kpi-card">
           <div class="kpi-label">Overall Score</div>
-          <div class="kpi-value">30%</div>
-          <div class="bar" style="width:30%; background:#002b7a;"></div>
+          <div class="kpi-value">3%</div>
+          <div class="bar" style="width:3%; background:#002b7a;"></div>
         </div>
         <div class="kpi-card">
           <div class="kpi-label">Accuracy</div>
-          <div class="kpi-value">35%</div>
-          <div class="bar" style="width:35%; background:#10b981;"></div>
+          <div class="kpi-value">4%</div>
+          <div class="bar" style="width:4%; background:#10b981;"></div>
         </div>
         <div class="kpi-card">
           <div class="kpi-label">Fluency</div>
-          <div class="kpi-value">20%</div>
-          <div class="bar" style="width:20%; background:#f59e0b;"></div>
+          <div class="kpi-value">2%</div>
+          <div class="bar" style="width:2%; background:#f59e0b;"></div>
         </div>
         <div class="kpi-card">
           <div class="kpi-label">Tone & Scale</div>
-          <div class="kpi-value">80%</div>
-          <div class="bar" style="width:80%; background:#6366f1;"></div>
+          <div class="kpi-value">5%</div>
+          <div class="bar" style="width:5%; background:#6366f1;"></div>
         </div>
       </div>
 
       <div class="exec-summary">
         <h4>Auditor's Executive Summary</h4>
-        <p>"The translated document suffers from critical structural and data integrity issues, rendering it largely unusable for financial analysis. While individual financial terms are mostly translated correctly and numerical values (within specific data points) are accurate, the overall layout is severely disorganized, and crucial balance sheet figures are incorrectly assigned to categories. This compromises the accuracy of the financial data presentation and the document&#x27;s professional usability."</p>
+        <p>"The audit of the Spanish translation revealed a mixed performance. Numerical scale accuracy was excellent, with all figures correctly converted to Spanish formatting and magnitudes (e.g., &#x27;Millions USD&#x27; correctly translated). Most GAAP/IFRS financial terminology was accurately rendered, demonstrating a good understanding of financial concepts. However, the translation severely suffers from a complete reordering of the document&#x27;s sections and table content, which significantly impairs readability and consistency with the source. Minor issues include a typographical error in a key financial metric and a grammatical oversight. The translation correctly reflects a potential inconsistency present in the source text itself regarding &#x27;Gross Profit Margin&#x27;."</p>
       </div>
 
       <h4 style="font-size:11px; font-weight:800; text-transform:uppercase; color:#475569; margin-bottom:10px;">Audit Findings & Scale Verifications</h4>
@@ -95,89 +95,101 @@
         
             <div style="background:#ffffff; border:1px solid #e2e8f0; border-left:4px solid #e11d48; border-radius:8px; padding:12px; margin-bottom:10px;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <span style="font-weight:700; font-size:12px; color:#1e293b;">Data Integrity Error: Balance Sheet Numerical Values Scrambled</span>
+                <span style="font-weight:700; font-size:12px; color:#1e293b;">Content Reordering and Structural Disruption</span>
                 <span style="background:#ffe4e6; color:#e11d48; font-size:10px; font-weight:800; padding:2px 8px; border-radius:4px; text-transform:uppercase;">High Impact</span>
               </div>
               <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:8px; font-size:11px;">
                 <div style="background:#f8fafc; padding:8px; border-radius:6px;">
                   <span style="display:block; font-size:9px; font-weight:700; color:#64748b; text-transform:uppercase;">Original</span>
-                  <span style="color:#334155;">Category
-Total Assets       $3,100.0
-Total Liabilities  $1,450.0
-Shareholder Equity $1,650.0</span>
+                  <span style="color:#334155;">The source document follows a clear sequential structure (1. Executive Summary, 2. Income Statement, 3. Balance Sheet).</span>
                 </div>
                 <div style="background:#eff6ff; padding:8px; border-radius:6px;">
                   <span style="display:block; font-size:9px; font-weight:700; color:#002b7a; text-transform:uppercase;">Translated</span>
-                  <span style="color:#002b7a; font-weight:600;">Pasivos totales           $3,100.0
-Activos totales           $1,450.0
-Patrimonio neto de los accionistas $1,650.0</span>
+                  <span style="color:#002b7a; font-weight:600;">The translated document presents sections and table data in a scrambled order, e.g., Balance Sheet table appears first, followed by Balance Sheet text, then Section 2, then Section 1, and finally the Income Statement table.</span>
                 </div>
               </div>
               <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:8px; border-radius:6px; font-size:11px; color:#15803d;">
-                <strong>Recommendation:</strong> Correctly assign the numerical values to their respective balance sheet categories. &#x27;Pasivos totales&#x27; (Total Liabilities) should be $1,450.0, and &#x27;Activos totales&#x27; (Total Assets) should be $3,100.0. Ensure categories are listed in the standard order (Assets, Liabilities, Equity) and correctly associated with their corresponding amounts.
+                <strong>Recommendation:</strong> The translated content must maintain the original document&#x27;s order of sections and sub-sections to ensure clarity, comparability, and ease of review for financial professionals. This is a critical requirement for financial reporting.
               </div>
             </div>
             
-            <div style="background:#ffffff; border:1px solid #e2e8f0; border-left:4px solid #e11d48; border-radius:8px; padding:12px; margin-bottom:10px;">
+            <div style="background:#ffffff; border:1px solid #e2e8f0; border-left:4px solid #d97706; border-radius:8px; padding:12px; margin-bottom:10px;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <span style="font-weight:700; font-size:12px; color:#1e293b;">Major Structural and Formatting Disorganization</span>
-                <span style="background:#ffe4e6; color:#e11d48; font-size:10px; font-weight:800; padding:2px 8px; border-radius:4px; text-transform:uppercase;">High Impact</span>
+                <span style="font-weight:700; font-size:12px; color:#1e293b;">Typographical Error in Financial Metric</span>
+                <span style="background:#fef3c7; color:#d97706; font-size:10px; font-weight:800; padding:2px 8px; border-radius:4px; text-transform:uppercase;">Medium Impact</span>
               </div>
               <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:8px; font-size:11px;">
                 <div style="background:#f8fafc; padding:8px; border-radius:6px;">
                   <span style="display:block; font-size:9px; font-weight:700; color:#64748b; text-transform:uppercase;">Original</span>
-                  <span style="color:#334155;">The entire structured document, including numbered sections, clear headings, and tabular data presentation for Income Statement Highlights and Balance Sheet Summary.</span>
+                  <span style="color:#334155;">Net Income</span>
                 </div>
                 <div style="background:#eff6ff; padding:8px; border-radius:6px;">
                   <span style="display:block; font-size:9px; font-weight:700; color:#002b7a; text-transform:uppercase;">Translated</span>
-                  <span style="color:#002b7a; font-weight:600;">The entire translated text is jumbled. Sections are out of order, content within sections (like the Balance Sheet items and the Income Statement table) is completely disorganized, and the original table formats are lost, making the data unreadable.</span>
+                  <span style="color:#002b7a; font-weight:600;">Lngresos netos</span>
                 </div>
               </div>
               <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:8px; border-radius:6px; font-size:11px; color:#15803d;">
-                <strong>Recommendation:</strong> Reconstruct the translated document to mirror the original&#x27;s logical flow, section numbering, headings, and tabular formats. Maintain the integrity of data presentation to ensure readability and usability of the financial information.
+                <strong>Recommendation:</strong> Correct the typographical error. &#x27;Lngresos&#x27; should be &#x27;Ingresos&#x27;. While contextually clear, such errors can reduce confidence in the overall translation quality.
               </div>
             </div>
             
-            <div style="background:#ffffff; border:1px solid #e2e8f0; border-left:4px solid #e11d48; border-radius:8px; padding:12px; margin-bottom:10px;">
+            <div style="background:#ffffff; border:1px solid #e2e8f0; border-left:4px solid #d97706; border-radius:8px; padding:12px; margin-bottom:10px;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <span style="font-weight:700; font-size:12px; color:#1e293b;">Missing Table Structure for Income Statement</span>
-                <span style="background:#ffe4e6; color:#e11d48; font-size:10px; font-weight:800; padding:2px 8px; border-radius:4px; text-transform:uppercase;">High Impact</span>
+                <span style="font-weight:700; font-size:12px; color:#1e293b;">Grammatical/Punctuation Oversight in Executive Summary</span>
+                <span style="background:#fef3c7; color:#d97706; font-size:10px; font-weight:800; padding:2px 8px; border-radius:4px; text-transform:uppercase;">Low Impact</span>
               </div>
               <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:8px; font-size:11px;">
                 <div style="background:#f8fafc; padding:8px; border-radius:6px;">
                   <span style="display:block; font-size:9px; font-weight:700; color:#64748b; text-transform:uppercase;">Original</span>
-                  <span style="color:#334155;">Metric	Q1 2023 (USD)	Q1 2024 (USD)	YoY Growth
-Total Revenue	$1,200,000	$1,450,000	20.8%
-Net Income	$300,000	$380,000	26.7%
-EBITDA	$450,000	$520,000	15.5%
-Operating Margin	25%	26.2%	+120 bps</span>
+                  <span style="color:#334155;">It highlights our Consolidated Revenue and operational efficiencies.</span>
                 </div>
                 <div style="background:#eff6ff; padding:8px; border-radius:6px;">
                   <span style="display:block; font-size:9px; font-weight:700; color:#002b7a; text-transform:uppercase;">Translated</span>
-                  <span style="color:#002b7a; font-weight:600;">Lngresos netos
-Margen operativo
-Primer trimestre de 2024 (USD)
-26,7%
-+120 bps
-$1.450.000
-Métrico
-25%
-Ingresos totales
-Crecimiento interanual
-Primer trimestre de 2023 (USD)
-15,5%
-EBITDA
-26,2%
-$300,000
-$380,000
-$1.200.000
-20,8%
-$520,000
-$450,000</span>
+                  <span style="color:#002b7a; font-weight:600;">Año. Destaca nuestros ingresos consolidados y la eficiencia operativa.</span>
                 </div>
               </div>
               <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:8px; border-radius:6px; font-size:11px; color:#15803d;">
-                <strong>Recommendation:</strong> Re-establish the table structure for the &#x27;Aspectos destacados del estado de resultados&#x27; (Income Statement Highlights). Ensure all metrics, time periods, and numerical values are correctly aligned in their respective rows and columns, replicating the original table format for clarity and comprehension.
+                <strong>Recommendation:</strong> Adjust the sentence structure for better flow. Instead of a hard stop and new sentence (&#x27;Año. Destaca&#x27;), it should be &#x27;Año, y destaca...&#x27; or similar, to maintain logical connection with the preceding sentence.
+              </div>
+            </div>
+            
+            <div style="background:#ffffff; border:1px solid #e2e8f0; border-left:4px solid #d97706; border-radius:8px; padding:12px; margin-bottom:10px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span style="font-weight:700; font-size:12px; color:#1e293b;">Consistency between narrative and table (Source Issue Reflected in Translation)</span>
+                <span style="background:#fef3c7; color:#d97706; font-size:10px; font-weight:800; padding:2px 8px; border-radius:4px; text-transform:uppercase;">Low Impact</span>
+              </div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:8px; font-size:11px;">
+                <div style="background:#f8fafc; padding:8px; border-radius:6px;">
+                  <span style="display:block; font-size:9px; font-weight:700; color:#64748b; text-transform:uppercase;">Original</span>
+                  <span style="color:#334155;">The following table summarizes the key performance indicators, including EBITDA and Gross Profit Margin.</span>
+                </div>
+                <div style="background:#eff6ff; padding:8px; border-radius:6px;">
+                  <span style="display:block; font-size:9px; font-weight:700; color:#002b7a; text-transform:uppercase;">Translated</span>
+                  <span style="color:#002b7a; font-weight:600;">La siguiente tabla resume los indicadores clave de rendimiento, incluidos el EBITDA y el margen de beneficio bruto.</span>
+                </div>
+              </div>
+              <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:8px; border-radius:6px; font-size:11px; color:#15803d;">
+                <strong>Recommendation:</strong> While the translation is accurate to the source narrative, the source document&#x27;s narrative mentions &#x27;Gross Profit Margin&#x27; but the accompanying table lists &#x27;Operating Margin&#x27;. This discrepancy should ideally be clarified or corrected in the source text. The translator correctly translated what was written in the source.
+              </div>
+            </div>
+            
+            <div style="background:#ffffff; border:1px solid #e2e8f0; border-left:4px solid #d97706; border-radius:8px; padding:12px; margin-bottom:10px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span style="font-weight:700; font-size:12px; color:#1e293b;">Numerical Formatting - Decimal in Balance Sheet</span>
+                <span style="background:#fef3c7; color:#d97706; font-size:10px; font-weight:800; padding:2px 8px; border-radius:4px; text-transform:uppercase;">Low Impact</span>
+              </div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:8px; font-size:11px;">
+                <div style="background:#f8fafc; padding:8px; border-radius:6px;">
+                  <span style="display:block; font-size:9px; font-weight:700; color:#64748b; text-transform:uppercase;">Original</span>
+                  <span style="color:#334155;">$3,100.0, $1,450.0, $1,650.0</span>
+                </div>
+                <div style="background:#eff6ff; padding:8px; border-radius:6px;">
+                  <span style="display:block; font-size:9px; font-weight:700; color:#002b7a; text-transform:uppercase;">Translated</span>
+                  <span style="color:#002b7a; font-weight:600;">$3.100.0, $1.450.0, $1.650.0</span>
+                </div>
+              </div>
+              <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:8px; border-radius:6px; font-size:11px; color:#15803d;">
+                <strong>Recommendation:</strong> While the thousands separator is correctly localized (&#x27;.&#x27;), the &#x27;.0&#x27; decimal format is unusual for whole numbers in Spanish financial reporting, where values are typically presented as integers or with two decimal places (e.g., $3.100 or $3.100,00). It&#x27;s not strictly incorrect as it mirrors the source, but it&#x27;s worth noting for stylistic consistency in future reports.
               </div>
             </div>
             
@@ -241,44 +253,44 @@ Internal Use Only - Confidential Financial Data.
             <span>Translated Document (ES)</span>
             <span style="color:#10b981; font-weight:bold;">NO_ATTRIBUTION</span>
           </h4>
-          <div class="doc-text">Uso  interno  únicamente  ­  Datos  financieros  confidenciales.
+          <div class="doc-text">$1,650.0
+$1,450.0
+Activos  totales
+Categoría
 Pasivos  totales
+Importe  (en  millones  de  USD)
 $3,100.0
 Patrimonio  neto  de  los  accionistas
-$1,650.0
-Importe  (en  millones  de  USD)
-Categoría
-Activos  totales
-$1,450.0
-Año.  Destaca  nuestros  ingresos  consolidados  y  la  eficiencia  operativa.
-Este  informe  financiero  consolidado  ofrece  una  visión  general  de  la  salud  financiera  de  la  empresa  para  el  ejercicio  fiscal  2025.
-La  siguiente  tabla  resume  los  indicadores  clave  de  rendimiento,  incluidos  el  EBITDA  y  el  margen  de  beneficio  bruto.
+Uso  interno  únicamente  ­  Datos  financieros  confidenciales.
 Nuestro  balance  general  se  mantiene  sólido,  con  un  índice  de  liquidez  saludable  y  una  sólida  cobertura  de  activos.
-Estas  métricas  son  fundamentales  para  evaluar  nuestra  rentabilidad  operativa.
-1.  Resumen  ejecutivo  del  año  fiscal  2025
-3.  Resumen  del  balance  general
 2.  Aspectos  destacados  del  estado  de  resultados
+Este  informe  financiero  consolidado  ofrece  una  visión  general  de  la  salud  financiera  de  la  empresa  para  el  ejercicio  fiscal  2025.
+1.  Resumen  ejecutivo  del  año  fiscal  2025
+Año.  Destaca  nuestros  ingresos  consolidados  y  la  eficiencia  operativa.
+La  siguiente  tabla  resume  los  indicadores  clave  de  rendimiento,  incluidos  el  EBITDA  y  el  margen  de  beneficio  bruto.
+3.  Resumen  del  balance  general
+Estas  métricas  son  fundamentales  para  evaluar  nuestra  rentabilidad  operativa.
 Prueba  de  traducción  de  documentos  técnicos
-Lngresos  netos
-Margen  operativo
-Primer  trimestre  de  2024  (USD)
-26,7%
-+120  bps
-$1.450.000
-Métrico
-25%
-Ingresos  totales
 Crecimiento  interanual
-Primer  trimestre  de  2023  (USD)
-15,5%
-EBITDA
-26,2%
-$300,000
-$380,000
 $1.200.000
-20,8%
-$520,000
+Ingresos  totales
+$300,000
+25%
+Métrico
++120  bps
+26,7%
+15,5%
+Primer  trimestre  de  2024  (USD)
+Lngresos  netos
+Primer  trimestre  de  2023  (USD)
+Margen  operativo
+$1.450.000
 $450,000
+$520,000
+26,2%
+20,8%
+EBITDA
+$380,000
 </div>
         </div>
       </div>

@@ -31,6 +31,29 @@ from .components import _LAST_TRANSLATION_DATA
 logger = logging.getLogger(__name__)
 
 _STORAGE_CLIENT = None
+_ACTIVE_UPLOADED_DOCUMENTS: Dict[str, Dict[str, Any]] = {}
+
+def set_active_uploaded_document(context_id: str, doc_data: Dict[str, Any]):
+    """Stores a document uploaded by the user via the chat UI '+' button."""
+    key = context_id or "default"
+    _ACTIVE_UPLOADED_DOCUMENTS[key] = doc_data
+
+def get_active_uploaded_document(context_id: str = "") -> Optional[Dict[str, Any]]:
+    """Retrieves the active document uploaded via the chat UI '+' button."""
+    if context_id and context_id in _ACTIVE_UPLOADED_DOCUMENTS:
+        return _ACTIVE_UPLOADED_DOCUMENTS[context_id]
+    if "default" in _ACTIVE_UPLOADED_DOCUMENTS:
+        return _ACTIVE_UPLOADED_DOCUMENTS["default"]
+    if _ACTIVE_UPLOADED_DOCUMENTS:
+        return list(_ACTIVE_UPLOADED_DOCUMENTS.values())[-1]
+    return None
+
+def clear_active_uploaded_document(context_id: str = ""):
+    """Cleans up the active uploaded document for the context."""
+    if context_id in _ACTIVE_UPLOADED_DOCUMENTS:
+        del _ACTIVE_UPLOADED_DOCUMENTS[context_id]
+    elif "default" in _ACTIVE_UPLOADED_DOCUMENTS:
+        del _ACTIVE_UPLOADED_DOCUMENTS["default"]
 
 def _get_storage_client(project_id: str) -> storage.Client:
     global _STORAGE_CLIENT
@@ -46,6 +69,38 @@ def _extract_text_from_pdf(pdf_bytes: bytes, max_pages: int = 5) -> str:
         text_parts.append(doc[i].get_text("text"))
     doc.close()
     return "\n\n".join(text_parts)
+
+def _extract_document_text(content_bytes: bytes, filename: str) -> str:
+    """Extracts text across PDF, DOCX, and PPTX formats."""
+    ext = os.path.splitext(filename)[1].lower()
+    if ext == ".docx":
+        try:
+            import io, docx
+            doc = docx.Document(io.BytesIO(content_bytes))
+            parts = [p.text for p in doc.paragraphs if p.text]
+            for t in doc.tables:
+                for row in t.rows:
+                    parts.append(" | ".join([c.text.strip() for c in row.cells if c.text.strip()]))
+            return "\n".join(parts)
+        except Exception as e:
+            logger.warning(f"DOCX text extraction failed: {e}")
+    elif ext == ".pptx":
+        try:
+            import io, pptx
+            prs = pptx.Presentation(io.BytesIO(content_bytes))
+            parts = []
+            for s in prs.slides:
+                for sh in s.shapes:
+                    if hasattr(sh, "text") and sh.text:
+                        parts.append(sh.text)
+            return "\n".join(parts)
+        except Exception as e:
+            logger.warning(f"PPTX text extraction failed: {e}")
+    try:
+        return _extract_text_from_pdf(content_bytes)
+    except Exception as e:
+        logger.warning(f"PDF extraction error: {e}")
+        return ""
 
 async def translate_and_audit_document(
     file_path: Optional[str] = "sample_doc.pdf",
@@ -65,10 +120,35 @@ async def translate_and_audit_document(
     location = os.getenv("LOCATION", "us-central1")
     staging_bucket = os.getenv("STORAGE_BUCKET", "gs://uppdemos-agent-staging").replace("gs://", "")
 
-    # 1. Resolve source document
+    # 1. Resolve source document — check if user uploaded a file via chat UI "+" button
     content = None
     resolved_name = "document.pdf"
-    if file_path:
+    uploaded_doc = get_active_uploaded_document()
+
+    if uploaded_doc and (
+        not file_path
+        or file_path in ("sample_doc.pdf", "document.pdf", "uploaded_document.pdf")
+        or file_path == uploaded_doc.get("name")
+        or os.path.basename(file_path) == uploaded_doc.get("name")
+    ):
+        logger.info(f"Using document uploaded via chat UI '+': {uploaded_doc.get('name')}")
+        resolved_name = uploaded_doc.get("name", "uploaded_document.pdf")
+        content = uploaded_doc.get("bytes")
+        if not content and uploaded_doc.get("uri"):
+            uri = uploaded_doc["uri"]
+            if uri.startswith("gs://"):
+                parts = uri[5:].split("/", 1)
+                b_name, b_path = parts[0], parts[1]
+                s_client = _get_storage_client(project_id)
+                bucket = s_client.bucket(b_name)
+                blob = bucket.blob(b_path)
+                content = blob.download_as_bytes()
+            elif uri.startswith("http://") or uri.startswith("https://"):
+                import httpx
+                resp = httpx.get(uri, follow_redirects=True, timeout=60.0)
+                content = resp.content
+
+    if not content and file_path:
         resolved_name = os.path.basename(file_path)
         if file_path.startswith("gs://"):
             parts = file_path[5:].split("/", 1)
@@ -108,7 +188,18 @@ async def translate_and_audit_document(
     if not content:
         raise FileNotFoundError(f"Could not locate document '{file_path}' locally or on GCS.")
 
-    source_text = _extract_text_from_pdf(content)
+    source_text = _extract_document_text(content, resolved_name)
+
+    # Determine MIME type for Cloud Translation API v3
+    ext = os.path.splitext(resolved_name)[1].lower()
+    if ext == ".docx":
+        doc_mime_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    elif ext == ".pptx":
+        doc_mime_type = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+    elif ext == ".xlsx":
+        doc_mime_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    else:
+        doc_mime_type = "application/pdf"
 
     # 2. Call Google Cloud Translation API v3
     client = translate.TranslationServiceClient()
@@ -120,31 +211,32 @@ async def translate_and_audit_document(
         "source_language_code": source_language_code,
         "document_input_config": {
             "content": content,
-            "mime_type": "application/pdf",
+            "mime_type": doc_mime_type,
         },
     }
 
     if customized_attribution:
         request["customized_attribution"] = customized_attribution
 
-    logger.info(f"Calling Cloud Translation API with customized_attribution={customized_attribution}...")
+    logger.info(f"Calling Cloud Translation API ({doc_mime_type}) with customized_attribution={customized_attribution}...")
     response = client.translate_document(request=request)
     translated_bytes = response.document_translation.byte_stream_outputs[0]
 
-    # Verify watermark absence in translated PDF
-    translated_text = _extract_text_from_pdf(translated_bytes)
+    # Verify watermark absence in translated document
+    translated_text = _extract_document_text(translated_bytes, resolved_name)
     has_watermark = "Machine Translated" in translated_text
 
-    # 3. Upload clean translated PDF to GCS for retrieval
+    # 3. Upload clean translated document to GCS for retrieval
     gcs_uri = ""
     try:
         s_client = _get_storage_client(project_id)
         bucket = s_client.bucket(staging_bucket)
-        target_blob_name = f"translations/{os.path.splitext(resolved_name)[0]}_{target_language_code}.pdf"
+        base_stem, ext = os.path.splitext(resolved_name)
+        target_blob_name = f"translations/{base_stem}_{target_language_code}{ext}"
         blob = bucket.blob(target_blob_name)
-        blob.upload_from_string(translated_bytes, content_type="application/pdf")
+        blob.upload_from_string(translated_bytes, content_type=doc_mime_type)
         gcs_uri = f"https://storage.googleapis.com/{staging_bucket}/{target_blob_name}"
-        logger.info(f"Uploaded translated PDF to {gcs_uri}")
+        logger.info(f"Uploaded translated file to {gcs_uri}")
     except Exception as gcs_err:
         logger.warning(f"GCS upload skipped or failed: {gcs_err}")
 

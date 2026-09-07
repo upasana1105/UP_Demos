@@ -55,6 +55,7 @@ from .components import (
     generate_translation_a2ui_tool,
     A2UI_MIME_TYPE,
 )
+from .tools import set_active_uploaded_document, clear_active_uploaded_document
 
 logger = logging.getLogger(__name__)
 
@@ -80,12 +81,55 @@ class KPMGTranslationExecutor(AgentExecutor):
         await updater.submit()
         await updater.start_work()
 
-        query = context.get_user_input() if hasattr(context, "get_user_input") else "Translate document"
+        # 1. Detect any document uploaded via the chat UI "+" button (FilePart)
+        uploaded_doc = None
+        if context.message and context.message.parts:
+            for p in context.message.parts:
+                root = getattr(p, "root", None)
+                if root and type(root).__name__ == "FilePart":
+                    f = getattr(root, "file", None)
+                    if f:
+                        filename = getattr(f, "name", None) or "uploaded_document.pdf"
+                        mime = getattr(f, "mime_type", None) or "application/pdf"
+                        file_bytes = None
+                        raw_b = getattr(f, "bytes", None)
+                        if raw_b:
+                            if isinstance(raw_b, str):
+                                try:
+                                    import base64
+                                    file_bytes = base64.b64decode(raw_b)
+                                except Exception:
+                                    file_bytes = raw_b.encode("utf-8")
+                            elif isinstance(raw_b, bytes):
+                                file_bytes = raw_b
+
+                        uri = getattr(f, "uri", None)
+                        uploaded_doc = {
+                            "name": filename,
+                            "mime_type": mime,
+                            "bytes": file_bytes,
+                            "uri": uri,
+                        }
+                        set_active_uploaded_document(context.context_id, uploaded_doc)
+                        logger.info(f"✓ Detected chat UI '+' attachment: {filename} ({mime})")
+                        break
+
+        # 2. Extract textual user query
+        query = context.get_user_input() if hasattr(context, "get_user_input") else ""
         if not query and context.message and context.message.parts:
             for p in context.message.parts:
-                if hasattr(p, "root") and hasattr(p.root, "text"):
-                    query = p.root.text
+                root = getattr(p, "root", None)
+                if hasattr(root, "text") and root.text:
+                    query = root.text
                     break
+
+        if not query:
+            if uploaded_doc:
+                query = f"Translate the uploaded document '{uploaded_doc['name']}' to Spanish using NO_ATTRIBUTION"
+            else:
+                query = "Translate sample_doc.pdf to Spanish using NO_ATTRIBUTION"
+        elif uploaded_doc and uploaded_doc["name"] not in query:
+            query = f"User uploaded '{uploaded_doc['name']}' via chat UI.\nUser request: {query}"
 
         logger.info(f"Executing translation query: '{query}'")
 
@@ -162,6 +206,8 @@ class KPMGTranslationExecutor(AgentExecutor):
                 context.task_id,
             )
             await updater.update_status(TaskState.failed, err_msg, final=True)
+        finally:
+            clear_active_uploaded_document(context.context_id)
 
     async def cancel(self, request: RequestContext, event_queue: EventQueue) -> None:
         logger.info(f"Cancellation requested for task {request.task_id}")
