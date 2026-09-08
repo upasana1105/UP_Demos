@@ -134,6 +134,48 @@ def _render_pdf_pages_to_gcs(
         logger.warning(f"Failed to render/upload PDF page previews to GCS: {e}")
     return urls
 
+def _build_image_localization_prompt(target_lang: str) -> str:
+    """Creates a strict localization prompt instructing Gemini Flash Image to localize
+    informative charts, tables, and diagrams while strictly skipping corporate logos,
+    trademarks, URLs, and photos, and demanding a pure white background.
+    """
+    return f"""You are an expert technical and document localization specialist.
+Analyze this image for any English text.
+
+STRICT EXCLUSION RULES (You MUST respond with exactly the text "NO_TEXT"):
+1. Brand Logos & Trademarks: If the image is a corporate logo, brand mark, company emblem, crest, or product trademark (such as "ZEBRA PROTECTION", "KPMG", "Google", company names/slogans), respond with NO_TEXT.
+2. Web URLs & Contact Info: If the text is a website address (such as "www.example.com"), email address, or phone number, respond with NO_TEXT.
+3. No English Text: If the image contains NO English text (or only numbers, technical codes, symbols, or decorative graphics), respond with NO_TEXT.
+4. Photo / Realistic Subject: If the image is a photo of a person, vehicle, equipment, or physical product with minor background markings, respond with NO_TEXT.
+
+INCLUSION / TRANSLATION RULES (Only for explanatory diagrams, data charts, and tables):
+- If and ONLY if the image is an informative chart (bar chart, pie chart, line graph), technical diagram, workflow/flowchart, table of data, or illustration with descriptive English labels/legends/captions:
+  Translate the English text labels into {target_lang}.
+  Generate a new image that preserves the exact same visual structure, colors, lines, and layout as the original, with the translated text cleanly rendered.
+- CRITICAL BACKGROUND REQUIREMENT: The background of the generated image MUST be solid clean white (RGB 255, 255, 255) matching the document page background. NEVER generate a black, dark, or checkerboard background.
+"""
+
+def _is_dark_background_artifact(new_img_bytes: bytes, orig_bytes: bytes) -> bool:
+    """Detects if Gemini generated an image with an unintended solid dark/black background."""
+    try:
+        from PIL import Image
+        import io
+        gen_img = Image.open(io.BytesIO(new_img_bytes)).convert("RGB")
+        thumb_gen = gen_img.resize((50, 50))
+        pix_gen = thumb_gen.load()
+        gen_black = sum(1 for y in range(50) for x in range(50) if pix_gen[x, y][0] < 35 and pix_gen[x, y][1] < 35 and pix_gen[x, y][2] < 35) / 2500.0
+
+        orig_img = Image.open(io.BytesIO(orig_bytes)).convert("RGB")
+        thumb_orig = orig_img.resize((50, 50))
+        pix_orig = thumb_orig.load()
+        orig_black = sum(1 for y in range(50) for x in range(50) if pix_orig[x, y][0] < 35 and pix_orig[x, y][1] < 35 and pix_orig[x, y][2] < 35) / 2500.0
+
+        if gen_black > 0.40 and orig_black < 0.25:
+            return True
+    except Exception:
+        pass
+    return False
+
 async def _localize_images_in_pdf_bytes(orig_bytes: bytes, trans_bytes: bytes, target_lang: str) -> bytes:
     """Finds charts/images in the PDF, uses Gemini (gemini-3.1-flash-image) to translate text within them,
     and inserts the localized images into the translated PDF bytes.
@@ -199,18 +241,33 @@ async def _localize_images_in_pdf_bytes(orig_bytes: bytes, trans_bytes: bytes, t
                 bbox = matching_info["bbox"]
                 try:
                     base_image = doc_orig.extract_image(xref)
-                    image_bytes = base_image["image"]
-                    ext = base_image["ext"]
+                    smask_xref = base_image.get("smask", 0)
+                    pix = fitz.Pixmap(doc_orig, xref)
+                    if smask_xref > 0:
+                        try:
+                            mask = fitz.Pixmap(doc_orig, smask_xref)
+                            pix = fitz.Pixmap(pix, mask)
+                        except Exception as mask_err:
+                            logger.debug(f"Could not combine smask {smask_xref}: {mask_err}")
+
+                    if pix.alpha:
+                        # Composite onto pure white background so transparent pixels are never black
+                        raw_png = pix.tobytes("png")
+                        im_pil = Image.open(io.BytesIO(raw_png)).convert("RGBA")
+                        bg = Image.new("RGBA", im_pil.size, (255, 255, 255, 255))
+                        composite = Image.alpha_composite(bg, im_pil).convert("RGB")
+                        buf = io.BytesIO()
+                        composite.save(buf, format="PNG")
+                        image_bytes = buf.getvalue()
+                        ext = "png"
+                    else:
+                        image_bytes = pix.tobytes("png")
+                        ext = "png"
                 except Exception as e:
                     logger.warning(f"Failed to extract image {xref}: {e}")
                     continue
 
-                generator_prompt = f"""Analyze this image for any English text (such as labels, titles, legends, or words).
-If the image contains NO English text at all (or only contains numbers, symbols, or decorative graphics), you MUST respond with exactly the text: NO_TEXT
-Otherwise, if it contains English text, translate all text within this image into {target_lang} and generate a new image that is identical in style, layout, colors, and data presentation as the input image, but with the fully translated text.
-The output image MUST be generated to match or scale nicely to {width}x{height} pixels.
-Ensure high visual fidelity and crisp text.
-"""
+                generator_prompt = _build_image_localization_prompt(target_lang)
                 tasks.append({
                     "type": "image",
                     "page_num": page_num,
@@ -252,6 +309,13 @@ Ensure high visual fidelity and crisp text.
                     break
 
             if not new_img_bytes:
+                continue
+
+            # Defensive Check: Dark / Black Box Detection
+            if _is_dark_background_artifact(new_img_bytes, task["bytes"]):
+                logger.warning(
+                    f"Rejecting generated image for page {task['page_num']} due to dark background artifact."
+                )
                 continue
 
             if task["page_num"] < len(doc_trans):
@@ -304,13 +368,7 @@ async def _localize_images_in_docx_bytes(docx_bytes: bytes, target_lang: str) ->
                 img_part = rel.target_part
                 image_bytes = img_part.blob
                 mime = img_part.content_type
-                generator_prompt = f"""
-                Translate ALL text within this image into {target_lang}.
-                It is CRITICAL that every single word, label, title, and legend item is translated to {target_lang}.
-                Do NOT leave any text in English.
-                Generate a new image that is identical in style, layout, colors, and data presentation as the input image, but with the fully translated text.
-                Ensure high visual fidelity and crisp text.
-                """
+                generator_prompt = _build_image_localization_prompt(target_lang)
                 tasks.append((img_part, image_bytes, mime, generator_prompt))
 
         if not tasks:
@@ -323,12 +381,26 @@ async def _localize_images_in_docx_bytes(docx_bytes: bytes, target_lang: str) ->
         for i, result in enumerate(results):
             if not result or not result.candidates:
                 continue
+
+            # Check for NO_TEXT
+            is_no_text = False
+            for part in result.candidates[0].content.parts:
+                if part.text and "NO_TEXT" in part.text:
+                    is_no_text = True
+                    break
+            if is_no_text:
+                continue
+
             new_img_bytes = None
             for part in result.candidates[0].content.parts:
                 if part.inline_data and part.inline_data.mime_type.startswith("image/"):
                     new_img_bytes = part.inline_data.data
                     break
+
             if new_img_bytes:
+                if _is_dark_background_artifact(new_img_bytes, tasks[i][1]):
+                    logger.warning(f"Rejecting DOCX generated image {i} due to dark background artifact.")
+                    continue
                 tasks[i][0]._blob = new_img_bytes
 
         buf = io.BytesIO()
@@ -337,7 +409,6 @@ async def _localize_images_in_docx_bytes(docx_bytes: bytes, target_lang: str) ->
     except Exception as e:
         logger.warning(f"DOCX image localization skipped or failed: {e}")
         return docx_bytes
-
 
 async def _localize_images_in_pptx_bytes(pptx_bytes: bytes, target_lang: str) -> bytes:
     """Finds images in PPTX bytes and translates text within them via gemini-3.1-flash-image."""
@@ -372,13 +443,7 @@ async def _localize_images_in_pptx_bytes(pptx_bytes: bytes, target_lang: str) ->
                     image = shape.image
                     image_bytes = image.blob
                     mime = f"image/{image.ext}" if image.ext else "image/png"
-                    generator_prompt = f"""
-                    Translate ALL text within this image into {target_lang}.
-                    It is CRITICAL that every single word, label, title, and legend item is translated to {target_lang}.
-                    Do NOT leave any text in English.
-                    Generate a new image that is identical in style, layout, colors, and data presentation as the input image, but with the fully translated text.
-                    Ensure high visual fidelity and crisp text.
-                    """
+                    generator_prompt = _build_image_localization_prompt(target_lang)
                     tasks.append((image, image_bytes, mime, generator_prompt))
 
         if not tasks:
@@ -391,12 +456,26 @@ async def _localize_images_in_pptx_bytes(pptx_bytes: bytes, target_lang: str) ->
         for i, result in enumerate(results):
             if not result or not result.candidates:
                 continue
+
+            # Check for NO_TEXT
+            is_no_text = False
+            for part in result.candidates[0].content.parts:
+                if part.text and "NO_TEXT" in part.text:
+                    is_no_text = True
+                    break
+            if is_no_text:
+                continue
+
             new_img_bytes = None
             for part in result.candidates[0].content.parts:
                 if part.inline_data and part.inline_data.mime_type.startswith("image/"):
                     new_img_bytes = part.inline_data.data
                     break
+
             if new_img_bytes:
+                if _is_dark_background_artifact(new_img_bytes, tasks[i][1]):
+                    logger.warning(f"Rejecting PPTX generated image {i} due to dark background artifact.")
+                    continue
                 tasks[i][0]._blob = new_img_bytes
 
         buf = io.BytesIO()
