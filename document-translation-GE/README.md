@@ -5,7 +5,7 @@ A production-ready Enterprise Agent built for **Gemini Enterprise (Discovery Eng
 This agent translates complex financial documents (PDF, DOCX, PPTX), removes attribution watermarks (`NO_ATTRIBUTION`), translates diagrams and in-image text using Gemini Multimodal, conducts financial quality and numerical precision audits, and renders interactive, sandboxed side-by-side dashboards directly inside Gemini Enterprise using **A2UI WebFrameSrcdoc** iframes.
 
 ---
-
+https://github.com/upasana1105/UP_Demos/blob/main/document-translation-GE/gcp_kpmg_translation_architecture.png
 
 ## 🌟 Key Features
 
