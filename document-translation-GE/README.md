@@ -1,4 +1,4 @@
-# KPMG Financial Document Translation Assistant for Gemini Enterprise (GE)
+# Financial Document Translation Assistant for Gemini Enterprise (GE)
 
 A production-ready Enterprise Agent built for **Gemini Enterprise (Discovery Engine)** and deployed on **Vertex AI Agent Engine (Reasoning Engine)** using the Google Agent Development Kit (ADK) and the Agent-to-Agent (A2A) protocol.
 
@@ -16,14 +16,14 @@ This agent translates complex financial documents (PDF, DOCX, PPTX), removes att
    - Detects visual diagrams, charts, and embedded graphics in PDFs and slides.
    - Uses `gemini-3.1-flash-image` to translate text inside graphics and re-inserts localized visuals seamlessly into the output document.
 
-3. **KPMG Financial Quality & Precision Audit**:
+3. ** Financial Quality & Precision Audit**:
    - Automated post-translation quality audit powered by Gemini.
    - Checks for numerical scale accuracy (e.g., Million vs. Billion, Billion vs. German *Milliarden*, preventing 1,000x magnitude errors).
    - Verifies compliance with GAAP/IFRS financial terminology and flags semantic or structural issues with impact ratings (High, Medium, Low).
 
 4. **Interactive A2UI Dashboard & Visual Viewer**:
    - Built on the A2UI v0.8 / v0.9 specification using `WebFrameSrcdoc`.
-   - Embeds a KPMG-branded interactive dashboard directly into the chat stream.
+   - Embeds a branded interactive dashboard directly into the chat stream.
    - Offers multiple comparison modes:
      - **Top-Down Full-Width View**: Displays original and translated pages vertically at 100% width.
      - **Side-by-Side Comparison**: Parallel split view of source and target pages.
@@ -53,7 +53,7 @@ This agent translates complex financial documents (PDF, DOCX, PPTX), removes att
                                                          v
                                     +--------------------+--------------------+
                                     |  Vertex AI Reasoning Engine / Agent     |
-                                    |       (KPMGTranslationExecutor)         |
+                                    |       (TranslationExecutor)         |
                                     +--------------------+--------------------+
                                                          |
                    +---------------------+---------------+---------------------+
@@ -87,7 +87,7 @@ document-translation-GE/
 │   │   ├── __init__.py
 │   │   ├── base_executor.py
 │   │   └── config_loader.py
-│   └── translation_assistant/          # KPMG translation agent implementation
+│   └── translation_assistant/          # translation agent implementation
 │       ├── __init__.py
 │       ├── agent.py                    # ADK agent definition and system prompts
 │       ├── components.py               # A2UI message generator & HTML dashboard builder
