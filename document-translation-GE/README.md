@@ -1,11 +1,12 @@
 # Financial Document Translation Assistant for Gemini Enterprise (GE)
 
-A production-ready Enterprise Agent built for **Gemini Enterprise (Discovery Engine)** and deployed on **Vertex AI Agent Engine (Reasoning Engine)** using the Google Agent Development Kit (ADK) and the Agent-to-Agent (A2A) protocol.
+A production-ready Enterprise Agent built for **Gemini Enterprise (Discovery Engine)** and deployed on **Vertex AI Agent Engine (Reasoning Engine)** using the Google Agent Development Kit (ADK) and the Vertex AI Agent Engine.
 
-This agent translates complex financial documents (PDF, DOCX, PPTX), removes attribution watermarks (`NO_ATTRIBUTION`), translates diagrams and in-image text using Gemini Multimodal, conducts financial quality and numerical precision audits, and renders interactive, sandboxed side-by-side dashboards directly inside Gemini Enterprise using **A2UI WebFrameSrcdoc** iframes.
+This agent translates complex financial documents (PDF, DOCX, PPTX), removes attribution watermarks (`NO_ATTRIBUTION`), translates diagrams and in-image text using Gemini Multimodal, conducts financial quality audits, and delivers interactive A2UI dashboards for side-by-side visual comparison with one-click clean document downloads.
 
 ---
-https://github.com/upasana1105/UP_Demos/blob/main/document-translation-GE/gcp_kpmg_translation_architecture.png
+
+![GCP KPMG Translation Architecture](gcp_kpmg_translation_architecture.png)
 
 ## 🌟 Key Features
 
@@ -37,7 +38,7 @@ https://github.com/upasana1105/UP_Demos/blob/main/document-translation-GE/gcp_kp
 
 6. **Persistent Session Architecture (< 256 KiB Threshold Optimization)**:
    - Page preview images are uploaded to Cloud Storage and referenced via public URLs (`https://storage.googleapis.com/...`), reducing the A2UI JSON payload size from >600 KiB down to **~15 KiB**.
-   - Because the payload is well below Discovery Engine's **256 KiB Spanner offload threshold** (`kInlineDataExternalizationThresholdBytes`), it is stored as native `inline_data` rather than a GCS file attachment.
+   - Because the payload is well below Discovery Engine's **256 KiB Spanner offload threshold** (`kInlineDataExternalizationThresholdBytes`), it is stored as native `inline_data` rather than a GCS file reference.
    - **Guarantees that refreshing or reloading the browser page permanently preserves the interactive dashboard without any `application/json+a2ui: Unsupported attachment` errors.**
 
 ---
