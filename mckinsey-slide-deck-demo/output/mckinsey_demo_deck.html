@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SAIL Digital Transformation Roadmap | BSL – McKinsey &amp; Company (3-Slide Executive Readout)</title>
+  <style>
+    :root {
+      /* Core McKinsey & Slideworks 2025 Palette */
+      --mck-navy: #051C2C;
+      --mck-navy-alt: #061F32;
+      --mck-electric-blue: #2222F6;
+      --mck-chart-blue: #1F6FD8;
+      --mck-cyan: #22A3DF;
+      --mck-sky: #5ACBF0;
+      --mck-mid-blue: #1877A2;
+      --mck-ice-blue: #E7F0F9;
+      --mck-ice-border: #A2D5EC;
+
+      /* Consulting Neutrals & Fractional Split Greys */
+      --mck-white: #FFFFFF;
+      --mck-bg-grey: #F2F2F2;
+      --mck-header-grey: #D8D8D8;
+      --mck-border: #D8D8D8;
+      --mck-muted: #7F7F7F;
+      --mck-axis-grey: #A5A5A5;
+      --mck-text: #051C2C;
+
+      /* RAG Status & Prioritization Matrix Accents */
+      --mck-green: #00B050;
+      --mck-amber: #FAD688;
+      --mck-amber-dark: #F8BC3B;
+      --mck-coral: #E5546C;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #0D1721;
+      font-family: 'Arial', 'Helvetica Neue', sans-serif;
+      color: var(--mck-text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 56px 20px 70px 20px;
+      gap: 36px;
+    }
+
+    body.mode-present {
+      height: 100vh;
+      overflow: hidden;
+      justify-content: center;
+      padding: 0;
+      gap: 0;
+    }
+
+    /* Top Interactive Presenter Bar */
+    #presenter-toolbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 42px;
+      background: rgba(5, 28, 44, 0.96);
+      border-bottom: 1px solid rgba(34, 163, 223, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      z-index: 300;
+      color: #FFFFFF;
+      font-size: 12px;
+    }
+    .toolbar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .toolbar-badge {
+      background: var(--mck-electric-blue);
+      color: #FFFFFF;
+      font-weight: 700;
+      font-size: 10px;
+      padding: 3px 8px;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+    }
+    .toolbar-title {
+      font-family: 'Georgia', serif;
+      font-size: 13px;
+      color: #E7F0F9;
+    }
+    .toolbar-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .tb-btn {
+      background: rgba(255, 255, 255, 0.1);
+      color: #FFFFFF;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      padding: 4px 11px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .tb-btn:hover, .tb-btn.active {
+      background: var(--mck-chart-blue);
+      border-color: var(--mck-cyan);
+    }
+
+    #deck-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 36px;
+      transform-origin: center center;
+    }
+    body.mode-present #deck-container {
+      position: relative;
+      width: 960px;
+      height: 540px;
+      gap: 0;
+    }
+
+    /* 16:9 Slide Canvas (960px x 540px) */
+    .slide {
+      width: 960px;
+      height: 540px;
+      background-color: var(--mck-white);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding: 32px 44px 22px 44px;
+      box-shadow: 0 18px 42px rgba(0, 0, 0, 0.55);
+      flex-shrink: 0;
+    }
+    body.mode-present .slide {
+      position: absolute;
+      inset: 0;
+      display: none;
+    }
+    body.mode-present .slide.active {
+      display: flex;
+    }
+
+    /* ==========================================
+       SLIDE 1: DARK NAVY COVER (slide--cover)
+       ========================================== */
+    .slide--cover {
+      background: linear-gradient(135deg, #051C2C 0%, #061F32 68%, #0A2E4A 100%);
+      color: var(--mck-white);
+      justify-content: space-between;
+      padding: 46px 56px 38px 56px;
+    }
+    .cover-accent-lines {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 340px;
+      height: 540px;
+      pointer-events: none;
+    }
+    .cover-eyebrow {
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 1.8px;
+      text-transform: uppercase;
+      color: var(--mck-cyan);
+      border-left: 3px solid var(--mck-electric-blue);
+      padding-left: 10px;
+    }
+    .cover-body {
+      max-width: 680px;
+      margin-top: 24px;
+      margin-bottom: auto;
+      padding-top: 48px;
+    }
+    .cover-title {
+      font-family: 'Georgia', serif;
+      font-size: 38px;
+      font-weight: 700;
+      line-height: 1.18;
+      color: var(--mck-white);
+      margin-bottom: 18px;
+    }
+    .cover-rule {
+      width: 72px;
+      height: 4px;
+      background-color: var(--mck-electric-blue);
+      margin-bottom: 18px;
+    }
+    .cover-subtitle {
+      font-family: 'Arial', sans-serif;
+      font-size: 15px;
+      font-weight: 400;
+      line-height: 1.48;
+      color: var(--mck-ice-border);
+    }
+    .cover-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      border-top: 1px solid rgba(162, 213, 236, 0.25);
+      padding-top: 16px;
+    }
+    .cover-meta {
+      font-size: 11px;
+      line-height: 1.5;
+      color: var(--mck-ice-border);
+    }
+    .cover-brand {
+      font-family: 'Georgia', serif;
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.05;
+      text-align: right;
+      color: var(--mck-white);
+    }
+
+    /* ==========================================
+       STANDARD CONTENT SLIDE HEADER & FOOTER
+       ========================================== */
+    .slide-header {
+      margin-bottom: 14px;
+      border-bottom: 1.5px solid var(--mck-navy);
+      padding-bottom: 10px;
+    }
+    .slide-tracker {
+      font-size: 9.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--mck-mid-blue);
+      margin-bottom: 4px;
+    }
+    .slide-title {
+      font-family: 'Arial', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1.22;
+      color: var(--mck-navy);
+      margin-bottom: 4px;
+    }
+    .slide-subtitle {
+      font-size: 11.5px;
+      color: var(--mck-muted);
+    }
+
+    .slide-footer {
+      margin-top: auto;
+      padding-top: 8px;
+      border-top: 1px solid var(--mck-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 8.5px;
+      color: var(--mck-muted);
+    }
+    .footer-right {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .footer-brand {
+      font-family: 'Georgia', serif;
+      font-weight: 700;
+      font-size: 10.5px;
+      color: var(--mck-navy);
+    }
+    .footer-page {
+      font-weight: 700;
+      color: var(--mck-navy);
+      font-size: 9.5px;
+    }
+
+    /* ==========================================
+       SLIDE 2: COLUMN CHART + 1/3 GREY TAKEAWAYS
+       ========================================== */
+    .split-2-1 {
+      display: grid;
+      grid-template-columns: 1.85fr 1fr;
+      gap: 24px;
+      flex: 1;
+      min-height: 0;
+      margin-bottom: 8px;
+    }
+    .chart-panel {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 8px 6px 4px 0;
+    }
+    .chart-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .chart-unit {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--mck-navy);
+    }
+    .chart-cagr {
+      background-color: var(--mck-ice-blue);
+      border: 1px solid var(--mck-chart-blue);
+      color: var(--mck-navy);
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 12px;
+    }
+    .bar-chart {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-around;
+      height: 250px;
+      border-bottom: 2px solid var(--mck-navy);
+      padding: 18px 16px 0 16px;
+      gap: 26px;
+    }
+    .bar-group {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      height: 100%;
+    }
+    .bar-val {
+      font-family: 'Georgia', serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--mck-navy);
+      margin-bottom: 5px;
+    }
+    .bar-Delta {
+      font-size: 9.5px;
+      font-weight: 700;
+      color: var(--mck-chart-blue);
+      margin-bottom: 2px;
+    }
+    .bar-fill {
+      width: 72px;
+      border-radius: 2px 2px 0 0;
+    }
+    .bar-fill--actual {
+      background-color: var(--mck-navy);
+    }
+    .bar-fill--forecast {
+      background-color: var(--mck-chart-blue);
+    }
+    .bar-fill--target {
+      background: linear-gradient(180deg, #2222F6 0%, #1F6FD8 100%);
+    }
+    .bar-lbl {
+      margin-top: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--mck-navy);
+      text-align: center;
+    }
+    .bar-sub {
+      font-size: 9.5px;
+      color: var(--mck-muted);
+      text-align: center;
+      margin-top: 2px;
+    }
+    .chart-legend {
+      display: flex;
+      gap: 18px;
+      margin-top: 28px;
+      font-size: 10px;
+      color: var(--mck-muted);
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .legend-swatch {
+      width: 10px;
+      height: 10px;
+      display: inline-block;
+    }
+
+    /* Slideworks 1/3 Grey Right-Hand Takeaway Panel */
+    .takeaways-sidebar {
+      background-color: var(--mck-bg-grey);
+      border-top: 4px solid var(--mck-navy);
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .sidebar-header {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--mck-navy);
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--mck-header-grey);
+    }
+    .sidebar-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .sidebar-list li {
+      font-size: 10.8px;
+      line-height: 1.42;
+      color: var(--mck-text);
+      padding-left: 12px;
+      border-left: 2.5px solid var(--mck-chart-blue);
+    }
+
+    /* ==========================================
+       SLIDE 3: 3x3 PRIORITIZATION MATRIX
+       ========================================== */
+    .matrix-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    .matrix-grid {
+      display: grid;
+      grid-template-columns: 95px 1fr 1fr 1fr;
+      grid-template-rows: 26px 1fr 1fr 1fr;
+      gap: 5px;
+      height: 315px;
+    }
+    .matrix-corner {
+      background-color: var(--mck-navy);
+      color: var(--mck-white);
+      font-size: 9px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2px;
+    }
+    .matrix-col-hdr {
+      background-color: var(--mck-axis-grey);
+      color: var(--mck-white);
+      font-size: 10px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      letter-spacing: 0.6px;
+    }
+    .matrix-row-hdr {
+      background-color: var(--mck-axis-grey);
+      color: var(--mck-white);
+      font-size: 10px;
+      font-weight: 700;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 4px;
+    }
+    .matrix-cell {
+      background-color: var(--mck-bg-grey);
+      border: 1px solid var(--mck-border);
+      padding: 6px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      justify-content: center;
+    }
+    .matrix-cell--priority {
+      background-color: var(--mck-ice-blue);
+      border: 1.5px solid var(--mck-chart-blue);
+    }
+    .matrix-badge {
+      font-size: 9.8px;
+      line-height: 1.25;
+      padding: 4px 8px;
+      border-radius: 3px;
+      font-weight: 700;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .badge--green {
+      background-color: var(--mck-green);
+      color: var(--mck-white);
+    }
+    .badge--amber {
+      background-color: var(--mck-amber);
+      color: var(--mck-navy);
+    }
+    .badge--coral {
+      background-color: var(--mck-coral);
+      color: var(--mck-white);
+    }
+    .matrix-legend {
+      display: flex;
+      justify-content: flex-end;
+      gap: 20px;
+      font-size: 10px;
+      color: var(--mck-navy);
+      padding-top: 4px;
+    }
+    .m-leg-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 700;
+    }
+    .m-pill {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    /* Bottom Navigation & Speaker Notes Drawer */
+    #bottom-nav {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(5, 28, 44, 0.92);
+      border: 1px solid rgba(162, 213, 236, 0.3);
+      padding: 6px 16px;
+      border-radius: 20px;
+      z-index: 300;
+    }
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .dot.active {
+      background: var(--mck-cyan);
+      transform: scale(1.25);
+    }
+    #slide-counter {
+      color: #E7F0F9;
+      font-size: 11px;
+      font-weight: 700;
+      margin-left: 6px;
+    }
+
+    #notes-drawer {
+      display: none;
+      position: fixed;
+      bottom: 54px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(880px, 92vw);
+      background: rgba(5, 28, 44, 0.97);
+      border-top: 3px solid var(--mck-electric-blue);
+      border-left: 1px solid rgba(162, 213, 236, 0.3);
+      border-right: 1px solid rgba(162, 213, 236, 0.3);
+      border-bottom: 1px solid rgba(162, 213, 236, 0.3);
+      padding: 14px 22px;
+      color: #FFFFFF;
+      z-index: 350;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.6);
+    }
+    #notes-drawer.visible {
+      display: block;
+    }
+    .notes-hdr {
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--mck-cyan);
+      margin-bottom: 5px;
+    }
+    #notes-body {
+      font-size: 12.5px;
+      line-height: 1.5;
+      color: #E7F0F9;
+    }
+  </style>
+</head>
+<body class="mode-present">
+
+  <!-- Interactive Presenter Toolbar -->
+  <div id="presenter-toolbar">
+    <div class="toolbar-left">
+      <span class="toolbar-badge">McKinsey &amp; Company</span>
+      <span class="toolbar-title">SAIL Digital Transformation Roadmap | BSL (3-Slide Executive Readout)</span>
+    </div>
+    <div class="toolbar-controls">
+      <button class="tb-btn" onclick="prevSlide()">◀ Prev</button>
+      <button class="tb-btn" onclick="nextSlide()">Next ▶</button>
+      <button class="tb-btn" id="btn-notes" onclick="toggleNotes()">Speaker Notes (P)</button>
+      <button class="tb-btn" id="btn-mode" onclick="toggleViewMode()">Switch to Scroll View</button>
+    </div>
+  </div>
+
+  <div id="deck-container">
+
+    <!-- =====================================================================
+         SLIDE 1: COVER SLIDE (Frontpage dark - McKinsey & Slideworks style)
+         ===================================================================== -->
+    <section id="s1" class="slide slide--cover active" data-notes="Welcome to the SAIL Bokaro Steel Plant Digital Transformation Roadmap executive readout. This 3-slide synthesis highlights our diagnostic across BSL's integrated steel plant and mines, prioritizing 150+ digital initiatives into a 3-wave roadmap delivering ~INR 1,310 Cr in annual recurring EBITDA.">
+      <svg class="cover-accent-lines" viewBox="0 0 340 540">
+        <line x1="120" y1="0" x2="340" y2="380" stroke="#2222F6" stroke-width="1.5" opacity="0.45"/>
+        <line x1="160" y1="0" x2="340" y2="310" stroke="#22A3DF" stroke-width="1.2" opacity="0.55"/>
+        <line x1="200" y1="0" x2="340" y2="240" stroke="#5ACBF0" stroke-width="1.0" opacity="0.35"/>
+        <line x1="60" y1="540" x2="340" y2="180" stroke="#1F6FD8" stroke-width="1.5" opacity="0.35"/>
+      </svg>
+      <div class="cover-eyebrow">DISCUSSION DOCUMENT | CLIENT CONFIDENTIAL</div>
+      <div class="cover-body">
+        <h1 class="cover-title">SAIL Digital Transformation Roadmap | BSL</h1>
+        <div class="cover-rule"></div>
+        <h2 class="cover-subtitle">End-to-end Industry 4.0 architecture, 150+ prioritized plant &amp; mine initiatives, and capability building to unlock ~INR 1,310 Cr in recurring EBITDA</h2>
+      </div>
+      <div class="cover-footer">
+        <div class="cover-meta">Prepared for Steel Authority of India Limited – Bokaro Steel Plant (BSL)<br>Digital Transformation Steering Committee | October 2026</div>
+        <div class="cover-brand">McKinsey &amp;<br>Company</div>
+      </div>
+    </section>
+
+    <!-- =====================================================================
+         SLIDE 2: HISTORIC & FORECAST COLUMN CHART + 1/3 GREY TAKEAWAYS
+         ===================================================================== -->
+    <section id="s2" class="slide slide--chart-takeaways" data-notes="Phased rollout across three waves expands BSL's recurring annual EBITDA run-rate from INR 180 Cr in FY25 actuals to INR 1,310 Cr by FY28. Wave 1 requires minimal capex and focuses on AI process control models that self-fund Waves 2 and 3.">
+      <div class="slide-header">
+        <div class="slide-tracker">VALUE REALIZATION TRAJECTORY</div>
+        <h2 class="slide-title">Phased rollout across three waves scales recurring EBITDA impact to ~INR 1,310 Cr by FY28</h2>
+        <div class="slide-subtitle">Gross annual run-rate EBITDA impact from 150+ digital initiatives, INR Crores (FY25 Actuals vs. FY26–FY28 Forecast)</div>
+      </div>
+
+      <div class="split-2-1">
+        <div class="chart-panel">
+          <div class="chart-meta">
+            <span class="chart-unit">Recurring EBITDA Impact, INR Cr</span>
+            <span class="chart-cagr">CAGR +94% (FY25–FY28F)</span>
+          </div>
+          <div class="bar-chart" data-chart-type="column">
+            <div class="bar-group" data-label="FY25 Actuals" data-sub="Pilot Baseline" data-value="180" data-series="Actuals" data-delta="Baseline">
+              <div class="bar-Delta">Baseline</div>
+              <div class="bar-val">180</div>
+              <div class="bar-fill bar-fill--actual" style="height: 32px;"></div>
+              <div class="bar-lbl">FY25 Actuals</div>
+              <div class="bar-sub">Pilot Baseline</div>
+            </div>
+            <div class="bar-group" data-label="FY26 Wave 1" data-sub="Quick Wins (45 use cases)" data-value="490" data-series="Forecast" data-delta="+172%">
+              <div class="bar-Delta">+172%</div>
+              <div class="bar-val">490</div>
+              <div class="bar-fill bar-fill--forecast" style="height: 85px;"></div>
+              <div class="bar-lbl">FY26 Wave 1</div>
+              <div class="bar-sub">Quick Wins (45)</div>
+            </div>
+            <div class="bar-group" data-label="FY27 Wave 2" data-sub="Core Scale (65 use cases)" data-value="920" data-series="Forecast" data-delta="+88%">
+              <div class="bar-Delta">+88%</div>
+              <div class="bar-val">920</div>
+              <div class="bar-fill bar-fill--forecast" style="height: 155px;"></div>
+              <div class="bar-lbl">FY27 Wave 2</div>
+              <div class="bar-sub">Core Scale (65)</div>
+            </div>
+            <div class="bar-group" data-label="FY28 Wave 3" data-sub="Full Maturity (150+ total)" data-value="1310" data-series="Target" data-delta="+42%">
+              <div class="bar-Delta">+42%</div>
+              <div class="bar-val">1,310</div>
+              <div class="bar-fill bar-fill--target" style="height: 215px;"></div>
+              <div class="bar-lbl">FY28 Wave 3</div>
+              <div class="bar-sub">Full Scale (150+)</div>
+            </div>
+          </div>
+          <div class="chart-legend">
+            <div class="legend-item"><span class="legend-swatch" style="background:#051C2C;"></span> Actuals / Baseline</div>
+            <div class="legend-item"><span class="legend-swatch" style="background:#1F6FD8;"></span> Wave 1–2 Forecast</div>
+            <div class="legend-item"><span class="legend-swatch" style="background:#22A3DF;"></span> Wave 3 Full Run-Rate Target</div>
+          </div>
+        </div>
+
+        <div class="takeaways-sidebar">
+          <div class="sidebar-header">Key takeaways / main conclusion</div>
+          <ul class="sidebar-list">
+            <li><strong>Self-funding Wave 1 (INR 490 Cr):</strong> 45 zero-capex Advanced Process Control (APC) and AI yield models in Blast Furnace &amp; SMS deliver cash flow within 6–9 months.</li>
+            <li><strong>Core plant scaling (INR 920 Cr):</strong> Wave 2 deploys predictive maintenance and Computer Vision slab/coil quality inspection, cutting unplanned downtime by 22%.</li>
+            <li><strong>Integrated mine-to-mill (INR 1,310 Cr):</strong> Wave 3 links captive iron-ore mines, sinter blend optimization, and dynamic energy dispatch for a +280 bps EBITDA margin lift.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <div class="footer-sources">Source: BSL Plant Operational Diagnostic (FY25); McKinsey Global Metals &amp; Mining Digital Benchmark | Footnote: 1. Gross run-rate EBITDA prior to Central Cloud/OT capex.</div>
+        <div class="footer-right"><span class="footer-brand">McKinsey &amp; Company</span> <span class="footer-page">2</span></div>
+      </div>
+    </section>
+
+    <!-- =====================================================================
+         SLIDE 3: 3x3 PRIORITIZATION MATRIX (Level of Impact vs. Time to Impact)
+         ===================================================================== -->
+    <section id="s3" class="slide slide--matrix" data-notes="We mapped all 150+ initiatives on a 3x3 prioritization matrix comparing Level of EBITDA Impact against Time to Impact. Green badges represent Wave 1 priority quick wins; Amber represents Wave 2 core scaling; Coral represents foundational IT/OT upgrades.">
+      <div class="slide-header">
+        <div class="slide-tracker">INITIATIVE PRIORITIZATION MATRIX</div>
+        <h2 class="slide-title">150+ digital initiatives prioritized by financial impact and time-to-value into three execution waves</h2>
+        <div class="slide-subtitle">Assessment of BSL digital use cases across Level of Impact (EBITDA Cr/yr) vs. Time to Impact (Months to Go-Live)</div>
+      </div>
+
+      <div class="matrix-wrapper">
+        <div class="matrix-grid">
+          <div class="matrix-corner">LEVEL OF IMPACT<br>vs. TIME</div>
+          <div class="matrix-col-hdr">SHORT (&lt; 6 Months)</div>
+          <div class="matrix-col-hdr">MEDIUM (6–15 Months)</div>
+          <div class="matrix-col-hdr">LONG (15–24+ Months)</div>
+
+          <!-- HIGH IMPACT ROW -->
+          <div class="matrix-row-hdr">HIGH<br><span style="font-size:8.5px;font-weight:400;">(&gt; INR 100 Cr)</span></div>
+          <div class="matrix-cell matrix-cell--priority" data-row="High" data-col="Short">
+            <div class="matrix-badge badge--green"><span>BF Coke &amp; Fuel Rate AI Optimizer</span><span>INR 240 Cr</span></div>
+            <div class="matrix-badge badge--green"><span>SMS Ferro-Alloy &amp; BOF Yield Twin</span><span>INR 165 Cr</span></div>
+          </div>
+          <div class="matrix-cell matrix-cell--priority" data-row="High" data-col="Medium">
+            <div class="matrix-badge badge--green"><span>HSM Throughput &amp; Cobble Prevention AI</span><span>INR 190 Cr</span></div>
+            <div class="matrix-badge badge--amber"><span>Captive Mine-to-Sinter Blend Optimizer</span><span>INR 145 Cr</span></div>
+          </div>
+          <div class="matrix-cell" data-row="High" data-col="Long">
+            <div class="matrix-badge badge--amber"><span>Autonomous Raw Material Yard &amp; Dispatch</span><span>INR 130 Cr</span></div>
+            <div class="matrix-badge badge--coral"><span>Enterprise ERP + MES Layer Modernization</span><span>Enabler</span></div>
+          </div>
+
+          <!-- MEDIUM IMPACT ROW -->
+          <div class="matrix-row-hdr">MEDIUM<br><span style="font-size:8.5px;font-weight:400;">(INR 40–100 Cr)</span></div>
+          <div class="matrix-cell matrix-cell--priority" data-row="Medium" data-col="Short">
+            <div class="matrix-badge badge--green"><span>Predictive Maintenance – Critical Turbines</span><span>INR 85 Cr</span></div>
+            <div class="matrix-badge badge--amber"><span>Real-Time By-Product Gas Grid Balancing</span><span>INR 70 Cr</span></div>
+          </div>
+          <div class="matrix-cell" data-row="Medium" data-col="Medium">
+            <div class="matrix-badge badge--amber"><span>Computer Vision Strip Surface Grading</span><span>INR 90 Cr</span></div>
+            <div class="matrix-badge badge--amber"><span>Cold Rolling Mill Acid &amp; Pickling APC</span><span>INR 60 Cr</span></div>
+          </div>
+          <div class="matrix-cell" data-row="Medium" data-col="Long">
+            <div class="matrix-badge badge--coral"><span>Integrated Rail &amp; Outbound Logistics Twin</span><span>INR 55 Cr</span></div>
+          </div>
+
+          <!-- LOW IMPACT ROW -->
+          <div class="matrix-row-hdr">LOW<br><span style="font-size:8.5px;font-weight:400;">(&lt; INR 40 Cr)</span></div>
+          <div class="matrix-cell" data-row="Low" data-col="Short">
+            <div class="matrix-badge badge--amber"><span>Digital Shift Handover &amp; E-Logbooks</span><span>INR 35 Cr</span></div>
+          </div>
+          <div class="matrix-cell" data-row="Low" data-col="Medium">
+            <div class="matrix-badge badge--amber"><span>GenAI Maintenance Copilot for Technicians</span><span>INR 25 Cr</span></div>
+          </div>
+          <div class="matrix-cell" data-row="Low" data-col="Long">
+            <div class="matrix-badge badge--coral"><span>Legacy SCADA Sensor Retrofit (Tier-3 Shops)</span><span>INR 20 Cr</span></div>
+          </div>
+        </div>
+
+        <div class="matrix-legend">
+          <div class="m-leg-item"><span class="m-pill" style="background:#00B050;"></span> = Wave 1 Priority Quick Wins (Immediate Launch)</div>
+          <div class="m-leg-item"><span class="m-pill" style="background:#FAD688;"></span> = Wave 2 Core Scale Initiatives</div>
+          <div class="m-leg-item"><span class="m-pill" style="background:#E5546C;"></span> = Wave 3 Foundational / Heavy IT-OT Capex</div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <div class="footer-sources">Source: BSL Shop-Floor Value Workshops; McKinsey Steel Digital Use-Case Library (n = 154 initiatives) | Footnote: 1. Top 12 flagship clusters shown above.</div>
+        <div class="footer-right"><span class="footer-brand">McKinsey &amp; Company</span> <span class="footer-page">3</span></div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Bottom Slide Dots & Counter -->
+  <div id="bottom-nav">
+    <div class="dot active" onclick="goToSlide(0)"></div>
+    <div class="dot" onclick="goToSlide(1)"></div>
+    <div class="dot" onclick="goToSlide(2)"></div>
+    <span id="slide-counter">Slide 1 of 3</span>
+  </div>
+
+  <!-- Speaker Notes Drawer -->
+  <div id="notes-drawer">
+    <div class="notes-hdr">McKinsey Executive Speaker Notes</div>
+    <div id="notes-body"></div>
+  </div>
+
+  <script>
+    const slides = document.querySelectorAll('.slide');
+    const dots = document.querySelectorAll('.dot');
+    const counter = document.getElementById('slide-counter');
+    const notesDrawer = document.getElementById('notes-drawer');
+    const notesBody = document.getElementById('notes-body');
+    const deckContainer = document.getElementById('deck-container');
+    const btnMode = document.getElementById('btn-mode');
+    const btnNotes = document.getElementById('btn-notes');
+
+    let currentIdx = 0;
+    let notesVisible = false;
+    let presentMode = true;
+
+    function goToSlide(idx) {
+      slides[currentIdx].classList.remove('active');
+      dots[currentIdx].classList.remove('active');
+      currentIdx = Math.max(0, Math.min(idx, slides.length - 1));
+      slides[currentIdx].classList.add('active');
+      dots[currentIdx].classList.add('active');
+      counter.textContent = `Slide ${currentIdx + 1} of ${slides.length}`;
+      if (!presentMode) {
+        slides[currentIdx].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      updateNotes();
+    }
+
+    function nextSlide() { goToSlide(currentIdx + 1); }
+    function prevSlide() { goToSlide(currentIdx - 1); }
+
+    function updateNotes() {
+      notesBody.textContent = slides[currentIdx].getAttribute('data-notes') || '';
+    }
+
+    function toggleNotes() {
+      notesVisible = !notesVisible;
+      notesDrawer.classList.toggle('visible', notesVisible);
+      btnNotes.classList.toggle('active', notesVisible);
+      updateNotes();
+    }
+
+    function toggleViewMode() {
+      presentMode = !presentMode;
+      document.body.classList.toggle('mode-present', presentMode);
+      btnMode.textContent = presentMode ? 'Switch to Scroll View' : 'Switch to Slide Show';
+      scaleSlides();
+    }
+
+    function scaleSlides() {
+      if (!presentMode) {
+        deckContainer.style.transform = 'none';
+        return;
+      }
+      const availW = window.innerWidth - 40;
+      const availH = window.innerHeight - 110;
+      const scale = Math.min(availW / 960, availH / 540, 1.35);
+      deckContainer.style.transform = `scale(${scale})`;
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+      if (e.key === 'p' || e.key === 'P') { toggleNotes(); }
+      if (e.key === 'f' || e.key === 'F') { document.documentElement.requestFullscreen?.(); }
+    });
+
+    window.addEventListener('resize', scaleSlides);
+    updateNotes();
+    scaleSlides();
+  </script>
+</body>
+</html>

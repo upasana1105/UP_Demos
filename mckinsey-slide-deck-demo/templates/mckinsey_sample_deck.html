@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SAIL Digital Transformation Roadmap | BSL – McKinsey &amp; Company Discussion Document</title>
+  <style>
+    :root {
+      /* Core McKinsey & Slideworks 2025 Palette */
+      --mck-navy: #051C2C;
+      --mck-navy-alt: #061F32;
+      --mck-electric-blue: #2222F6;
+      --mck-chart-blue: #1F6FD8;
+      --mck-cyan: #22A3DF;
+      --mck-sky: #5ACBF0;
+      --mck-mid-blue: #1877A2;
+      --mck-ice-blue: #E7F0F9;
+      --mck-ice-border: #A2D5EC;
+
+      /* Consulting Neutrals & Fractional Split Greys */
+      --mck-white: #FFFFFF;
+      --mck-bg-grey: #F2F2F2;
+      --mck-header-grey: #D8D8D8;
+      --mck-border: #D8D8D8;
+      --mck-muted: #7F7F7F;
+      --mck-axis-grey: #A5A5A5;
+      --mck-text: #051C2C;
+
+      /* RAG Status & Prioritization Matrix Accents */
+      --mck-green: #00B050;
+      --mck-amber: #FAD688;
+      --mck-amber-dark: #F8BC3B;
+      --mck-coral: #E5546C;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #1B2631;
+      font-family: 'Arial', 'Helvetica Neue', sans-serif;
+      color: var(--mck-text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 36px 20px;
+      gap: 36px;
+    }
+
+    /* 16:9 Slide Canvas (960px x 540px) */
+    .slide {
+      width: 960px;
+      height: 540px;
+      background-color: var(--mck-white);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding: 32px 44px 22px 44px;
+      box-shadow: 0 18px 42px rgba(0, 0, 0, 0.45);
+    }
+
+    /* ==========================================
+       SLIDE 1: DARK NAVY COVER (slide--cover)
+       ========================================== */
+    .slide--cover {
+      background: linear-gradient(135deg, #051C2C 0%, #061F32 68%, #0A2E4A 100%);
+      color: var(--mck-white);
+      justify-content: space-between;
+      padding: 46px 56px 38px 56px;
+    }
+    .cover-accent-lines {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 340px;
+      height: 540px;
+      pointer-events: none;
+    }
+    .cover-eyebrow {
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 1.8px;
+      text-transform: uppercase;
+      color: var(--mck-cyan);
+      border-left: 3px solid var(--mck-electric-blue);
+      padding-left: 10px;
+    }
+    .cover-body {
+      max-width: 680px;
+      margin-top: 24px;
+      margin-bottom: auto;
+      padding-top: 48px;
+    }
+    .cover-title {
+      font-family: 'Georgia', serif;
+      font-size: 38px;
+      font-weight: 700;
+      line-height: 1.16;
+      color: var(--mck-white);
+      margin-bottom: 18px;
+    }
+    .cover-rule {
+      width: 72px;
+      height: 3px;
+      background-color: var(--mck-electric-blue);
+      margin-bottom: 18px;
+    }
+    .cover-subtitle {
+      font-family: 'Arial', sans-serif;
+      font-size: 15px;
+      font-weight: 400;
+      line-height: 1.45;
+      color: var(--mck-ice-border);
+    }
+    .cover-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      border-top: 1px solid rgba(255, 255, 255, 0.16);
+      padding-top: 16px;
+      z-index: 2;
+    }
+    .cover-meta {
+      font-size: 11px;
+      line-height: 1.5;
+      color: #D8D8D8;
+    }
+    .cover-brand {
+      font-family: 'Georgia', serif;
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1.1;
+      text-align: right;
+      color: var(--mck-white);
+    }
+
+    /* ==========================================
+       SLIDE 2: SECTION BREAKER (slide--divider)
+       ========================================== */
+    .slide--divider {
+      background-color: var(--mck-navy-alt);
+      color: var(--mck-white);
+      justify-content: space-between;
+      padding: 52px 56px 32px 56px;
+    }
+    .divider-content {
+      margin-top: auto;
+      margin-bottom: auto;
+      max-width: 740px;
+    }
+    .divider-eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.6px;
+      text-transform: uppercase;
+      color: var(--mck-cyan);
+      margin-bottom: 14px;
+    }
+    .divider-title {
+      font-family: 'Georgia', serif;
+      font-size: 32px;
+      font-weight: 700;
+      line-height: 1.22;
+      color: var(--mck-white);
+      margin-bottom: 18px;
+    }
+    .divider-sub {
+      font-size: 14px;
+      color: var(--mck-ice-border);
+      line-height: 1.45;
+      border-left: 3px solid var(--mck-electric-blue);
+      padding-left: 14px;
+    }
+    .divider-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+      padding-top: 12px;
+      font-size: 10px;
+      color: var(--mck-axis-grey);
+    }
+    .footer-brand-light {
+      font-family: 'Georgia', serif;
+      font-weight: 700;
+      color: var(--mck-white);
+      font-size: 12px;
+    }
+
+    /* ==========================================
+       STANDARD CONTENT SLIDE HEADER & FOOTER
+       ========================================== */
+    .slide-header {
+      margin-bottom: 14px;
+      border-bottom: 1.5px solid var(--mck-navy);
+      padding-bottom: 8px;
+    }
+    .slide-tracker {
+      font-size: 9.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--mck-mid-blue);
+      margin-bottom: 3px;
+    }
+    .slide-title {
+      font-family: 'Arial', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1.2;
+      color: var(--mck-navy);
+    }
+    .slide-subtitle {
+      font-size: 11.5px;
+      color: var(--mck-muted);
+      margin-top: 3px;
+    }
+
+    .slide-footer {
+      margin-top: auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 7px;
+      border-top: 1px solid var(--mck-border);
+      font-size: 8.5px;
+      color: var(--mck-muted);
+    }
+    .footer-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .footer-brand {
+      font-family: 'Georgia', serif;
+      font-weight: 700;
+      font-size: 10px;
+      color: var(--mck-navy);
+    }
+    .footer-page {
+      font-weight: 700;
+      color: var(--mck-navy);
+    }
+
+    /* ==========================================
+       SLIDE 3: HISTORIC & FORECAST COLUMN CHART + 1/3 GREY TAKEAWAYS
+       ========================================== */
+    .split-2-1 {
+      display: grid;
+      grid-template-columns: 1.85fr 1.15fr;
+      gap: 22px;
+      flex: 1;
+      margin-bottom: 8px;
+    }
+    .chart-panel {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 8px 6px 4px 0;
+    }
+    .chart-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .chart-unit {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--mck-navy);
+    }
+    .chart-cagr {
+      background-color: var(--mck-ice-blue);
+      border: 1px solid var(--mck-ice-border);
+      color: var(--mck-navy);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 12px;
+    }
+    .bar-chart {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-around;
+      height: 255px;
+      padding: 24px 14px 8px 14px;
+      border-bottom: 1.5px solid var(--mck-navy);
+      gap: 18px;
+    }
+    .bar-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+    }
+    .bar-val {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--mck-navy);
+      margin-bottom: 5px;
+    }
+    .bar-Delta {
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--mck-chart-blue);
+      margin-bottom: 3px;
+    }
+    .bar-fill {
+      width: 58px;
+      border-radius: 2px 2px 0 0;
+    }
+    .bar-fill--actual {
+      background-color: var(--mck-navy);
+    }
+    .bar-fill--forecast {
+      background-color: var(--mck-chart-blue);
+    }
+    .bar-fill--target {
+      background-color: var(--mck-cyan);
+    }
+    .bar-lbl {
+      margin-top: 8px;
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--mck-navy);
+      text-align: center;
+    }
+    .bar-sub {
+      font-size: 9px;
+      color: var(--mck-muted);
+      text-align: center;
+    }
+    .chart-legend {
+      display: flex;
+      gap: 18px;
+      margin-top: 10px;
+      font-size: 10px;
+      color: var(--mck-text);
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .legend-swatch {
+      width: 11px;
+      height: 11px;
+      display: inline-block;
+    }
+
+    .takeaways-sidebar {
+      background-color: var(--mck-bg-grey);
+      display: flex;
+      flex-direction: column;
+      border-top: 4px solid var(--mck-navy);
+    }
+    .sidebar-header {
+      background-color: var(--mck-navy-alt);
+      color: var(--mck-white);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 9px 14px;
+    }
+    .sidebar-list {
+      list-style: none;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      font-size: 10.8px;
+      line-height: 1.42;
+    }
+    .sidebar-list li {
+      position: relative;
+      padding-left: 13px;
+    }
+    .sidebar-list li::before {
+      content: "▪";
+      position: absolute;
+      left: 0;
+      color: var(--mck-chart-blue);
+      font-weight: bold;
+    }
+
+    /* ==========================================
+       SLIDE 4: 3x3 PRIORITIZATION MATRIX (slide--matrix)
+       ========================================== */
+    .matrix-wrapper {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .matrix-grid {
+      display: grid;
+      grid-template-columns: 95px 1fr 1fr 1fr;
+      grid-template-rows: 26px 1fr 1fr 1fr;
+      gap: 5px;
+      flex: 1;
+    }
+    .matrix-corner {
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--mck-axis-grey);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      text-transform: uppercase;
+    }
+    .matrix-col-hdr {
+      background-color: var(--mck-navy-alt);
+      color: var(--mck-white);
+      font-size: 10.5px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      letter-spacing: 0.4px;
+    }
+    .matrix-row-hdr {
+      background-color: var(--mck-header-grey);
+      color: var(--mck-navy);
+      font-size: 10.5px;
+      font-weight: 700;
+      display: flex;
+       flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 4px;
+    }
+    .matrix-cell {
+      background-color: var(--mck-bg-grey);
+      padding: 7px 9px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      border: 1px solid #E2E2E2;
+    }
+    .matrix-cell--priority {
+      background-color: var(--mck-ice-blue);
+      border: 1.5px solid var(--mck-chart-blue);
+    }
+    .matrix-badge {
+      font-size: 9.5px;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 3px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .badge--green {
+      background-color: var(--mck-green);
+      color: var(--mck-white);
+    }
+    .badge--amber {
+      background-color: var(--mck-amber);
+      color: var(--mck-navy);
+    }
+    .badge--coral {
+      background-color: var(--mck-coral);
+      color: var(--mck-white);
+    }
+    .matrix-legend {
+      display: flex;
+      justify-content: flex-end;
+      gap: 20px;
+      font-size: 10px;
+      align-items: center;
+      padding-top: 2px;
+    }
+    .m-leg-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 700;
+      color: var(--mck-navy);
+    }
+    .m-pill {
+      width: 14px;
+      height: 10px;
+      border-radius: 2px;
+      display: inline-block;
+    }
+
+    /* ==========================================
+       SLIDE 5: FOUR KEY TRENDS / WORKSTREAMS (slide--trends)
+       ========================================== */
+    .trends-table {
+      width: 100%;
+      border-collapse: collapse;
+      flex: 1;
+      margin-bottom: 8px;
+    }
+    .trends-table th {
+      background-color: var(--mck-navy-alt);
+      color: var(--mck-white);
+      font-size: 11px;
+      font-weight: 700;
+      text-align: left;
+      padding: 7px 12px;
+      border-right: 2px solid var(--mck-white);
+    }
+    .trends-table td {
+      padding: 8px 12px;
+      vertical-align: top;
+      border-bottom: 3px solid var(--mck-white);
+      font-size: 10.2px;
+      line-height: 1.38;
+    }
+    .trend-name-cell {
+      background-color: var(--mck-navy);
+      color: var(--mck-white);
+      font-weight: 700;
+      font-size: 11px;
+      width: 22%;
+    }
+    .trend-name-sub {
+      display: block;
+      font-size: 9.5px;
+      font-weight: 400;
+      color: var(--mck-cyan);
+      margin-top: 3px;
+    }
+    .trend-desc-cell {
+      background-color: var(--mck-bg-grey);
+      width: 48%;
+    }
+    .trend-ex-cell {
+      background-color: var(--mck-ice-blue);
+      width: 30%;
+    }
+    .compact-bullets {
+      list-style: none;
+      padding-left: 0;
+    }
+    .compact-bullets li {
+      position: relative;
+      padding-left: 11px;
+      margin-bottom: 3px;
+    }
+    .compact-bullets li::before {
+      content: "•";
+      position: absolute;
+      left: 0;
+      color: var(--mck-chart-blue);
+      font-weight: bold;
+    }
+
+    /* ==========================================
+       SLIDE 6: CAPABILITY ASSESSMENT & ROADMAP (slide--assessment)
+       ========================================== */
+    .assessment-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 10px;
+    }
+    .assessment-table th {
+      background-color: var(--mck-navy-alt);
+      color: var(--mck-white);
+      font-size: 10.5px;
+      font-weight: 700;
+      text-align: left;
+      padding: 7px 10px;
+    }
+    .assessment-table tr:nth-child(odd) td {
+      background-color: var(--mck-header-grey);
+    }
+    .assessment-table tr:nth-child(even) td {
+      background-color: var(--mck-bg-grey);
+    }
+    .assessment-table td {
+      padding: 6.5px 10px;
+      font-size: 10px;
+      color: var(--mck-navy);
+      border-bottom: 2px solid var(--mck-white);
+    }
+    .status-dot {
+      display: inline-block;
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      margin-right: 5px;
+      vertical-align: middle;
+    }
+    .bottom-callout-bar {
+      background-color: var(--mck-ice-blue);
+      border-left: 4px solid var(--mck-electric-blue);
+      padding: 8px 14px;
+      font-size: 10.5px;
+      color: var(--mck-navy);
+      margin-bottom: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- =====================================================================
+       SLIDE 1: COVER SLIDE (Frontpage dark - McKinsey & Slideworks style)
+       ===================================================================== -->
+  <section id="s1" class="slide slide--cover" data-notes="Welcome to the SAIL Bokaro Steel Plant Digital Transformation Roadmap discussion document. This deck synthesizes our diagnostic across BSL's integrated steel plant and mines, prioritizing 150+ digital initiatives into a 3-wave roadmap delivering ~INR 1,310 Cr in annual recurring EBITDA.">
+    <svg class="cover-accent-lines" viewBox="0 0 340 540">
+      <line x1="120" y1="0" x2="340" y2="380" stroke="#2222F6" stroke-width="1.5" opacity="0.45"/>
+      <line x1="160" y1="0" x2="340" y2="310" stroke="#22A3DF" stroke-width="1.2" opacity="0.55"/>
+      <line x1="200" y1="0" x2="340" y2="240" stroke="#5ACBF0" stroke-width="1.0" opacity="0.35"/>
+      <line x1="60" y1="540" x2="340" y2="180" stroke="#1F6FD8" stroke-width="1.5" opacity="0.35"/>
+    </svg>
+    <div class="cover-eyebrow">DISCUSSION DOCUMENT | CLIENT CONFIDENTIAL</div>
+    <div class="cover-body">
+      <h1 class="cover-title">SAIL Digital Transformation Roadmap | BSL</h1>
+      <div class="cover-rule"></div>
+      <h2 class="cover-subtitle">End-to-end Industry 4.0 architecture, 150+ prioritized plant &amp; mine initiatives, and capability building to unlock ~INR 1,310 Cr in recurring EBITDA</h2>
+    </div>
+    <div class="cover-footer">
+      <div class="cover-meta">Prepared for Steel Authority of India Limited – Bokaro Steel Plant (BSL)<br>Digital Transformation Steering Committee | October 2026</div>
+      <div class="cover-brand">McKinsey &amp;<br>Company</div>
+    </div>
+  </section>
+
+  <!-- =====================================================================
+       SLIDE 2: SECTION BREAKER (Section 01 - Value Creation & Diagnostic)
+       ===================================================================== -->
+  <section id="s2" class="slide slide--divider" data-notes="Section 1 details the baseline operational diagnostic and how the 3-wave transformation scales financial impact from INR 180 Cr in FY25 to INR 1,310 Cr by FY28.">
+    <div class="divider-content">
+      <div class="divider-eyebrow">SECTION 01 | VALUE REALIZATION &amp; STRATEGIC TRAJECTORY</div>
+      <h1 class="divider-title">Capturing ~INR 1,310 Cr in annual value through advanced analytics and plant digitization</h1>
+      <p class="divider-sub"> Phased execution across Blast Furnace, Steel Melting Shop (SMS), Hot Strip Mill (HSM), Energy &amp; Utilities, and Raw Material Mines</p>
+    </div>
+    <div class="divider-footer">
+      <span>SAIL Digital Transformation Roadmap | BSL – Discussion Document</span>
+      <span class="footer-brand-light">McKinsey &amp; Company</span>
+    </div>
+  </section>
+
+  <!-- =====================================================================
+       SLIDE 3: HISTORIC & FORECAST COLUMN CHART + 1/3 GREY TAKEAWAYS
+       ===================================================================== -->
+  <section id="s3" class="slide slide--chart-takeaways" data-notes="Phased rollout across three waves expands BSL's recurring annual EBITDA run-rate from INR 180 Cr in FY25 actuals to INR 1,310 Cr by FY28. Wave 1 requires minimal capex and focuses on AI process control models that self-fund Waves 2 and 3.">
+    <div class="slide-header">
+      <div class="slide-tracker">VALUE REALIZATION TRAJECTORY</div>
+      <h2 class="slide-title">Phased rollout across three waves scales recurring EBITDA impact to ~INR 1,310 Cr by FY28</h2>
+      <div class="slide-subtitle">Gross annual run-rate EBITDA impact from 150+ digital initiatives, INR Crores (FY25 Actuals vs. FY26–FY28 Forecast)</div>
+    </div>
+
+    <div class="split-2-1">
+      <div class="chart-panel">
+        <div class="chart-meta">
+          <span class="chart-unit">Recurring EBITDA Impact, INR Cr</span>
+          <span class="chart-cagr">CAGR +94% (FY25–FY28F)</span>
+        </div>
+        <div class="bar-chart" data-chart-type="column">
+          <div class="bar-group" data-label="FY25 Actuals" data-sub="Pilot Baseline" data-value="180" data-series="Actuals" data-delta="Baseline">
+            <div class="bar-Delta">Baseline</div>
+            <div class="bar-val">180</div>
+            <div class="bar-fill bar-fill--actual" style="height: 32px;"></div>
+            <div class="bar-lbl">FY25 Actuals</div>
+            <div class="bar-sub">Pilot Baseline</div>
+          </div>
+          <div class="bar-group" data-label="FY26 Wave 1" data-sub="Quick Wins (45 use cases)" data-value="490" data-series="Forecast" data-delta="+172%">
+            <div class="bar-Delta">+172%</div>
+            <div class="bar-val">490</div>
+            <div class="bar-fill bar-fill--forecast" style="height: 85px;"></div>
+            <div class="bar-lbl">FY26 Wave 1</div>
+            <div class="bar-sub">Quick Wins (45)</div>
+          </div>
+          <div class="bar-group" data-label="FY27 Wave 2" data-sub="Core Scale (65 use cases)" data-value="920" data-series="Forecast" data-delta="+88%">
+            <div class="bar-Delta">+88%</div>
+            <div class="bar-val">920</div>
+            <div class="bar-fill bar-fill--forecast" style="height: 155px;"></div>
+            <div class="bar-lbl">FY27 Wave 2</div>
+            <div class="bar-sub">Core Scale (65)</div>
+          </div>
+          <div class="bar-group" data-label="FY28 Wave 3" data-sub="Full Maturity (150+ total)" data-value="1310" data-series="Target" data-delta="+42%">
+            <div class="bar-Delta">+42%</div>
+            <div class="bar-val">1,310</div>
+            <div class="bar-fill bar-fill--target" style="height: 215px;"></div>
+            <div class="bar-lbl">FY28 Wave 3</div>
+            <div class="bar-sub">Full Scale (150+)</div>
+          </div>
+        </div>
+        <div class="chart-legend">
+          <div class="legend-item"><span class="legend-swatch" style="background:#051C2C;"></span> Actuals / Baseline</div>
+          <div class="legend-item"><span class="legend-swatch" style="background:#1F6FD8;"></span> Wave 1–2 Forecast</div>
+          <div class="legend-item"><span class="legend-swatch" style="background:#22A3DF;"></span> Wave 3 Full Run-Rate Target</div>
+        </div>
+      </div>
+
+      <div class="takeaways-sidebar">
+        <div class="sidebar-header">Key takeaways / main conclusion</div>
+        <ul class="sidebar-list">
+          <li><strong>Self-funding Wave 1 (INR 490 Cr):</strong> 45 zero-capex Advanced Process Control (APC) and AI yield models in Blast Furnace &amp; SMS deliver cash flow within 6–9 months.</li>
+          <li><strong>Core plant scaling (INR 920 Cr):</strong> Wave 2 deploys predictive maintenance and Computer Vision slab/coil quality inspection, cutting unplanned downtime by 22%.</li>
+          <li><strong>Integrated mine-to-mill (INR 1,310 Cr):</strong> Wave 3 links captive iron-ore mines, sinter blend optimization, and dynamic energy dispatch for a +280 bps EBITDA margin lift.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="slide-footer">
+      <div class="footer-sources">Source: BSL Plant Operational Diagnostic (FY25); McKinsey Global Metals &amp; Mining Digital Benchmark | Footnote: 1. Gross run-rate EBITDA prior to Central Cloud/OT capex.</div>
+      <div class="footer-right"><span class="footer-brand">McKinsey &amp; Company</span> <span class="footer-page">3</span></div>
+    </div>
+  </section>
+
+  <!-- =====================================================================
+       SLIDE 4: 3x3 PRIORITIZATION MATRIX (Level of Impact vs. Time to Impact)
+       ===================================================================== -->
+  <section id="s4" class="slide slide--matrix" data-notes="We mapped all 150+ initiatives on a 3x3 prioritization matrix comparing Level of EBITDA Impact against Time to Impact. Green badges represent Wave 1 priority quick wins; Amber represents Wave 2 core scaling; Coral represents foundational IT/OT upgrades.">
+    <div class="slide-header">
+      <div class="slide-tracker">INITIATIVE PRIORITIZATION MATRIX</div>
+      <h2 class="slide-title">150+ digital initiatives prioritized by financial impact and time-to-value into three execution waves</h2>
+      <div class="slide-subtitle">Assessment of BSL digital use cases across Level of Impact (EBITDA Cr/yr) vs. Time to Impact (Months to Go-Live)</div>
+    </div>
+
+    <div class="matrix-wrapper">
+      <div class="matrix-grid">
+        <div class="matrix-corner">LEVEL OF IMPACT<br>vs. TIME</div>
+        <div class="matrix-col-hdr">SHORT (&lt; 6 Months)</div>
+        <div class="matrix-col-hdr">MEDIUM (6–15 Months)</div>
+        <div class="matrix-col-hdr">LONG (15–24+ Months)</div>
+
+        <!-- HIGH IMPACT ROW -->
+        <div class="matrix-row-hdr">HIGH<br><span style="font-size:8.5px;font-weight:400;">(&gt; INR 100 Cr)</span></div>
+        <div class="matrix-cell matrix-cell--priority" data-row="High" data-col="Short">
+          <div class="matrix-badge badge--green"><span>BF Coke &amp; Fuel Rate AI Optimizer</span><span>INR 240 Cr</span></div>
+          <div class="matrix-badge badge--green"><span>SMS Ferro-Alloy &amp;BOF Yield Twin</span><span>INR 165 Cr</span></div>
+        </div>
+        <div class="matrix-cell matrix-cell--priority" data-row="High" data-col="Medium">
+          <div class="matrix-badge badge--green"><span>HSM Throughput &amp; Cobble Prevention AI</span><span>INR 190 Cr</span></div>
+          <div class="matrix-badge badge--amber"><span>Captive Mine-to-Sinter Blend Optimizer</span><span>INR 145 Cr</span></div>
+        </div>
+        <div class="matrix-cell" data-row="High" data-col="Long">
+          <div class="matrix-badge badge--amber"><span>Autonomous Raw Material Yard &amp; Dispatch</span><span>INR 130 Cr</span></div>
+          <div class="matrix-badge badge--coral"><span>Enterprise ERP + MES Layer Modernization</span><span>Enabler</span></div>
+        </div>
+
+        <!-- MEDIUM IMPACT ROW -->
+        <div class="matrix-row-hdr">MEDIUM<br><span style="font-size:8.5px;font-weight:400;">(INR 40–100 Cr)</span></div>
+        <div class="matrix-cell matrix-cell--priority" data-row="Medium" data-col="Short">
+          <div class="matrix-badge badge--green"><span>Predictive Maintenance – Critical Turbines</span><span>INR 85 Cr</span></div>
+          <div class="matrix-badge badge--amber"><span>Real-Time By-Product Gas Grid Balancing</span><span>INR 70 Cr</span></div>
+        </div>
+        <div class="matrix-cell" data-row="Medium" data-col="Medium">
+          <div class="matrix-badge badge--amber"><span>Computer Vision Strip Surface Grading</span><span>INR 90 Cr</span></div>
+          <div class="matrix-badge badge--amber"><span>Cold Rolling Mill Acid &amp; Pickling APC</span><span>INR 60 Cr</span></div>
+        </div>
+        <div class="matrix-cell" data-row="Medium" data-col="Long">
+          <div class="matrix-badge badge--coral"><span>Integrated Rail &amp; Outbound Logistics Twin</span><span>INR 55 Cr</span></div>
+        </div>
+
+        <!-- LOW IMPACT ROW -->
+        <div class="matrix-row-hdr">LOW<br><span style="font-size:8.5px;font-weight:400;">(&lt; INR 40 Cr)</span></div>
+        <div class="matrix-cell" data-row="Low" data-col="Short">
+          <div class="matrix-badge badge--amber"><span>Digital Shift Handover &amp; E-Logbooks</span><span>INR 35 Cr</span></div>
+        </div>
+        <div class="matrix-cell" data-row="Low" data-col="Medium">
+          <div class="matrix-badge badge--amber"><span>GenAI Maintenance Copilot for Technicians</span><span>INR 25 Cr</span></div>
+        </div>
+        <div class="matrix-cell" data-row="Low" data-col="Long">
+          <div class="matrix-badge badge--coral"><span>Legacy SCADA Sensor Retrofit (Tier-3 Shops)</span><span>INR 20 Cr</span></div>
+        </div>
+      </div>
+
+      <div class="matrix-legend">
+        <div class="m-leg-item"><span class="m-pill" style="background:#00B050;"></span> = Wave 1 Priority Quick Wins (Immediate Launch)</div>
+        <div class="m-leg-item"><span class="m-pill" style="background:#FAD688;"></span> = Wave 2 Core Scale Initiatives</div>
+        <div class="m-leg-item"><span class="m-pill" style="background:#E5546C;"></span> = Wave 3 Foundational / Heavy IT-OT Capex</div>
+      </div>
+    </div>
+
+    <div class="slide-footer">
+      <div class="footer-sources">Source: BSL Shop-Floor Value Workshops; McKinsey Steel Digital Use-Case Library (n = 154 initiatives) | Footnote: 1. Top 12 flagship clusters shown above.</div>
+      <div class="footer-right"><span class="footer-brand">McKinsey &amp; Company</span> <span class="footer-page">4</span></div>
+    </div>
+  </section>
+
+  <!-- =====================================================================
+       SLIDE 5: FOUR KEY TRENDS / WORKSTREAMS TABLE (slide--trends)
+       ===================================================================== -->
+  <section id="s5" class="slide slide--trends" data-notes="Four integrated transformation pillars underpin BSL's roadmap: Primary Steelmaking AI, Rolling & Quality Automation, Smart Energy & Mine Logistics, and the SAIL Digital Academy & Cloud Data Platform.">
+    <div class="slide-header">
+      <div class="slide-tracker">STRATEGIC TRANSFORMATION PILLARS</div>
+      <h2 class="slide-title">Four core digital pillars drive end-to-end operational excellence across BSL plants and mines</h2>
+      <div class="slide-subtitle">Synthesis of strategic levers, technical architecture, and flagship shop-floor implementations</div>
+    </div>
+
+    <table class="trends-table">
+      <thead>
+        <tr>
+          <th>Transformation Pillar</th>
+          <th>Description &amp; Core Strategic Levers</th>
+          <th>Select BSL Examples &amp; Quantified Impact</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="trend-name-cell">1. Primary Steelmaking &amp; Blast Furnace AI<span class="trend-name-sub">~INR 550 Cr | 48 Initiatives</span></td>
+          <td class="trend-desc-cell">
+            <ul class="compact-bullets">
+              <li>Closed-loop thermal state prediction and burden distribution modeling in Blast Furnaces</li>
+              <li>Dynamic charge-mix and ferro-alloy minimization in Basic Oxygen Furnaces (SMS-II)</li>
+              <li>Automated sinter plant basicity and moisture control connected to raw material chemistry</li>
+            </ul>
+          </td>
+          <td class="trend-ex-cell">
+            <ul class="compact-bullets">
+              <li><strong>BF Coke Rate AI:</strong> -14 kg/tHM reduction (+INR 240 Cr)</li>
+              <li><strong>BOF First-Turndown Hit Rate:</strong> +18% improvement (+INR 165 Cr)</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td class="trend-name-cell">2. Rolling Mills &amp; Vision Quality Control<span class="trend-name-sub">~INR 380 Cr | 42 Initiatives</span></td>
+          <td class="trend-desc-cell">
+            <ul class="compact-bullets">
+              <li>Pacing optimization and reheating furnace fuel control in Hot Strip Mill (HSM)</li>
+              <li>High-speed Computer Vision defect detection to prevent downstream cold-rolling cobbles</li>
+              <li>Vibration and thermal anomaly prediction across mill stands, bearings, and coilers</li>
+            </ul>
+          </td>
+          <td class="trend-ex-cell">
+            <ul class="compact-bullets">
+              <li><strong>HSM Bottleneck Pacing:</strong> +6.5% throughput (+INR 190 Cr)</li>
+              <li><strong>CV Surface Inspection:</strong> -31% quality downgrades (+INR 90 Cr)</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td class="trend-name-cell">3. Smart Energy, Utilities &amp; Mine-to-Mill<span class="trend-name-sub">~INR 260 Cr | 36 Initiatives</span></td>
+          <td class="trend-desc-cell">
+            <ul class="compact-bullets">
+              <li>Real-time optimization of BF, Coke Oven, and LD gas network to minimize flaring</li>
+              <li>Integrated mine-to-pellet-to-blast-furnace logistics scheduling and rake turnaround</li>
+              <li>Smart water and oxygen plant load forecasting synchronized with converter blowing</li>
+            </ul>
+          </td>
+          <td class="trend-ex-cell">
+            <ul class="compact-bullets">
+              <li><strong>Mine-to-Sinter Blend:</strong> +INR 145 Cr iron recovery</li>
+              <li><strong>Gas Grid Dispatch:</strong> -28% gas flaring loss (+INR 70 Cr)</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td class="trend-name-cell">4. OT/IT Data Platform &amp; Digital Academy<span class="trend-name-sub">~INR 120 Cr | 28 Enablers</span></td>
+          <td class="trend-desc-cell">
+            <ul class="compact-bullets">
+              <li>Unified industrial data lakehouse ingesting Level-1/Level-2 PLC &amp; SCADA tags at 1-sec resolution</li>
+              <li>GenAI Maintenance Copilot indexing 15+ years of BSL OEM manuals and breakdown logs</li>
+              <li>Dedicated Digital Center of Excellence (CCoE) upskilling 450+ plant engineers and translators</li>
+            </ul>
+          </td>
+          <td class="trend-ex-cell">
+            <ul class="compact-bullets">
+              <li><strong>Unified OT/IT Lake:</strong> 85% sensor tag coverage by Q3 FY27</li>
+              <li><strong>SAIL Digital Academy:</strong> 60+ agile pod specialists trained</li>
+            </ul>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="slide-footer">
+      <div class="footer-sources">Source: SAIL-BSL Digital Transformation Blueprint; McKinsey Industry 4.0 Architecture Team | Footnote: 1. Initiative counts include sub-shop rollouts.</div>
+      <div class="footer-right"><span class="footer-brand">McKinsey &amp; Company</span> <span class="footer-page">5</span></div>
+    </div>
+  </section>
+
+  <!-- =====================================================================
+       SLIDE 6: CAPABILITY ASSESSMENT & WAVE EXECUTION OVERVIEW (slide--assessment)
+       ===================================================================== -->
+  <section id="s6" class="slide slide--assessment" data-notes="To sustain INR 1,310 Cr in annual value, BSL must address five organizational and technical dimensions. While executive sponsorship and Wave 1 use-case design are green, Level-1/2 sensor readiness in legacy shops requires immediate Q1 remediation.">
+    <div class="slide-header">
+      <div class="slide-tracker">CAPABILITY &amp; READINESS ASSESSMENT</div>
+      <h2 class="slide-title">Delivering the roadmap requires targeted upgrades across OT instrumentation and agile pod talent</h2>
+      <div class="slide-subtitle">Current capability maturity assessment and 24-month governance milestones across 6 core dimensions</div>
+    </div>
+
+    <table class="assessment-table">
+      <thead>
+        <tr>
+          <th style="width: 22%;">Parameter / Dimension</th>
+          <th style="width: 38%;">Current Baseline &amp; Key Diagnostic Gap</th>
+          <th style="width: 24%;">Wave 1–3 Target State (FY26–FY28)</th>
+          <th style="width: 16%;">Readiness Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>1. Executive Governance &amp; PMO</strong></td>
+          <td>Weekly SteerCo established under ED (Works); shop-level value owners assigned across all 8 departments</td>
+          <td>Automated real-time value-tracking dashboard tied to monthly plant P&amp;L</td>
+          <td><span class="status-dot" style="background:#00B050;"></span><strong>On Track (High)</strong></td>
+        </tr>
+        <tr>
+          <td><strong>2.Blast Furnace &amp; SMS Level-2 APC</strong></td>
+          <td>Modern SCADA &amp; PLC historians live in BF-2/BF-5 and SMS-II; ready for immediate AI model deployment</td>
+          <td>Closed-loop AI operator advisory active across 100% of primary hot-metal lines</td>
+          <td><span class="status-dot" style="background:#00B050;"></span><strong>On Track (High)</strong></td>
+        </tr>
+        <tr>
+          <td><strong>3. Cloud &amp; Edge Data Architecture</strong></td>
+          <td>Core ERP &amp; MES operational, but real-time streaming middleware between OT and Cloud is in procurement</td>
+          <td>Unified Industrial Data Lakehouse ingesting 120,000+ tags at &lt;1s latency</td>
+          <td><span class="status-dot" style="background:#F8BC3B;"></span><strong>In Progress (Med)</strong></td>
+        </tr>
+        <tr>
+          <td><strong>4. Digital Center of Excellence (CCoE)</strong></td>
+          <td>22 data scientists and metallurgists onboarded; shortage of ML engineers and agile product owners</td>
+          <td>upskill 450+ BSL champions via SAIL Digital Academy; 6 autonomous pods</td>
+          <td><span class="status-dot" style="background:#F8BC3B;"></span><strong>In Progress (Med)</strong></td>
+        </tr>
+        <tr>
+          <td><strong>5. Legacy Shop Sensor &amp; OT Retrofit</strong></td>
+          <td>Manual logbooks and missing flow/temperature instrumentation in older Coke Oven batteries &amp; tier-2 mills</td>
+          <td>Targeted IIoT smart-sensor retrofit across 340 critical measurement points</td>
+          <td><span class="status-dot" style="background:#E5546C;"></span><strong>Action Req (Low)</strong></td>
+        </tr>
+        <tr>
+          <td><strong>6. Change Management &amp; Adoption</strong></td>
+          <td>Strong engineer enthusiasm; front-line console operators need incentive alignment and UI co-design</td>
+          <td>&gt;85% daily active operator adherence to AI set-point recommendations</td>
+          <td><span class="status-dot" style="background:#00B050;"></span><strong>On Track (High)</strong></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="bottom-callout-bar">
+      <strong>Immediate 90-Day Decision Imperative:</strong> Approve Wave 1 launch for 45 priority quick-win use cases, fast-track IIoT sensor procurement for legacy shops (INR 38 Cr capex), and charter the first 3 cross-functional BSL Digital Pods.
+    </div>
+
+    <div class="slide-footer">
+      <div class="footer-sources">Source: McKinsey Digital Quotient (MDQ) Diagnostic at BSL; Joint IT/OT Architecture Assessment | Footnote: 1. RAG status reflects Wave 1 launch readiness.</div>
+      <div class="footer-right"><span class="footer-brand">McKinsey &amp; Company</span> <span class="footer-page">6</span></div>
+    </div>
+  </section>
+
+</body>
+</html>

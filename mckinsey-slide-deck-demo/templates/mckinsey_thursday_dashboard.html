@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>McKinsey &amp; Company | Thursday Client Value-Realization Command Center</title>
+  <style>
+    :root {
+      /* McKinsey & Slideworks 2025 Design Tokens */
+      --mck-navy: #051C2C;
+      --mck-navy-alt: #061F32;
+      --mck-navy-card: #0A273D;
+      --mck-electric-blue: #2222F6;
+      --mck-chart-blue: #1F6FD8;
+      --mck-cyan: #22A3DF;
+      --mck-sky: #5ACBF0;
+      --mck-mid-blue: #1877A2;
+      --mck-ice-blue: #E7F0F9;
+      --mck-ice-border: #A2D5EC;
+
+      --mck-white: #FFFFFF;
+      --mck-bg-page: #F4F6F9;
+      --mck-bg-grey: #F2F2F2;
+      --mck-header-grey: #D8D8D8;
+      --mck-border: #D8D8D8;
+      --mck-muted: #6E7681;
+      --mck-axis-grey: #A5A5A5;
+      --mck-text: #051C2C;
+
+      /* Consulting RAG Status Colors */
+      --mck-green: #00B050;
+      --mck-green-bg: #E6F8EE;
+      --mck-amber: #F8BC3B;
+      --mck-amber-pill: #FAD688;
+      --mck-amber-bg: #FFF8E6;
+      --mck-coral: #E5546C;
+      --mck-coral-bg: #FDECEF;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--mck-bg-page);
+      font-family: 'Arial', 'Helvetica Neue', sans-serif;
+      color: var(--mck-text);
+      line-height: 1.45;
+      padding-bottom: 48px;
+    }
+
+    /* =====================================================================
+       TOP EXECUTIVE HEADER BAR (Deep McKinsey Navy #051C2C)
+       ===================================================================== */
+    .top-nav {
+      background: linear-gradient(90deg, #051C2C 0%, #061F32 70%, #0A2E4A 100%);
+      color: var(--mck-white);
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 3px solid var(--mck-electric-blue);
+      box-shadow: 0 4px 16px rgba(5, 28, 44, 0.18);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .brand-left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .mck-wordmark {
+      font-family: 'Georgia', serif;
+      font-size: 19px;
+      font-weight: 700;
+      line-height: 1.05;
+      color: var(--mck-white);
+      border-right: 1px solid rgba(255,255,255,0.25);
+      padding-right: 18px;
+    }
+    .engagement-header-info {
+      display: flex;
+      flex-direction: column;
+    }
+    .eng-eyebrow {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      color: var(--mck-cyan);
+    }
+    .eng-title {
+      font-family: 'Georgia', serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--mck-white);
+    }
+
+    .nav-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .mode-switch-btn {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: var(--mck-white);
+      border: 1px solid var(--mck-ice-border);
+      padding: 7px 14px;
+      font-size: 11.5px;
+      font-weight: 700;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .mode-switch-btn:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+    .btn-primary-electric {
+      background-color: var(--mck-electric-blue);
+      color: var(--mck-white);
+      border: none;
+      padding: 8px 16px;
+      font-size: 11.5px;
+      font-weight: 700;
+      border-radius: 3px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 2px 8px rgba(34, 34, 246, 0.35);
+    }
+    .btn-primary-electric:hover {
+      background-color: #1919D1;
+    }
+    .btn-secondary-cyan {
+      background-color: var(--mck-cyan);
+      color: var(--mck-navy);
+      border: none;
+      padding: 8px 15px;
+      font-size: 11.5px;
+      font-weight: 700;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .btn-secondary-cyan:hover {
+      background-color: var(--mck-sky);
+    }
+
+    /* =====================================================================
+       BYOMCP LIVE DATA FABRIC & PARTNER MEMORY RIBBON
+       ===================================================================== */
+    .byomcp-ribbon {
+      background-color: var(--mck-white);
+      border-bottom: 1px solid var(--mck-border);
+      padding: 10px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .mcp-badges {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .mcp-label {
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--mck-navy);
+    }
+    .mcp-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background-color: var(--mck-ice-blue);
+      border: 1px solid var(--mck-ice-border);
+      color: var(--mck-navy);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 14px;
+    }
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background-color: var(--mck-green);
+      display: inline-block;
+    }
+    .partner-memory-tag {
+      background-color: #FFF8E6;
+      border: 1px solid var(--mck-amber);
+      color: var(--mck-navy);
+      font-size: 11px;
+      padding: 4px 12px;
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* =====================================================================
+       MAIN DASHBOARD CONTAINER
+       ===================================================================== */
+    .container {
+      max-width: 1380px;
+      margin: 22px auto;
+      padding: 0 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Full-Sentence McKinsey Action Title Banner */
+    .action-title-banner {
+      background-color: var(--mck-white);
+      border-left: 5px solid var(--mck-navy);
+      padding: 16px 22px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .action-tracker {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--mck-mid-blue);
+      margin-bottom: 4px;
+    }
+    .action-headline {
+      font-size: 21px;
+      font-weight: 700;
+      color: var(--mck-navy);
+      line-height: 1.25;
+    }
+    .action-sub {
+      font-size: 12px;
+      color: var(--mck-muted);
+      margin-top: 3px;
+    }
+
+    /* =====================================================================
+       4-CARD EXECUTIVE KPI RIBBON
+       ===================================================================== */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+    .kpi-card {
+      background-color: var(--mck-white);
+      border-top: 4px solid var(--mck-navy);
+      padding: 16px 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .kpi-card--highlight {
+      border-top-color: var(--mck-electric-blue);
+      background: linear-gradient(180deg, #F7FAFF 0%, #FFFFFF 100%);
+    }
+    .kpi-label {
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      color: var(--mck-muted);
+    }
+    .kpi-value {
+      font-family: 'Georgia', serif;
+      font-size: 31px;
+      font-weight: 700;
+      color: var(--mck-navy);
+      margin: 8px 0 4px 0;
+    }
+    .kpi-delta {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--mck-green);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .kpi-foot {
+      font-size: 11px;
+      color: var(--mck-muted);
+      margin-top: 4px;
+    }
+
+    /* =====================================================================
+       2-COLUMN WORKSPACE: LEFT (CHART + WHAT-IF) | RIGHT (TAKEAWAYS + HUMAN API)
+       ===================================================================== */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.85fr 1.15fr;
+      gap: 20px;
+    }
+    .panel-card {
+      background-color: var(--mck-white);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      border: 1px solid var(--mck-border);
+      display: flex;
+      flex-direction: column;
+    }
+    .panel-header {
+      background-color: var(--mck-navy-alt);
+      color: var(--mck-white);
+      padding: 11px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .panel-title {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+    .view-tabs {
+      display: flex;
+      gap: 6px;
+    }
+    .view-tab {
+      background-color: rgba(255,255,255,0.12);
+      color: var(--mck-white);
+      border: 1px solid rgba(255,255,255,0.2);
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 2px;
+      cursor: pointer;
+    }
+    .view-tab.active {
+      background-color: var(--mck-cyan);
+      color: var(--mck-navy);
+      border-color: var(--mck-cyan);
+    }
+
+    .panel-body {
+      padding: 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* Interactive Column Chart Area */
+    .chart-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .cagr-pill {
+      background-color: var(--mck-ice-blue);
+      border: 1px solid var(--mck-ice-border);
+      color: var(--mck-navy);
+      font-weight: 700;
+      font-size: 11.5px;
+      padding: 4px 12px;
+      border-radius: 14px;
+    }
+    .interactive-bars {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-around;
+      height: 250px;
+      border-bottom: 2px solid var(--mck-navy);
+      padding: 24px 16px 0 16px;
+      gap: 24px;
+    }
+    .i-bar-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+    }
+    .i-bar-delta {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--mck-chart-blue);
+      margin-bottom: 3px;
+    }
+    .i-bar-val {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--mck-navy);
+      margin-bottom: 6px;
+    }
+    .i-bar-rect {
+      width: 78px;
+      border-radius: 3px 3px 0 0;
+      transition: height 0.25s ease;
+      position: relative;
+    }
+    .i-bar-lbl {
+      margin-top: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--mck-navy);
+    }
+    .i-bar-sub {
+      font-size: 10.5px;
+      color: var(--mck-muted);
+      margin-bottom: 6px;
+    }
+
+    /* What-If Scenario Simulator Controls (SDLC Feature) */
+    .simulator-box {
+      margin-top: 20px;
+      background-color: var(--mck-ice-blue);
+      border: 1px solid var(--mck-ice-border);
+      padding: 14px 18px;
+      border-radius: 3px;
+    }
+    .sim-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .sim-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--mck-navy);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .sim-sliders {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .slider-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .slider-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--mck-navy);
+    }
+    input[type="range"] {
+      accent-color: var(--mck-electric-blue);
+      width: 100%;
+      cursor: pointer;
+    }
+
+    /* Right Sidebar: Slideworks 1/3 Grey Key Takeaways + Human API Tracker */
+    .right-col-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .takeaways-grey-box {
+      background-color: var(--mck-bg-grey);
+      border: 1px solid var(--mck-header-grey);
+      border-top: 4px solid var(--mck-navy);
+    }
+    .takeaways-list {
+      list-style: none;
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      font-size: 12px;
+    }
+    .takeaways-list li {
+      position: relative;
+      padding-left: 15px;
+    }
+    .takeaways-list li::before {
+      content: "▪";
+      position: absolute;
+      left: 0;
+      color: var(--mck-electric-blue);
+      font-weight: bold;
+    }
+
+    /* Human API Workstream Chase Table */
+    .human-api-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .human-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background-color: var(--mck-bg-grey);
+      border-left: 4px solid var(--mck-green);
+      font-size: 11.5px;
+    }
+    .human-row--missing {
+      border-left-color: var(--mck-coral);
+      background-color: var(--mck-coral-bg);
+    }
+    .status-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 3px;
+      text-transform: uppercase;
+    }
+    .status-badge--ok {
+      background-color: var(--mck-green);
+      color: var(--mck-white);
+    }
+    .status-badge--pending {
+      background-color: var(--mck-coral);
+      color: var(--mck-white);
+    }
+
+    /* =====================================================================
+       BOTTOM SECTION: 3x3 PRIORITIZATION MATRIX & IN-PLACE EXCEL SYNC LOG
+       ===================================================================== */
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 20px;
+    }
+    .mini-matrix {
+      display: grid;
+      grid-template-columns: 90px 1fr 1fr 1fr;
+      gap: 6px;
+      font-size: 11px;
+    }
+    .mm-hdr {
+      background-color: var(--mck-navy-alt);
+      color: var(--mck-white);
+      font-weight: 700;
+      padding: 6px;
+      text-align: center;
+    }
+    .mm-row-hdr {
+      background-color: var(--mck-header-grey);
+      color: var(--mck-navy);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 6px;
+    }
+    .mm-cell {
+      background-color: var(--mck-bg-grey);
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      border: 1px solid #E0E0E0;
+    }
+    .mm-cell--hi {
+      background-color: var(--mck-ice-blue);
+      border: 1.5px solid var(--mck-chart-blue);
+    }
+    .mm-pill {
+      padding: 4px 7px;
+      border-radius: 3px;
+      font-size: 10px;
+      font-weight: 700;
+      display: flex;
+      justify-content: space-between;
+    }
+    .mm-pill--green { background-color: var(--mck-green); color: #FFF; }
+    .mm-pill--amber { background-color: var(--mck-amber-pill); color: var(--mck-navy); }
+    .mm-pill--coral { background-color: var(--mck-coral); color: #FFF; }
+
+    /* Toast Notification Banner */
+    #toast-banner {
+      display: none;
+      position: fixed;
+      bottom: 24px;
+      right: 28px;
+      background-color: var(--mck-navy);
+      color: var(--mck-white);
+      border-left: 5px solid var(--mck-cyan);
+      padding: 14px 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+      font-size: 12.5px;
+      z-index: 999;
+      max-width: 440px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP EXECUTIVE BAR -->
+  <header class="top-nav">
+    <div class="brand-left">
+      <div class="mck-wordmark">McKinsey &amp;<br>Company</div>
+      <div class="engagement-header-info">
+        <span class="eng-eyebrow" id="eng-eyebrow">THURSDAY STEERCO COMMAND CENTER | BUILT WITH GOOGLE ANTIGRAVITY</span>
+        <span class="eng-title" id="eng-title">SAIL Digital Transformation Roadmap | BSL Value-Realization Tracker</span>
+      </div>
+    </div>
+    <div class="nav-controls">
+      <button class="mode-switch-btn" id="btn-toggle-currency" onclick="toggleEngagementMode()">
+        Switch to Global ($M) Mode
+      </button>
+      <button class="btn-secondary-cyan" id="btn-sync-excel" onclick="triggerSharePointExcelSync()">
+        ↻ Sync Excel in SharePoint (In-Place)
+      </button>
+      <button class="btn-primary-electric" id="btn-export-pptx" onclick="triggerPptxExport()">
+        ⬇ Compile 6-Slide McKinsey PPTX
+      </button>
+    </div>
+  </header>
+
+  <!-- BYOMCP LIVE DATA FABRIC & PARTNER PREFERENCE MEMORY -->
+  <div class="byomcp-ribbon">
+    <div class="mcp-badges">
+      <span class="mcp-label">Active BYOMCP Fabric (90% Firm Standard):</span>
+      <span class="mcp-pill"><span class="pulse-dot"></span> @bigquery-plant-telemetry</span>
+      <span class="mcp-pill"><span class="pulse-dot"></span> @databricks-genie-ml</span>
+      <span class="mcp-pill"><span class="pulse-dot"></span> @snowflake-erp-actuals</span>
+      <span class="mcp-pill"><span class="pulse-dot"></span> @sharepoint-excel-inplace</span>
+    </div>
+    <div class="partner-memory-tag">
+      <strong>🧠 Partner Memory Active:</strong>
+      <span id="partner-memory-text">"Always display 3-Wave Column Forecast with CAGR badge &amp; full-sentence Action Titles (per Joe / Partner Thursday review)"</span>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="container">
+
+    <!-- FULL-SENTENCE ACTION TITLE BANNER -->
+    <section class="action-title-banner">
+      <div>
+        <div class="action-tracker">THURSDAY EXECUTIVE READOUT | WEEK 42 ACTUALS VS. PLAN</div>
+        <h1 class="action-headline" id="dynamic-action-title">
+          Phased rollout across three waves scales recurring EBITDA impact to ~INR 1,310 Cr by FY28, with Wave 1 tracking +8% ahead of plan
+        </h1>
+        <div class="action-sub" id="dynamic-action-sub">
+          Cross-referenced across 154 digital &amp; analytics initiatives | Last in-place SharePoint Excel sync: Thursday 14:45 EST
+        </div>
+      </div>
+    </section>
+
+    <!-- 4-CARD KPI RIBBON -->
+    <section class="kpi-grid">
+      <div class="kpi-card kpi-card--highlight">
+        <span class="kpi-label">FY28 Full Run-Rate EBITDA Target</span>
+        <div class="kpi-value" id="kpi-total-val">INR 1,310 Cr</div>
+        <div class="kpi-delta" id="kpi-total-delta">▲ +94% CAGR (FY25–FY28F)</div>
+        <div class="kpi-foot">Validated across 8 plant &amp; mine workstreams</div>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Wave 1 Quick-Wins Run-Rate (FY26)</span>
+        <div class="kpi-value" id="kpi-wave1-val">INR 490 Cr</div>
+        <div class="kpi-delta">▲ +172% vs. FY25 Pilot Baseline</div>
+        <div class="kpi-foot">45 zero-capex APC &amp; AI yield models</div>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Prioritized Digital Initiatives</span>
+        <div class="kpi-value">154</div>
+        <div class="kpi-delta">● 92% OT/IT Sensor Tag Coverage</div>
+        <div class="kpi-foot">48 Primary Steel | 42 Rolling | 36 Energy/Mines</div>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Thursday Workstream Sign-Off ("Human API")</span>
+        <div class="kpi-value" id="kpi-human-status">7 / 8 Ready</div>
+        <div class="kpi-delta" id="kpi-human-delta" style="color: var(--mck-coral);">● 1 Workstream Pending Input</div>
+        <div class="kpi-foot">Automated Slack/Teams chase ready below</div>
+      </div>
+    </section>
+
+    <!-- 2-COLUMN WORKSPACE -->
+    <section class="main-grid">
+
+      <!-- LEFT: COLUMN CHART + WHAT-IF SIMULATOR -->
+      <div class="panel-card">
+        <div class="panel-header">
+          <span class="panel-title">GROSS ANNUAL EBITDA IMPACT TRAJECTORY (HISTORIC ACTUALS VS. WAVE 1–3 FORECAST)</span>
+          <div class="view-tabs">
+            <button class="view-tab active" id="tab-col" onclick="setPartnerChartMode('column')">Partner Preferred: Column + CAGR</button>
+            <button class="view-tab" id="tab-bridge" onclick="setPartnerChartMode('bridge')">EBITDA Lever Breakdown</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div>
+            <div class="chart-top-bar">
+              <strong style="font-size: 12px; color: var(--mck-navy);" id="chart-unit-label">Recurring Annual EBITDA Impact, INR Crores</strong>
+              <span class="cagr-pill" id="chart-cagr-badge">CAGR +94% (FY25–FY28F)</span>
+            </div>
+
+            <!-- Interactive Bars -->
+            <div class="interactive-bars" id="chart-bars-container">
+              <div class="i-bar-col">
+                <div class="i-bar-delta">Baseline</div>
+                <div class="i-bar-val" id="bar-val-0">180</div>
+                <div class="i-bar-rect" id="bar-rect-0" style="height: 36px; background-color: var(--mck-navy);"></div>
+                <div class="i-bar-lbl">FY25 Actuals</div>
+                <div class="i-bar-sub">Pilot Baseline</div>
+              </div>
+              <div class="i-bar-col">
+                <div class="i-bar-delta" id="bar-delta-1">+172%</div>
+                <div class="i-bar-val" id="bar-val-1">490</div>
+                <div class="i-bar-rect" id="bar-rect-1" style="height: 92px; background-color: var(--mck-chart-blue);"></div>
+                <div class="i-bar-lbl">FY26 Wave 1</div>
+                <div class="i-bar-sub">Quick Wins (45)</div>
+              </div>
+              <div class="i-bar-col">
+                <div class="i-bar-delta" id="bar-delta-2">+88%</div>
+                <div class="i-bar-val" id="bar-val-2">920</div>
+                <div class="i-bar-rect" id="bar-rect-2" style="height: 162px; background-color: var(--mck-chart-blue);"></div>
+                <div class="i-bar-lbl">FY27 Wave 2</div>
+                <div class="i-bar-sub">Core Scale (65)</div>
+              </div>
+              <div class="i-bar-col">
+                <div class="i-bar-delta" id="bar-delta-3">+42%</div>
+                <div class="i-bar-val" id="bar-val-3">1,310</div>
+                <div class="i-bar-rect" id="bar-rect-3" style="height: 215px; background-color: var(--mck-cyan);"></div>
+                <div class="i-bar-lbl">FY28 Wave 3</div>
+                <div class="i-bar-sub">Full Maturity (154)</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- LIVE WHAT-IF SENSITIVITY SIMULATOR (Built & Tested in Antigravity) -->
+          <div class="simulator-box">
+            <div class="sim-header">
+              <span class="sim-title">⚡ Live SteerCo What-If Sensitivity Simulator (Verified by Pytest Suite)</span>
+              <button class="mode-switch-btn" style="background:#051C2C; padding:3px 9px; font-size:10px;" onclick="resetSimulator()">Reset to Base Case</button>
+            </div>
+            <div class="sim-sliders">
+              <div class="slider-group">
+                <div class="slider-label">
+                  <span>Operator AI Adoption Rate</span>
+                  <span id="lbl-adoption">85% (Base)</span>
+                </div>
+                <input type="range" id="slider-adoption" min="60" max="100" value="85" oninput="recalcWhatIf()">
+              </div>
+              <div class="slider-group">
+                <div class="slider-label">
+                  <span>Coking Coal / Energy Index</span>
+                  <span id="lbl-energy">100% (Nominal)</span>
+                </div>
+                <input type="range" id="slider-energy" min="80" max="125" value="100" oninput="recalcWhatIf()">
+              </div>
+              <div class="slider-group">
+                <div class="slider-label">
+                  <span>IT/OT Sensor Capex Buffer</span>
+                  <span id="lbl-buffer">0% Slippage</span>
+                </div>
+                <input type="range" id="slider-buffer" min="-15" max="15" value="0" oninput="recalcWhatIf()">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: SLIDEWORKS 1/3 GREY TAKEAWAYS + AUTOMATING THE HUMAN API -->
+      <div class="right-col-stack">
+        <div class="takeaways-grey-box">
+          <div class="panel-header">
+            <span class="panel-title">KEY TAKEAWAYS / MAIN CONCLUSION (1/3 GREY SPLIT)</span>
+          </div>
+          <ul class="takeaways-list">
+            <li><strong>Self-funding Wave 1 (<span id="tk-w1">INR 490 Cr</span>):</strong> Zero-capex Blast Furnace coke-rate AI and SMS ferro-alloy models generate cash within 6–9 months.</li>
+            <li><strong>Core plant scaling (<span id="tk-w2">INR 920 Cr</span>):</strong> Predictive maintenance and Computer Vision strip grading reduce unplanned cobbles by 22%.</li>
+            <li><strong>Integrated mine-to-mill (<span id="tk-w3">INR 1,310 Cr</span>):</strong> Captive iron-ore blend optimization and dynamic gas-grid dispatch lock in +280 bps margin lift.</li>
+          </ul>
+        </div>
+
+        <!-- AUTOMATING THE HUMAN API PANEL (Sarah's Thursday Requirement) -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <span class="panel-title">AUTOMATING THE "HUMAN API" — THURSDAY WORKSTREAM CHASE</span>
+            <button class="btn-secondary-cyan" style="padding: 3px 9px; font-size: 10px;" id="btn-chase-human" onclick="chaseMissingWorkstream()">
+              ⚡ Auto-Ping Missing Owner
+            </button>
+          </div>
+          <div class="panel-body" style="padding: 14px; gap: 8px;">
+            <div class="human-api-list">
+              <div class="human-row">
+                <div><strong>Blast Furnace (BF-2 &amp; BF-5)</strong> — R. Sharma<br><span style="font-size:10px;color:var(--mck-muted);">Coke rate: -14.2 kg/tHM verified via @bigquery</span></div>
+                <span class="status-badge status-badge--ok">Synced</span>
+              </div>
+              <div class="human-row">
+                <div><strong>Steel Melting Shop (SMS-II)</strong> — P. Verma<br><span style="font-size:10px;color:var(--mck-muted);">BOF yield twin: +18.4% hit rate via @databricks</span></div>
+                <span class="status-badge status-badge--ok">Synced</span>
+              </div>
+              <div class="human-row human-row--missing" id="missing-workstream-row">
+                <div><strong>Hot Strip Mill (HSM) &amp; Cold Rolling</strong> — A. Kulkarni<br><span style="font-size:10px;color:var(--mck-navy);" id="missing-workstream-sub">⚠️ Missing Week 42 cobble-reduction &amp; capex actuals</span></div>
+                <span class="status-badge status-badge--pending" id="missing-workstream-badge">Pending Input</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- BOTTOM SECTION: 3x3 IMPACT VS TIME MATRIX & SHAREPOINT EXCEL AUDIT -->
+    <section class="bottom-grid">
+      <div class="panel-card">
+        <div class="panel-header">
+          <span class="panel-title">INITIATIVE PRIORITIZATION MATRIX (LEVEL OF IMPACT VS. TIME TO IMPACT)</span>
+        </div>
+        <div class="panel-body" style="padding: 14px;">
+          <div class="mini-matrix">
+            <div class="mm-hdr" style="background:var(--mck-header-grey);color:var(--mck-navy);">IMPACT \ TIME</div>
+            <div class="mm-hdr">SHORT (&lt;6M)</div>
+            <div class="mm-hdr">MEDIUM (6–15M)</div>
+            <div class="mm-hdr">LONG (15–24M+)</div>
+
+            <div class="mm-row-hdr">HIGH</div>
+            <div class="mm-cell mm-cell--hi">
+              <div class="mm-pill mm-pill--green"><span>BF Coke Rate AI</span><span class="m-val-tag" data-inr="240" data-usd="29">INR 240 Cr</span></div>
+              <div class="mm-pill mm-pill--green"><span>SMS BOF Yield Twin</span><span class="m-val-tag" data-inr="165" data-usd="20">INR 165 Cr</span></div>
+            </div>
+            <div class="mm-cell mm-cell--hi">
+              <div class="mm-pill mm-pill--green"><span>HSM Pacing AI</span><span class="m-val-tag" data-inr="190" data-usd="23">INR 190 Cr</span></div>
+              <div class="mm-pill mm-pill--amber"><span>Mine-Sinter Blend</span><span class="m-val-tag" data-inr="145" data-usd="18">INR 145 Cr</span></div>
+            </div>
+            <div class="mm-cell">
+              <div class="mm-pill mm-pill--amber"><span>Autonomous Raw Yard</span><span class="m-val-tag" data-inr="130" data-usd="16">INR 130 Cr</span></div>
+              <div class="mm-pill mm-pill--coral"><span>ERP + MES Core Upgrade</span><span>Enabler</span></div>
+            </div>
+
+            <div class="mm-row-hdr">MEDIUM</div>
+            <div class="mm-cell mm-cell--hi">
+              <div class="mm-pill mm-pill--green"><span>Turbine Pred. Maint.</span><span class="m-val-tag" data-inr="85" data-usd="10">INR 85 Cr</span></div>
+            </div>
+            <div class="mm-cell">
+              <div class="mm-pill mm-pill--amber"><span>CV Strip Surface AI</span><span class="m-val-tag" data-inr="90" data-usd="11">INR 90 Cr</span></div>
+            </div>
+            <div class="mm-cell">
+              <div class="mm-pill mm-pill--coral"><span>Outbound Rail Twin</span><span class="m-val-tag" data-inr="55" data-usd="7">INR 55 Cr</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SHAREPOINT IN-PLACE ARTIFACT & SKILL COEXISTENCE PANEL -->
+      <div class="panel-card">
+        <div class="panel-header">
+          <span class="panel-title">IN-PLACE SHAREPOINT ARTIFACTS &amp; ANTIGRAVITY → SPARK COEXISTENCE</span>
+        </div>
+        <div class="panel-body" style="padding: 16px; gap: 10px; font-size: 11.5px;">
+          <div style="background: var(--mck-ice-blue); padding: 10px 12px; border-left: 4px solid var(--mck-chart-blue);">
+            <strong>1. In-Place SharePoint Excel Workbook (Zero Download/Re-Upload):</strong><br>
+            <span style="color:var(--mck-muted);">Path:</span> <code>SharePoint://McKinsey-Client-SteerCo/McKinsey_Thursday_Value_Tracker.xlsx</code><br>
+            <span id="excel-sync-status" style="color:var(--mck-green);font-weight:700;">✓ 4 Tabs Synced In-Place (Executive Summary, Wave Bridge, 154 Initiatives, Audit Log)</span>
+          </div>
+          <div style="background: var(--mck-bg-grey); padding: 10px 12px; border-left: 4px solid var(--mck-navy);">
+            <strong>2. Reusable Skill Exported to Gemini Agent (Spark):</strong><br>
+            Embedded consultants author <code>.agents/skills/mckinsey-slide-creator/SKILL.md</code> in Antigravity and publish to Gemini Agent so Partners can generate on-brand <code>.pptx</code> decks from chat.
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <div id="toast-banner"></div>
+
+  <script>
+    let isUsdMode = false;
+    const baseValuesInr = [180, 490, 920, 1310];
+    const baseValuesUsd = [22, 59, 111, 158];
+
+    function showToast(msg) {
+      const t = document.getElementById('toast-banner');
+      t.innerHTML = msg;
+      t.style.display = 'block';
+      setTimeout(() => { t.style.display = 'none'; }, 4200);
+    }
+
+    function formatCurrency(val) {
+      return isUsdMode ? `$${val.toLocaleString()}M` : `INR ${val.toLocaleString()} Cr`;
+    }
+
+    function recalcWhatIf() {
+      const adoption = parseInt(document.getElementById('slider-adoption').value, 10);
+      const energy = parseInt(document.getElementById('slider-energy').value, 10);
+      const buffer = parseInt(document.getElementById('slider-buffer').value, 10);
+
+      document.getElementById('lbl-adoption').textContent = `${adoption}%`;
+      document.getElementById('lbl-energy').textContent = `${energy}%`;
+      document.getElementById('lbl-buffer').textContent = `${buffer > 0 ? '+' : ''}${buffer}%`;
+
+      const mult = (adoption / 85.0) * (energy / 100.0) * (1 + buffer / 100.0);
+      const baseArr = isUsdMode ? baseValuesUsd : baseValuesInr;
+
+      const v0 = baseArr[0];
+      const v1 = Math.round(baseArr[1] * mult);
+      const v2 = Math.round(baseArr[2] * mult);
+      const v3 = Math.round(baseArr[3] * mult);
+
+      const vals = [v0, v1, v2, v3];
+      const maxVal = Math.max(...vals, isUsdMode ? 180 : 1500);
+
+      vals.forEach((v, idx) => {
+        document.getElementById(`bar-val-${idx}`).textContent = v.toLocaleString();
+        const h = Math.max(28, Math.round((v / maxVal) * 215));
+        document.getElementById(`bar-rect-${idx}`).style.height = `${h}px`;
+      });
+
+      const cagr = Math.round((Math.pow(v3 / v0, 1 / 3) - 1) * 100);
+      document.getElementById('chart-cagr-badge').textContent = `CAGR +${cagr}% (FY25–FY28F)`;
+      document.getElementById('kpi-total-val').textContent = formatCurrency(v3);
+      document.getElementById('kpi-total-delta').textContent = `▲ +${cagr}% CAGR (FY25–FY28F)`;
+      document.getElementById('kpi-wave1-val').textContent = formatCurrency(v1);
+
+      document.getElementById('tk-w1').textContent = formatCurrency(v1);
+      document.getElementById('tk-w2').textContent = formatCurrency(v2);
+      document.getElementById('tk-w3').textContent = formatCurrency(v3);
+
+      document.getElementById('dynamic-action-title').textContent =
+        `Phased rollout across three waves scales recurring EBITDA impact to ~${formatCurrency(v3)} by FY28 (${adoption}% operator AI adoption scenario)`;
+    }
+
+    function resetSimulator() {
+      document.getElementById('slider-adoption').value = 85;
+      document.getElementById('slider-energy').value = 100;
+      document.getElementById('slider-buffer').value = 0;
+      recalcWhatIf();
+      showToast("✓ Reset What-If Simulator to McKinsey Base Case.");
+    }
+
+    function toggleEngagementMode() {
+      isUsdMode = !isUsdMode;
+      const btn = document.getElementById('btn-toggle-currency');
+      if (isUsdMode) {
+        btn.textContent = "Switch to SAIL-BSL (INR Cr) Mode";
+        document.getElementById('eng-title').textContent = "Global Industrial Transformation | Executive Value-Realization Tracker ($M)";
+        document.getElementById('chart-unit-label').textContent = "Recurring Annual EBITDA Impact, $ Millions";
+      } else {
+        btn.textContent = "Switch to Global ($M) Mode";
+        document.getElementById('eng-title').textContent = "SAIL Digital Transformation Roadmap | BSL Value-Realization Tracker";
+        document.getElementById('chart-unit-label').textContent = "Recurring Annual EBITDA Impact, INR Crores";
+      }
+      document.querySelectorAll('.m-val-tag').forEach(el => {
+        el.textContent = isUsdMode ? `$${el.dataset.usd}M` : `INR ${el.dataset.inr} Cr`;
+      });
+      recalcWhatIf();
+      showToast(isUsdMode
+        ? "🌐 Switched to Customer-Agnostic Global ($M) Mode (Ready for BCG / Global Readouts)."
+        : "🏭 Switched to SAIL-BSL Digital Transformation Mode (INR Crores).");
+    }
+
+    function chaseMissingWorkstream() {
+      const row = document.getElementById('missing-workstream-row');
+      const sub = document.getElementById('missing-workstream-sub');
+      const badge = document.getElementById('missing-workstream-badge');
+      row.classList.remove('human-row--missing');
+      sub.textContent = "✓ Auto-chased via Slack/Teams MCP → HSM cobble reduction (-22%) & INR 190 Cr run-rate confirmed";
+      sub.style.color = "var(--mck-green)";
+      badge.textContent = "Synced";
+      badge.className = "status-badge status-badge--ok";
+      document.getElementById('kpi-human-status').textContent = "8 / 8 Ready";
+      document.getElementById('kpi-human-delta').textContent = "✓ 100% Workstreams Signed Off";
+      document.getElementById('kpi-human-delta').style.color = "var(--mck-green)";
+      showToast("💬 Human API Triggered: Sent Teams ping to A. Kulkarni (HSM Lead), ingested Week 42 actuals, and reconciled dashboard.");
+    }
+
+    function triggerSharePointExcelSync() {
+      const statusEl = document.getElementById('excel-sync-status');
+      statusEl.textContent = "✓ Updated McKinsey_Thursday_Value_Tracker.xlsx In-Place via @sharepoint-excel (Just now)";
+      showToast("📊 In-Place SharePoint Sync Complete: Opening 'McKinsey_Thursday_Value_Tracker.xlsx' in SharePoint Online...");
+      setTimeout(() => {
+        window.open('mckinsey_sharepoint_excel_viewer.html', '_blank');
+      }, 900);
+    }
+
+    function triggerPptxExport() {
+      showToast("🎯 Skill 'mckinsey-slide-creator' Invoked: Opening compiled 6-slide McKinsey presentation...");
+      setTimeout(() => {
+        window.open('mckinsey_sample_deck.html', '_blank');
+      }, 900);
+    }
+
+    function setPartnerChartMode(mode) {
+      document.getElementById('tab-col').classList.toggle('active', mode === 'column');
+      document.getElementById('tab-bridge').classList.toggle('active', mode === 'bridge');
+      if (mode === 'bridge') {
+        document.getElementById('partner-memory-text').textContent =
+          '"Switched to EBITDA Lever Breakdown view (Primary Steel 42% | Rolling 29% | Energy & Mines 20% | OT Enablers 9%)"';
+      } else {
+        document.getElementById('partner-memory-text').textContent =
+          '"Always display 3-Wave Column Forecast with CAGR badge & full-sentence Action Titles (per Joe / Partner Thursday review)"';
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SharePoint Online | McKinsey_Thursday_Value_Tracker.xlsx (In-Place Live Edit)</title>
+  <style>
+    :root {
+      --mck-navy: #051C2C;
+      --mck-navy-alt: #061F32;
+      --mck-electric-blue: #2222F6;
+      --mck-chart-blue: #1F6FD8;
+      --mck-cyan: #22A3DF;
+      --mck-ice-blue: #E7F0F9;
+      --mck-ice-border: #A2D5EC;
+      --mck-bg-grey: #F2F2F2;
+      --mck-header-grey: #D8D8D8;
+      --mck-green: #00B050;
+      --sp-green: #107C41;
+      --sp-ribbon: #F3F2F1;
+      --sp-border: #E1DFDD;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Arial', 'Segoe UI', sans-serif;
+      background-color: #FAF9F8;
+      color: var(--mck-navy);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* SharePoint / Excel Online Top Chrome */
+    .sp-top-bar {
+      background-color: var(--sp-green);
+      color: #FFFFFF;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+    }
+    .sp-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .sp-app-icon {
+      background-color: #FFFFFF;
+      color: var(--sp-green);
+      font-weight: 900;
+      font-size: 13px;
+      padding: 3px 8px;
+      border-radius: 3px;
+    }
+    .sp-doc-title {
+      font-weight: 700;
+      font-size: 14px;
+    }
+    .sp-saved-pill {
+      background-color: rgba(255,255,255,0.2);
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .sp-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 11.5px;
+    }
+    .mcp-live-badge {
+      background-color: var(--mck-navy);
+      color: #FFFFFF;
+      border: 1px solid var(--mck-cyan);
+      padding: 4px 12px;
+      border-radius: 14px;
+      font-weight: 700;
+      font-size: 11px;
+    }
+
+    /* Formula Bar */
+    .formula-bar {
+      background-color: #FFFFFF;
+      border-bottom: 1px solid var(--sp-border);
+      padding: 6px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 12px;
+    }
+    .cell-ref {
+      border: 1px solid #C8C6C4;
+      padding: 3px 12px;
+      font-weight: 700;
+      color: var(--mck-navy);
+      background: #F8F8F8;
+      width: 72px;
+      text-align: center;
+    }
+    .fx-symbol {
+      font-family: 'Georgia', serif;
+      font-style: italic;
+      font-weight: 700;
+      color: #605E5C;
+    }
+    .fx-input {
+      flex: 1;
+      border: 1px solid #C8C6C4;
+      padding: 4px 10px;
+      font-family: monospace;
+      font-size: 12px;
+      color: var(--mck-navy);
+      background-color: #FFFFFF;
+    }
+
+    /* Spreadsheet Grid Area */
+    .sheet-viewport {
+      flex: 1;
+      overflow: auto;
+      padding: 18px 24px;
+      background-color: #FFFFFF;
+    }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    .mck-sheet-banner {
+      background-color: var(--mck-navy);
+      color: #FFFFFF;
+      padding: 14px 18px;
+      border-left: 6px solid var(--mck-electric-blue);
+      margin-bottom: 16px;
+    }
+    .mck-sheet-banner h2 {
+      font-family: 'Georgia', serif;
+      font-size: 18px;
+      margin-bottom: 3px;
+    }
+    .mck-sheet-banner p {
+      font-size: 11.5px;
+      color: var(--mck-ice-border);
+    }
+
+    table.excel-grid {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    table.excel-grid th.col-letter {
+      background-color: #F3F2F1;
+      color: #605E5C;
+      border: 1px solid #D2D0CE;
+      padding: 4px;
+      font-weight: 600;
+      text-align: center;
+      font-size: 11px;
+    }
+    table.excel-grid td.row-num {
+      background-color: #F3F2F1;
+      color: #605E5C;
+      border: 1px solid #D2D0CE;
+      padding: 4px 8px;
+      text-align: center;
+      font-size: 11px;
+      width: 36px;
+    }
+    table.excel-grid th.mck-th {
+      background-color: var(--mck-navy-alt);
+      color: #FFFFFF;
+      padding: 9px 12px;
+      border: 1px solid #C8C6C4;
+      text-align: left;
+      font-weight: 700;
+    }
+    table.excel-grid td {
+      padding: 8px 12px;
+      border: 1px solid #D8D8D8;
+      background-color: var(--mck-bg-grey);
+    }
+    table.excel-grid td.cell-ice {
+      background-color: var(--mck-ice-blue);
+      font-weight: 700;
+      text-align: right;
+      border-color: var(--mck-ice-border);
+    }
+    table.excel-grid td.cell-status-ok {
+      background-color: var(--mck-green);
+      color: #FFFFFF;
+      font-weight: 700;
+      text-align: center;
+    }
+    table.excel-grid tr.total-row td {
+      background-color: var(--mck-navy);
+      color: #FFFFFF;
+      font-weight: 700;
+    }
+
+    /* Bottom Excel Worksheet Tabs */
+    .excel-bottom-tabs {
+      background-color: var(--sp-ribbon);
+      border-top: 1px solid var(--sp-border);
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 38px;
+    }
+    .sheet-tabs-left {
+      display: flex;
+      height: 100%;
+    }
+    .sheet-tab {
+      padding: 0 18px;
+      border: none;
+      border-right: 1px solid var(--sp-border);
+      background: transparent;
+      font-size: 12px;
+      font-weight: 700;
+      color: #605E5C;
+      cursor: pointer;
+      height: 100%;
+    }
+    .sheet-tab.active {
+      background-color: #FFFFFF;
+      color: var(--sp-green);
+      border-bottom: 3px solid var(--sp-green);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP SHAREPOINT / EXCEL ONLINE HEADER -->
+  <header class="sp-top-bar">
+    <div class="sp-left">
+      <span class="sp-app-icon">XLSX</span>
+      <span class="sp-doc-title">SharePoint &rsaquo; McKinsey-SteerCo-Deliverables &rsaquo; McKinsey_Thursday_Value_Tracker.xlsx</span>
+      <span class="sp-saved-pill">✓ Saved In-Place to SharePoint (Zero Download/Re-Upload)</span>
+    </div>
+    <div class="sp-right">
+      <span class="mcp-live-badge">⚡ Connected to Antigravity via @sharepoint-excel-inplace</span>
+      <span>Actual File: <code>output/McKinsey_Thursday_Value_Tracker.xlsx</code></span>
+    </div>
+  </header>
+
+  <!-- FORMULA BAR -->
+  <div class="formula-bar">
+    <div class="cell-ref" id="active-cell-ref">G12</div>
+    <span class="fx-symbol">fx</span>
+    <input class="fx-input" id="active-formula" value="=SUM(G5:G11)  // Reconciles 154 Initiatives to FY28 Wave 3 Target (INR 1,310 Cr | $158M — Zero Variance Verified by Pytest)" readonly>
+  </div>
+
+  <!-- WORKSHEET VIEWPORT -->
+  <div class="sheet-viewport">
+
+    <!-- TAB 1: EXECUTIVE WAVE BRIDGE -->
+    <div class="tab-pane active" id="tab-1">
+      <div class="mck-sheet-banner">
+        <h2>Tab 1: Executive Summary &amp; 3-Wave EBITDA Bridge (FY25 Actuals &ndash; FY28 Target)</h2>
+        <p>Updated In-Place via @sharepoint-excel-inplace &amp; BYOMCP Fabric | Reconciled with HTML Dashboard &amp; 6-Slide PPTX Deck</p>
+      </div>
+      <table class="excel-grid">
+        <thead>
+          <tr>
+            <th class="col-letter">#</th>
+            <th class="col-letter">A</th>
+            <th class="col-letter">B</th>
+            <th class="col-letter">C</th>
+            <th class="col-letter">D</th>
+            <th class="col-letter">E</th>
+            <th class="col-letter">F</th>
+          </tr>
+          <tr>
+            <td class="row-num">1</td>
+            <th class="mck-th">Roadmap Phase</th>
+            <th class="mck-th">Strategic Focus</th>
+            <th class="mck-th">Active Initiatives</th>
+            <th class="mck-th">EBITDA (INR Cr)</th>
+            <th class="mck-th">EBITDA ($M Agnostic)</th>
+            <th class="mck-th">BYOMCP Source Connector</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="row-num">2</td>
+            <td><strong>FY25 Actuals</strong></td>
+            <td>Pilot Baseline</td>
+            <td>12</td>
+            <td class="cell-ice">180</td>
+            <td class="cell-ice">$22M</td>
+            <td><code>@bigquery-plant-telemetry</code></td>
+          </tr>
+          <tr>
+            <td class="row-num">3</td>
+            <td><strong>FY26 Wave 1</strong></td>
+            <td>Quick Wins (Zero-Capex APC/AI)</td>
+            <td>45</td>
+            <td class="cell-ice">490</td>
+            <td class="cell-ice">$59M</td>
+            <td><code>@databricks-genie-ml</code></td>
+          </tr>
+          <tr>
+            <td class="row-num">4</td>
+            <td><strong>FY27 Wave 2</strong></td>
+            <td>Core Plant Scale</td>
+            <td>65</td>
+            <td class="cell-ice">920</td>
+            <td class="cell-ice">$111M</td>
+            <td><code>@databricks-genie-ml</code></td>
+          </tr>
+          <tr>
+            <td class="row-num">5</td>
+            <td><strong>FY28 Wave 3</strong></td>
+            <td>Full Maturity (End-to-End Twin)</td>
+            <td>154</td>
+            <td class="cell-ice">1,310</td>
+            <td class="cell-ice">$158M</td>
+            <td><code>@snowflake-erp-actuals</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- TAB 2: 3x3 INITIATIVE MATRIX & HUMAN API -->
+    <div class="tab-pane" id="tab-2">
+      <div class="mck-sheet-banner">
+        <h2>Tab 2: 3&times;3 Prioritization Matrix &amp; Thursday "Human API" Workstream Sign-Off</h2>
+        <p>All 8 Workstreams Reconciled | Row BSL-03 (Hot Strip Mill) Auto-Chased via Slack/Teams MCP</p>
+      </div>
+      <table class="excel-grid">
+        <thead>
+          <tr>
+            <th class="col-letter">#</th>
+            <th class="col-letter">A</th>
+            <th class="col-letter">B</th>
+            <th class="col-letter">C</th>
+            <th class="col-letter">D</th>
+            <th class="col-letter">E</th>
+            <th class="col-letter">F</th>
+            <th class="col-letter">G</th>
+            <th class="col-letter">H</th>
+          </tr>
+          <tr>
+            <td class="row-num">4</td>
+            <th class="mck-th">ID</th>
+            <th class="mck-th">Initiative Name</th>
+            <th class="mck-th">Transformation Pillar</th>
+            <th class="mck-th">Impact Level</th>
+            <th class="mck-th">Time to Impact</th>
+            <th class="mck-th">Run-Rate (INR Cr)</th>
+            <th class="mck-th">Run-Rate ($M)</th>
+            <th class="mck-th">Thursday Human API Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="row-num">5</td>
+            <td>BSL-01</td>
+            <td><strong>Blast Furnace (BF-2/BF-5) AI Coke Rate &amp; Thermal Setpoint</strong></td>
+            <td>1. Primary Steelmaking</td>
+            <td>HIGH</td>
+            <td>SHORT (&lt; 6M)</td>
+            <td class="cell-ice">240</td>
+            <td class="cell-ice">$29M</td>
+            <td class="cell-status-ok">Synced (R. Sharma)</td>
+          </tr>
+          <tr>
+            <td class="row-num">6</td>
+            <td>BSL-02</td>
+            <td><strong>SMS-II BOF End-Point Temperature &amp; Ferro-Alloy Yield Twin</strong></td>
+            <td>1. Primary Steelmaking</td>
+            <td>HIGH</td>
+            <td>SHORT (&lt; 6M)</td>
+            <td class="cell-ice">165</td>
+            <td class="cell-ice">$20M</td>
+            <td class="cell-status-ok">Synced (P. Verma)</td>
+          </tr>
+          <tr>
+            <td class="row-num">7</td>
+            <td>BSL-03</td>
+            <td><strong>Hot Strip Mill (HSM) Cobble Prevention &amp; Pacing AI</strong></td>
+            <td>2. Flat Products &amp; Rolling</td>
+            <td>HIGH</td>
+            <td>MEDIUM (6–15M)</td>
+            <td class="cell-ice">190</td>
+            <td class="cell-ice">$23M</td>
+            <td class="cell-status-ok">Synced (Auto-Chased A. Kulkarni)</td>
+          </tr>
+          <tr>
+            <td class="row-num">8</td>
+            <td>BSL-04</td>
+            <td><strong>Integrated Mine-to-Sinter Blend Optimizer</strong></td>
+            <td>3. Captive Mines &amp; Energy</td>
+            <td>HIGH</td>
+            <td>MEDIUM (6–15M)</td>
+            <td class="cell-ice">145</td>
+            <td class="cell-ice">$18M</td>
+            <td class="cell-status-ok">Synced (S. Chatterjee)</td>
+          </tr>
+          <tr>
+            <td class="row-num">9</td>
+            <td>BSL-05</td>
+            <td><strong>Autonomous Raw Material Yard &amp; Torpedo Ladle Twin</strong></td>
+            <td>3. Captive Mines &amp; Energy</td>
+            <td>HIGH</td>
+            <td>LONG (15–24M+)</td>
+            <td class="cell-ice">130</td>
+            <td class="cell-ice">$16M</td>
+            <td class="cell-status-ok">Synced (M. Dasgupta)</td>
+          </tr>
+          <tr>
+            <td class="row-num">10</td>
+            <td>BSL-06</td>
+            <td><strong>Gas-Grid &amp; Captive Power Turbine Predictive Maintenance</strong></td>
+            <td>3. Captive Mines &amp; Energy</td>
+            <td>MEDIUM</td>
+            <td>SHORT (&lt; 6M)</td>
+            <td class="cell-ice">85</td>
+            <td class="cell-ice">$10M</td>
+            <td class="cell-status-ok">Synced (V. Nair)</td>
+          </tr>
+          <tr>
+            <td class="row-num">11</td>
+            <td>BSL-07</td>
+            <td><strong>Computer Vision Strip Surface Defect Grading</strong></td>
+            <td>2. Flat Products &amp; Rolling</td>
+            <td>MEDIUM</td>
+            <td>MEDIUM (6–15M)</td>
+            <td class="cell-ice">90</td>
+            <td class="cell-ice">$11M</td>
+            <td class="cell-status-ok">Synced (K. Iyer)</td>
+          </tr>
+          <tr>
+            <td class="row-num">12</td>
+            <td>BSL-08</td>
+            <td><strong>Remaining 147 Plant, Logistics &amp; Commercial Tail Initiatives</strong></td>
+            <td>4. Digital Factory &amp; OT Core</td>
+            <td>MEDIUM/LOW</td>
+            <td>MEDIUM/LONG</td>
+            <td class="cell-ice">265</td>
+            <td class="cell-ice">$31M</td>
+            <td class="cell-status-ok">Synced (PMO Factory)</td>
+          </tr>
+          <tr class="total-row">
+            <td class="row-num">13</td>
+            <td colspan="5" style="text-align:right;">TOTAL RUN-RATE EBITDA (FORMULA: <code>=SUM(F5:F12)</code>)</td>
+            <td style="text-align:right;background:#2222F6;">INR 1,310 Cr</td>
+            <td style="text-align:right;background:#2222F6;">$158M</td>
+            <td style="text-align:center;">100% RECONCILED</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- TAB 3: BYOMCP AUDIT LOG -->
+    <div class="tab-pane" id="tab-3">
+      <div class="mck-sheet-banner">
+        <h2>Tab 3: BYOMCP Connector Telemetry &amp; Antigravity SDLC Verification Log</h2>
+        <p>90% Firm-Wide BYOMCP Standard | Every Data Point Auditable Across BigQuery, Databricks, Snowflake &amp; SharePoint</p>
+      </div>
+      <table class="excel-grid">
+        <thead>
+          <tr>
+            <th class="col-letter">#</th>
+            <th class="col-letter">A</th>
+            <th class="col-letter">B</th>
+            <th class="col-letter">C</th>
+            <th class="col-letter">D</th>
+          </tr>
+          <tr>
+            <td class="row-num">1</td>
+            <th class="mck-th">Timestamp (UTC)</th>
+            <th class="mck-th">MCP Server / Skill</th>
+            <th class="mck-th">Action Executed</th>
+            <th class="mck-th">Verification Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="row-num">2</td>
+            <td>2026-10-20 14:40:00Z</td>
+            <td><code>@bigquery-plant-telemetry</code></td>
+            <td>Queried BF-2, BF-5 &amp; SMS-II sensor tag actuals</td>
+            <td class="cell-status-ok">VERIFIED</td>
+          </tr>
+          <tr>
+            <td class="row-num">3</td>
+            <td>2026-10-20 14:41:12Z</td>
+            <td><code>@databricks-genie-ml</code></td>
+            <td>Fetched HSM cobble &amp; CV defect model predictions</td>
+            <td class="cell-status-ok">VERIFIED</td>
+          </tr>
+          <tr>
+            <td class="row-num">4</td>
+            <td>2026-10-20 14:42:05Z</td>
+            <td><code>@slack-teams-human-api</code></td>
+            <td>Auto-chased A. Kulkarni for Week 42 HSM actuals</td>
+            <td class="cell-status-ok">VERIFIED</td>
+          </tr>
+          <tr>
+            <td class="row-num">5</td>
+            <td>2026-10-20 14:43:30Z</td>
+            <td><code>@sharepoint-excel-inplace</code></td>
+            <td>Updated McKinsey_Thursday_Value_Tracker.xlsx in-place</td>
+            <td class="cell-status-ok">VERIFIED</td>
+          </tr>
+          <tr>
+            <td class="row-num">6</td>
+            <td>2026-10-20 14:44:10Z</td>
+            <td><code>skill:mckinsey-slide-creator</code></td>
+            <td>Compiled 6-slide SteerCo PowerPoint readout</td>
+            <td class="cell-status-ok">VERIFIED</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM WORKSHEET TABS -->
+  <footer class="excel-bottom-tabs">
+    <div class="sheet-tabs-left">
+      <button class="sheet-tab active" id="btn-tab-1" onclick="switchTab(1)">1_Executive_Wave_Bridge</button>
+      <button class="sheet-tab" id="btn-tab-2" onclick="switchTab(2)">2_Initiative_Matrix_HumanAPI</button>
+      <button class="sheet-tab" id="btn-tab-3" onclick="switchTab(3)">3_BYOMCP_Audit_Log</button>
+    </div>
+    <div style="font-size: 11px; color: #605E5C; font-weight: 700;">
+      Ready | In-Place SharePoint Mode | Pytest Variance: 0.00
+    </div>
+  </footer>
+
+  <script>
+    function switchTab(idx) {
+      [1, 2, 3].forEach(i => {
+        document.getElementById(`tab-${i}`).classList.toggle('active', i === idx);
+        document.getElementById(`btn-tab-${i}`).classList.toggle('active', i === idx);
+      });
+    }
+  </script>
+</body>
+</html>
